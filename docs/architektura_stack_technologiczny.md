@@ -107,13 +107,17 @@ flowchart TB
         subgraph TOOLS ["Zarejestrowane Narzędzia (Client Tools)"]
             T1["check_spa_availability"]:::webhookLayer
             T2["book_spa_appointment"]:::webhookLayer
+            T2B["cancel_spa_appointment"]:::webhookLayer
+            T2C["reschedule_spa_appointment"]:::webhookLayer
             T3["check_room_availability"]:::webhookLayer
             T4["send_sms_summary"]:::webhookLayer
-            T5["transfer_to_number"]:::webhookLayer
+            T5["transfer_to_simulated_handoff"]:::webhookLayer
         end
 
         TOOL_ROUTER --> T1
         TOOL_ROUTER --> T2
+        TOOL_ROUTER --> T2B
+        TOOL_ROUTER --> T2C
         TOOL_ROUTER --> T3
         TOOL_ROUTER --> T4
         TOOL_ROUTER --> T5
@@ -177,9 +181,9 @@ flowchart TB
   - Latencja: ~150 ms.
   - Akustyczny model języka polskiego zoptymalizowany pod specyficzne terminy balneologiczne (np. *kąpiel siarczkowa*, *borowina*, *jonoforeza*).
   - Voice Activity Detection (VAD) z czasem oczekiwania `turn_timeout: 3.0s` (brak przerywania seniorom).
-- **LLM Orchestrator:** `GPT-4o Mini` / `Gemini 2.5 Flash`
+- **LLM Orchestrator:** `gemini-3.5-flash-lite`
   - Temperatura: `0.1` (bezwzględny zakaz halucynacji).
-  - Mechanizm stanowy: **ElevenLabs Agent Workflows & Procedures**.
+  - Mechanizm stanowy: **ElevenLabs Agent Workflows & Procedures** (7 procedur opublikowanych + graf start→main_agent→end).
 - **RAG & Knowledge Base:**
   - 5 plików Markdown podzielonych na tryby:
     - `prompt`: procedury operacyjne i cenniki wstrzykiwane na stałe.
@@ -199,9 +203,11 @@ ElevenLabs wywołuje zewnętrzne narzędzia za pomocą schematu **Client Tools (
 |---|---|---|---|
 | **`check_spa_availability`** | HTTPS POST | `/check_spa_availability` | Weryfikacja wolnych slotów w kalendarzu SPA w PMS |
 | **`book_spa_appointment`** | HTTPS POST | `/book_spa_appointment` | Zapisanie rezerwacji zabiegu i wygenerowanie kodu `SPA-XXXX` |
+| **`cancel_spa_appointment`** | HTTPS POST | `/cancel_spa_appointment` | Anulowanie zabiegu (polityka 2h + zwolnienie medyczne) |
+| **`reschedule_spa_appointment`** | HTTPS POST | `/reschedule_spa_appointment` | Zmiana terminu zabiegu (bezpłatna, nowy kod SPA) |
 | **`check_room_availability`** | HTTPS POST | `/check_room_availability` | Sprawdzenie obłożenia pokoi i kalkulacja ceny całkowitej |
 | **`send_sms_summary`** | HTTPS POST | `/send_sms_summary` | Wysłanie wiadomości SMS/Telegram z potwierdzeniem |
-| **`transfer_to_number`** | SIP REFER | `tel:+48181234567` | Przekazanie połączenia do pracownika recepcji |
+| **`transfer_to_simulated_handoff`** | HTTPS POST | `/transfer_to_simulated_handoff` | Symulowane przekazanie do człowieka (PoC — brak telefonii) |
 
 ---
 
