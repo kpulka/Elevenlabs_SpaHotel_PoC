@@ -1,0 +1,129 @@
+# PROMPT DIAGNOSTYCZNY: Widget ElevenLabs nie uruchamia rozmowy w Next.js (React 19)
+
+Jesteś ekspertem od ElevenLabs Conversational AI i integracji widgetu `<elevenlabs-convai>` (konwersacyjny agent osadzony na stronie). Pomóż rozwiązać błąd, z powodu którego nie da się przeprowadzić rozmowy z agentem na stronie — proszę o diagnozę i konkretny kod naprawczy, NIE ogólne rady.
+
+---
+
+## 1. ŚRODOWISKO
+- **Framework:** Next.js **16.3.0** (App Router, Turbopack), TypeScript **5.7.3**
+- **React:** **19.2.4** (react-dom 19.2.4) — czyli React **19**
+- **pnpm** 10.30
+- **Browser:** Chrome 151 / Brave (sterowany również przez chrome remote debugging; ale problem występuje też u człowieka klikającym normalnie)
+- **Hosting testowy:** `http://localhost:3100` (produkcja `next start -p 3100`)
+
+## 2. CO CHCEMY OSIĄGNĄĆ
+Zamontować **jeden** oficjalny pływający widget ElevenLabs (custom element `<elevenlabs-convai>`), który pozwala "porozmawiać z Anną" (głos + tekst), z bazą wiedzy (RAG) i tool callingiem (webhooki). Agent działa (już zweryfikowany w panelu i przez SDK — rozmawia): agent_id `agent_8401m0n03cggfgebhfh0cj96t7aj`.
+
+## 3. JAK PODŁĄCZONO (obecna implementacja)
+
+### 3.1. API route (Next.js) `app/api/anna/signed-url/route.ts`
+Serwer trzyma klucz `ELEVENLABS_API_KEY` (w `.env.local`) i zwraca signed URL:
+```
+GET https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=agent_8401e240... 
+-h "xi-api-key: <KEY>"
+```
+daje (HTTP 200, działa):
+```
+{ "signed_url": "wss://api.elevenlabs.io/v1/convai/conversation?agent_id=agent_8401...&conversation_signature=cvtkn_XXX" }
+```
+route zwraca ten JSON. **(zweryfikowane przez curl: 200 + poprawny signed_url)**
+
+### 3.2 Komponent `frontend/components/anna-embed-widget.tsx`
+```tsx
+'use client'
+import { useEffect, useRef, useState } from 'react'
+
+const AGENT_ID = 'agent_8401...'
+const WIDGET_SCRIPT = 'https://unpkg.com/@elevenlabs/convai-widget-embed@0.16.4/dist/index.js'
+
+export function AnnaEmbedWidget() {
+  const [signedUrl, setSignedUrl] = useState<string|null>(null)
+  const [error, setError] = useState<string|null>(null)
+  const scriptInserted = useRef(false)
+  const widgetRef = useRef<HTMLElement|null>(null)
+
+  useEffect(() => { // fetch signed-url
+    let cancelled=false
+    fetch('/api/anna/signed-url')
+      .then(r=>r.ok?r.json():Promise.reject('HTTP '+r.status))
+      .then(d=>{ if(!cancelled && d?.signed_url) setSignedUrl(d.signed_url); else if(!cancelled) setError(d?.error||'no signed_url') })
+      .catch(e=>!cancelled&&setError(e.message))
+    return ()=>{cancelled=true}
+  },[])
+
+  useEffect(()=>{ // wstrzyknij skrypt widgetu
+    if(scriptInserted.current) return
+    scriptInserted.current=true
+    const el=document.createElement('script'); el.src=WIDGET_SCRIPT; el.type='text/javascript'; el.defer=true; el.async=true
+    el.onerror=()=>setError('Nie można załadować widgetu ElevenLabs')
+    document.head.appendChild(el)
+  },[])
+
+  useEffect(()=>{ // open via event
+    if(!widgetRef.current) return
+    const host=widgetRef.current
+    function openWidget(){
+      try { const api = host.show?.() ?? host.getRoundedRect?.(); if(!api) host.click?.() } catch {}
+    }
+    window.addEventListener('open-anna-widget', openWidget)
+    return ()=>window.removeEventListener('open-anna-widget', openWidget)
+  },[signedUrl])
+
+  return (<>
+    {error && <div className="fixed right-4 bottom-4 z-[1000] ">...błąd...</div>}
+    {signedUrl && !error && (
+      <elevenlabs-convai
+        ref={(el:any)=>{widgetRef.current=el}}
+        agent-id={AGENT_ID}
+        signed-url={signedUrl}
+      />
+    )}
+  </>)
+}
+```
+
+### 3.3 Ostylowanie (już nie w komponencie — ustawione na koncie przez API)
+`platform_settings.widget` agenta (PATCH /agents/{id}) ustawione: kolory brand (btn gold `#c9a84c`, bg cream, text navy), radius, `language:"pl"`, `text_input_enabled:true`, `mic_muting_enabled:true`, `transcript_enabled:true`, `show_avatar_when_collapsed:true`. Zweryfikowane — widget ma accent `#c9a84c`.
+
+### 3.4 `app/layout.tsx`
+```tsx
+<AnnaEmbedWidget />  // renderowane globalnie w <body> (single)
+```
+
+## 4. OBSERWOWANY PROBLEM (kluczowe)
+Użytkownik, nawet w prawdziwej przeglądarce (Chrome/Brave, nie headless), **nie może przeprowadzić rozmowy z avatarem**. Sekwencja:
+1. Strona ładuje się; widać natywny FAB (`Potrzebujesz pomocy?`).
+2. Kliknięcie FAB otwiera okienko z **„Rozpocznij rozmowę"**.
+3. Kliknięcie „Rozpocznij rozmowę" → pojawia się **„Terms and conditions ... I consent ..."** + przycisk „Akceptuję".
+4. Kliknięcie „Akceptuję" → **„Wystąpił błąd: Permission denied"** (błąd na ekranie). Rozmowa nie startuje.
+
+W konsoli przeglądarki:
+```
+[Violation] Permissions policy violation: microphone is not allowed in this document.
+```
+oraz (niezależne, ale w logach):
+```
+(velcro 404) _vercel/insights/script.js 404 — <script> refused MIME text/plain
+```
+
+## 5. GŁÓWNE PODEJRZENIA (potwierdź/obale)
+1. **Czy widget `<elevenlabs-convai>` dla `signed-url` w ogóle wchodzi w WebSocket?** Signed-url działa, ale może signed-url wymaga POLICY/CORS, a `wss://` z originem `localhost:3100` jest blokowany (Origin mismatch)? — bo `signed-url` może być bound do konkretnego origin albo „Permission denied" to rzeczywisty błąd platformy przy próbie połączenia.
+2. **Czy to jest problem `microphone` (głos), a nie WebSocket?** „microphone is not allowed in this document" sugeruje unsafe-context/header `Permissions-Policy`. localhost jest secure-context, ale może wymaga nagłówka albo i doesn't allow.
+3. **Czy `@elevenlabs/convai-widget-embed@0.16.4` wymaga czegoś więcej / nowszego konfigurowania?`** Czy proper wsadzanie signed-url + agent-id jest poprawne dla tej wersji? Czy musi być `ovverride`/`environment`/`branch`? 
+4. **React 19 / Next 16**: czy custom element (`<elevenlabs-convai>`) z domyślnem `ref`, `agent-id`, `signed-url` nie jest "wyczyszczany" przez React 19 (closing tag / attr handling), tj. czy React poprawnie przekazuje attributy custom elementowi i nie nadpisuje?
+5. **Double-consent / przepływ**: może „Permission denied" powstaje przy SECOND call (po przejściu terms), bo signed_url jest jednorazowy albo `conversation_signature` expitował, albo trzeba `enable` na agent: „allow user to disable in built debug"? 
+6. **vercel analytics 404** — czy przerywa jakiś loaded script (chunk) i nie powinno się użyć w prod? Czy blokuje?
+
+## 6. CZEGO OD CIEBIE CHCĘ
+Proszę w odpowiedzi:
+1. **Dokładną diagnozę** którą z (podejrzanych) to realny powód oraz czy to raczej „platform blocker / diseño" niż czysty błąd kodu.
+2. **Poprawny, minimalny kod** do osadzonego `<elevenlabs-convai>` dla Next.js 16/React 19 (komponent 'use client' + ewentualna route signed-url) — z naciskiem na: czy trzeba użyć `@11labs/react` `useConversation` zamiast widget-custom-element; jak rozwiązać mikrofon/permissions; czy ustawić konfigurację inaczej (`signed-url` vs `agent-id` bez signed dla publicznego).
+3. Jeśli problem jest w **versji React/Next** (np. React 19 custom element quirks) — powiedz dokładnie jak obejść (np. `dangerouslySetInnerHTML`, `createPortal`, event delegated, apel do `@elevenlabs/react`).
+4. Czy `microphone not allowed` rozwiązuje się przez: HTTPS, flagę crop/`--use-fake-ui`, `Prompt` API, lub `Permissions-Policy` w headers, i czy jest bezpieczne.
+
+## 7. DODATKOWE FAKTY (ułatwienie)
+- Agent w koncie **Creator**, działa (GET /agents/200). Więc to jest **czysto frontend/integracja**.
+- Jeśli przy umieszczeniu „signed-url" z `agent-id` KAŻDY widget daje Permission denied, nawet w prostej statycznej stronie — to może być błędne API użycie.
+- `@elevenlabs/react` (0.2.0) eksportuje **hooki** (`useConversation`, `startSession`), NIE gotowy widget `<ConvaiWidget>`. **Chcemy dowiedzieć**: czy właściwym, zalecanym, minimalnym sposobem osadzenia „pływającego avatara z głosem I tekstem" jest widget `<elevenlabs-convai>` z `signed-url`, czy raczej zbudować własny komponent.
+
+Daj konkretną rekomendację z pełnym kodem.

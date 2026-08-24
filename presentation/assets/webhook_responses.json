@@ -1,0 +1,43 @@
+{
+  "agent_id": "agent_8401m0n03cggfgebhfh0cj96t7aj",
+  "tunel": "https://usually-stranger-leslie-casey.trycloudflare.com",
+  "odpowiedzi": {
+    "check_spa_availability": {
+      "available": true,
+      "slots": [
+        "10:00",
+        "11:00",
+        "14:00",
+        "14:30",
+        "15:00",
+        "16:00"
+      ],
+      "service_name": "masaż klasyczny",
+      "date": "2026-08-25"
+    },
+    "book_spa_appointment": {
+      "success": true,
+      "confirmation_id": "SPA-9623",
+      "service_name": "masaż klasyczny",
+      "date": "2026-08-25",
+      "time": "14:00",
+      "guest_name": "Zofia Kowalska",
+      "message": "Rezerwacja potwierdzona."
+    },
+    "send_sms_summary": {
+      "success": true,
+      "message": "Wiadomość wysłana.",
+      "delivered_to": "+48 600 111 222"
+    },
+    "check_room_availability": {
+      "available": true,
+      "room_type": "jednoosobowy",
+      "price_per_night": 350,
+      "check_in": "2026-09-01",
+      "check_out": "2026-09-03",
+      "total_nights": 2,
+      "total_price": 700,
+      "message": "Pokój dostępny. Cena: 700 PLN za 2 noc(y)."
+    }
+  }
+}

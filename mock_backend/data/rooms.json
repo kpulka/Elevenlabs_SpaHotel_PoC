@@ -1,0 +1,31 @@
+{
+  "_comment": "Mock danych pokoi hotelowych dla Uzdrowiska Bukowy Dwór.",
+  "typy_pokoi": {
+    "jednoosobowy": {
+      "nazwa": "Pokój Jednoosobowy 'Spokojny Sen'",
+      "cena_za_noc": 350,
+      "waluta": "PLN",
+      "opis": "Dla jednej osoby, idealny na pobyty sanatoryjne. Łóżko medyczne, telefon z dużymi przyciskami, system SOS."
+    },
+    "dwuosobowy": {
+      "nazwa": "Pokój Dwuosobowy 'Komfort Plus'",
+      "cena_za_noc": 500,
+      "waluta": "PLN",
+      "opis": "Dla par lub gościa z opiekunem. Dwa oddzielne łóżka, lodówka na leki, sejf na wysokości wzroku."
+    },
+    "apartament": {
+      "nazwa": "Apartament",
+      "cena_za_noc": 750,
+      "waluta": "PLN",
+      "opis": "Luksusowy apartament z salonem. Pełne wyposażenie medyczne i udogodnienia dla seniorów."
+    }
+  },
+  "zajete_terminy": [
+    {
+      "opis": "Szczyt sezonu — weekendy letnie 2026",
+      "daty": ["2026-08-29", "2026-08-30"],
+      "dotyczy": ["jednoosobowy", "dwuosobowy", "apartament"]
+    }
+  ],
+  "_note_zajete": "Weekend 30-31 sierpnia 2026: jeśli check_in=2026-08-30 lub check_out=2026-08-31, wszystkie pokoje zajęte."
+}

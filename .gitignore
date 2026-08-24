@@ -1,0 +1,48 @@
+# ── Secrets (NIGDY nie wrzucaj) ──────────────────────────────
+frontend/.env.local
+frontend/.env*.local
+*.env
+.env
+**/.env.local
+
+# ── Node / frontend ──────────────────────────────────────────
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/dist/
+frontend/.turbo/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+
+# ── Tunel / runtime state (zawiera adresy + PIDy) ────────────
+mock_backend/tunnel/tunnel.log
+mock_backend/tunnel/backend.log
+mock_backend/tunnel/state.json
+mock_backend/tunnel/*.bak
+
+# ── Backupy i pliki robocze z wrażliwymi danymi ──────────────
+*.backup.json
+_agent_backup_*.json
+agent_pre_*.json
+*.bak
+
+# ── IDE / OS ─────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db
+
+# ── Inne narzędzia ───────────────────────────────────────────
+.tmp/
+*.tmp

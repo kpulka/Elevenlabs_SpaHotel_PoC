@@ -1,0 +1,221 @@
+{
+  "nodes": {
+    "start_node": {
+      "type": "start",
+      "position": {
+        "x": 0,
+        "y": 0
+      },
+      "edge_order": [
+        "e_start_main"
+      ]
+    },
+    "main_agent": {
+      "type": "override_agent",
+      "label": "Anna - główny agent",
+      "position": {
+        "x": 220,
+        "y": 0
+      },
+      "edge_order": [
+        "e_main_spa",
+        "e_main_room",
+        "e_main_handoff",
+        "e_main_end"
+      ]
+    },
+    "t_check_spa": {
+      "type": "tool",
+      "position": {
+        "x": 440,
+        "y": -80
+      },
+      "edge_order": [
+        "e_spa_back",
+        "e_spa_fail"
+      ],
+      "tools": [
+        {
+          "tool_id": "tool_4801m0ncs38tf8t93f45jfj992dt"
+        }
+      ]
+    },
+    "t_book_spa": {
+      "type": "tool",
+      "position": {
+        "x": 660,
+        "y": -80
+      },
+      "edge_order": [
+        "e_book_back",
+        "e_book_fail"
+      ],
+      "tools": [
+        {
+          "tool_id": "tool_6001m0ncs38vf73v1zbaa9p5vdfv"
+        }
+      ]
+    },
+    "t_check_room": {
+      "type": "tool",
+      "position": {
+        "x": 440,
+        "y": 120
+      },
+      "edge_order": [
+        "e_room_back",
+        "e_room_fail"
+      ],
+      "tools": [
+        {
+          "tool_id": "tool_6301m0ncs38wewt865sh99v1qkm8"
+        }
+      ]
+    },
+    "t_send_sms": {
+      "type": "tool",
+      "position": {
+        "x": 660,
+        "y": 120
+      },
+      "edge_order": [
+        "e_sms_back"
+      ],
+      "tools": [
+        {
+          "tool_id": "tool_8101m0ncs38xe6tb29923tjt9045"
+        }
+      ]
+    },
+    "t_handoff": {
+      "type": "tool",
+      "position": {
+        "x": 660,
+        "y": 280
+      },
+      "edge_order": [
+        "e_handoff_back"
+      ],
+      "tools": [
+        {
+          "tool_id": "tool_6001m0ntyt8xefgsx1e8mcqnsw1n"
+        }
+      ]
+    },
+    "end_node": {
+      "type": "end",
+      "position": {
+        "x": 440,
+        "y": 400
+      },
+      "edge_order": []
+    }
+  },
+  "edges": {
+    "e_start_main": {
+      "source": "start_node",
+      "target": "main_agent",
+      "forward_condition": {
+        "type": "unconditional",
+        "label": "start"
+      }
+    },
+    "e_main_spa": {
+      "source": "main_agent",
+      "target": "t_check_spa",
+      "forward_condition": {
+        "type": "llm",
+        "condition": "Gość chce zarezerwować lub zapytać o zabieg SPA (kąpiel siarczkowa, borowina, jonoforeza, masaż).",
+        "label": "ścieżka SPA"
+      }
+    },
+    "e_main_room": {
+      "source": "main_agent",
+      "target": "t_check_room",
+      "forward_condition": {
+        "type": "llm",
+        "condition": "Gość pyta o pokój, rezerwację pokoju, dostępność lub cenę noclegu.",
+        "label": "ścieżka pokoje"
+      }
+    },
+    "e_main_handoff": {
+      "source": "main_agent",
+      "target": "t_handoff",
+      "forward_condition": {
+        "type": "llm",
+        "condition": "Gość prosi o rozmowę z człowiekiem, zgłasza nagłą sytuację zdrowotną, awarię, skargę, negocjację ceny lub brak danych w bazie wiedzy.",
+        "label": "ścieżka handoff"
+      }
+    },
+    "e_main_end": {
+      "source": "main_agent",
+      "target": "end_node",
+      "forward_condition": {
+        "type": "llm",
+        "condition": "Gość dziękuje i kończy rozmowę; nie ma dalszych pytań.",
+        "label": "koniec rozmowy"
+      }
+    },
+    "e_spa_back": {
+      "source": "t_check_spa",
+      "target": "main_agent",
+      "forward_condition": {
+        "type": "result",
+        "successful": true,
+        "label": "sloty sprawdzone"
+      },
+      "backward_condition": {
+        "type": "result",
+        "successful": false,
+        "label": "brak slotów"
+      }
+    },
+    "e_book_back": {
+      "source": "t_book_spa",
+      "target": "main_agent",
+      "forward_condition": {
+        "type": "result",
+        "successful": true,
+        "label": "rezerwacja OK"
+      },
+      "backward_condition": {
+        "type": "result",
+        "successful": false,
+        "label": "błąd rezerwacji"
+      }
+    },
+    "e_room_back": {
+      "source": "t_check_room",
+      "target": "main_agent",
+      "forward_condition": {
+        "type": "result",
+        "successful": true,
+        "label": "pokój sprawdzony"
+      },
+      "backward_condition": {
+        "type": "result",
+        "successful": false,
+        "label": "brak pokoju"
+      }
+    },
+    "e_sms_back": {
+      "source": "t_send_sms",
+      "target": "main_agent",
+      "forward_condition": {
+        "type": "result",
+        "successful": true,
+        "label": "SMS wysłany"
+      }
+    },
+    "e_handoff_back": {
+      "source": "t_handoff",
+      "target": "main_agent",
+      "forward_condition": {
+        "type": "result",
+        "successful": true,
+        "label": "handoff wykonany"
+      }
+    }
+  },
+  "prevent_subagent_loops": false
+}
