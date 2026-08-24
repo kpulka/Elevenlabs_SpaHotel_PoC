@@ -1,0 +1,37 @@
+{
+  "nodes": {
+    "start_node": {
+      "type": "start",
+      "position": { "x": 0, "y": 0 },
+      "edge_order": ["e_start_main"]
+    },
+    "main_agent": {
+      "type": "override_agent",
+      "label": "Anna - główna rozmowa",
+      "position": { "x": 220, "y": 0 },
+      "edge_order": ["e_main_end"]
+    },
+    "end_node": {
+      "type": "end",
+      "position": { "x": 440, "y": 0 },
+      "edge_order": []
+    }
+  },
+  "edges": {
+    "e_start_main": {
+      "source": "start_node",
+      "target": "main_agent",
+      "forward_condition": { "type": "unconditional", "label": "start" }
+    },
+    "e_main_end": {
+      "source": "main_agent",
+      "target": "end_node",
+      "forward_condition": {
+        "type": "llm",
+        "condition": "Gość kończy rozmowę, dziękuje i nie ma dalszych pytań.",
+        "label": "koniec rozmowy"
+      }
+    }
+  },
+  "prevent_subagent_loops": false
+}
