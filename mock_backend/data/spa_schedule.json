@@ -1,0 +1,13 @@
+{
+  "_comment": "Mock danych kalendarza SPA — generowany dynamicznie przez main.py przy starcie serwera.",
+  "_note": "Ten plik jest nadpisywany przy każdym uruchomieniu main.py. Poniżej przykładowa struktura.",
+  "zabiegi": [
+    "kąpiel siarczkowa Ukojenie Stawów",
+    "masaż leczniczy pleców",
+    "kąpiel borowinowa",
+    "jonoforeza",
+    "masaż klasyczny"
+  ],
+  "sloty_domyslne": ["10:00", "11:00", "14:00", "14:30", "15:00", "16:00"],
+  "harmonogram": {}
+}

@@ -1,0 +1,767 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bukowy Dwór — Virtual AI Receptionist | ElevenLabs Case Study</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #1B2A4A;
+      --navy-light: #233458;
+      --gold: #C9A84C;
+      --gold-light: #E0C37B;
+      --cream: #F5F0E8;
+      --warm-white: #FDFAF5;
+      --sage: #7A9E7E;
+      --charcoal: #2C2C2C;
+      --muted: #8A8A8A;
+      --font-serif: 'Playfair Display', Georgia, serif;
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: #0d1525;
+      color: var(--charcoal);
+      font-family: var(--font-sans);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      display: flex;
+      flex-direction: column;
+      user-select: none;
+    }
+
+    /* Presentation Container (16:9 Aspect Ratio) */
+    .deck-viewport {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .deck-frame {
+      width: 100%;
+      max-width: 1400px;
+      aspect-ratio: 16 / 9;
+      max-height: 90vh;
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+      background: var(--navy);
+    }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      transform: translateX(30px);
+      display: flex;
+      flex-direction: column;
+      padding: 3rem 4rem;
+      background: var(--cream);
+      overflow-y: auto;
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0);
+      z-index: 10;
+    }
+
+    /* Dark Slide Theme */
+    .slide.theme-dark {
+      background: var(--navy);
+      color: #ffffff;
+    }
+
+    /* Header Styles */
+    .slide-category {
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 0.4rem;
+    }
+
+    .slide-title {
+      font-family: var(--font-serif);
+      font-size: 2.2rem;
+      font-weight: 700;
+      color: var(--navy);
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+    }
+
+    .theme-dark .slide-title {
+      color: #ffffff;
+    }
+
+    /* Layout Grids */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      flex: 1;
+      align-items: stretch;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 1.5rem;
+      flex: 1;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr 1fr;
+      gap: 1.2rem;
+      flex: 1;
+    }
+
+    /* Cards */
+    .card {
+      background: #ffffff;
+      border: 1px solid rgba(201, 168, 76, 0.3);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .theme-dark .card {
+      background: var(--navy-light);
+      border-color: rgba(201, 168, 76, 0.2);
+      color: #ffffff;
+    }
+
+    .card h3 {
+      font-family: var(--font-serif);
+      font-size: 1.25rem;
+      color: var(--navy);
+      margin-bottom: 0.5rem;
+    }
+
+    .theme-dark .card h3 {
+      color: var(--gold);
+    }
+
+    .card p, .card li {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: var(--charcoal);
+    }
+
+    .theme-dark .card p, .theme-dark .card li {
+      color: #e0e0e0;
+    }
+
+    ul.clean-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    ul.clean-list li {
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    ul.clean-list li::before {
+      content: "•";
+      position: absolute;
+      left: 0;
+      color: var(--gold);
+      font-size: 1.4rem;
+      line-height: 1;
+    }
+
+    /* Tables */
+    .styled-table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+      font-size: 0.9rem;
+    }
+
+    .styled-table th {
+      background: var(--navy);
+      color: #ffffff;
+      padding: 0.85rem 1.2rem;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 2px solid var(--gold);
+    }
+
+    .styled-table td {
+      padding: 0.8rem 1.2rem;
+      border-bottom: 1px solid #eaeaea;
+      color: var(--charcoal);
+    }
+
+    .styled-table tr:nth-child(even) td {
+      background-color: var(--warm-white);
+    }
+
+    /* Images */
+    .slide-media {
+      width: 100%;
+      height: 100%;
+      max-height: 380px;
+      object-fit: contain;
+      border-radius: 10px;
+    }
+
+    /* Presenter Toolbar */
+    .deck-controls {
+      height: 60px;
+      background: #0a0f1a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      color: #ffffff;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-nav {
+      background: var(--navy-light);
+      border: 1px solid var(--gold);
+      color: #ffffff;
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.85rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-nav:hover {
+      background: var(--gold);
+      color: var(--navy);
+    }
+
+    /* Notes Drawer */
+    .notes-drawer {
+      position: fixed;
+      bottom: 60px;
+      left: 0;
+      right: 0;
+      height: 180px;
+      background: rgba(13, 21, 37, 0.96);
+      backdrop-filter: blur(10px);
+      border-top: 2px solid var(--gold);
+      padding: 1.5rem 3rem;
+      color: #e0e0e0;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      transform: translateY(100%);
+      transition: transform 0.3s ease;
+      z-index: 100;
+      overflow-y: auto;
+    }
+
+    .notes-drawer.open {
+      transform: translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="deck-viewport">
+    <div class="deck-frame">
+
+      <!-- SLIDE 1: Title -->
+      <div class="slide theme-dark active" data-slide="1">
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+          <div class="slide-category" style="font-size: 1rem; letter-spacing: 0.2em;">ELEVENLABS DEPLOYMENT STRATEGIST CASE STUDY</div>
+          <h1 style="font-family: var(--font-serif); font-size: 3.6rem; color: #ffffff; margin: 1rem 0;">Virtual AI Receptionist</h1>
+          <h2 style="font-family: var(--font-serif); font-size: 2.0rem; color: var(--gold); font-weight: 400; margin-bottom: 2rem;">Bukowy Dwór — Thermal Spa & Health Resort</h2>
+          <p style="font-size: 1.1rem; color: var(--cream); opacity: 0.9;">Enterprise Voice AI Architecture for Hospitality Chains · 2026</p>
+        </div>
+        <div class="notes-content" style="display:none;">
+          Start with 30 seconds of pure business context and customer demographics. Do not dive into technical boxes until the hotel problem and user pain points are clearly framed.
+        </div>
+      </div>
+
+      <!-- SLIDE 2: Business Problem -->
+      <div class="slide" data-slide="2">
+        <div class="slide-category">Business Problem & Context</div>
+        <h2 class="slide-title">Senior Guests Wait. Front Desk Can't Keep Up.</h2>
+        <div class="grid-4">
+          <div class="card">
+            <h3>60–70% Senior Guests</h3>
+            <p>Core demographic (60+) strongly prefers voice phone calls over mobile apps or online booking engines.</p>
+          </div>
+          <div class="card">
+            <h3>Peak Call Spikes</h3>
+            <p>Morning (8–10 AM) and afternoon (4–6 PM) call surges cause long queues, dropped calls, and guest frustration.</p>
+          </div>
+          <div class="card">
+            <h3>Lost High-Margin Revenue</h3>
+            <p>Unanswered inquiries equal lost treatments ($30–$80/session) and forfeited room bookings ($100–$250/night).</p>
+          </div>
+          <div class="card">
+            <h3>Front Desk Bottlenecks</h3>
+            <p>Staff burdened by repetitive FAQs, leaving zero time for pre-arrival guest outreach or personalized care.</p>
+          </div>
+        </div>
+        <div class="notes-content" style="display:none;">
+          Frame the problem from both user experience and hotel profitability perspectives before presenting technical solutions.
+        </div>
+      </div>
+
+      <!-- SLIDE 3: Persona Sophia -->
+      <div class="slide" data-slide="3">
+        <div class="slide-category">User Persona & Cognitive Model</div>
+        <h2 class="slide-title">Target Persona: Mrs. Sophia, 72 Years Old</h2>
+        <div class="grid-2">
+          <div style="display:flex; justify-content:center; align-items:center;">
+            <img src="assets/persona_zofia.png" alt="Mrs. Sophia Persona" class="slide-media" style="box-shadow:0 8px 25px rgba(0,0,0,0.15);">
+          </div>
+          <div class="card">
+            <h3>Cognitive & Speech Traits</h3>
+            <ul class="clean-list" style="margin-top:0.75rem;">
+              <li><strong>Speech Pacing:</strong> Speaks slowly with natural pauses mid-sentence to formulate thoughts.</li>
+              <li><strong>Vocabulary:</strong> Does not recall clinical names ('that warm mud bath for my lower back').</li>
+              <li><strong>Zero Error Tolerance:</strong> Hangs up immediately if interrupted or rushed by a robotic voice.</li>
+              <li><strong>Confirmation Need:</strong> Expects immediate SMS confirmation sent to her or her daughter's phone.</li>
+              <li><strong>Engineering Rule:</strong> Every latency setting, turn timeout (3.0s), and TTS parameter is calibrated for Sophia.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="notes-content" style="display:none;">
+          Sophia is not a hypothetical persona — she is the actual archetype of a health resort guest.
+        </div>
+      </div>
+
+      <!-- SLIDE 4: Solution -->
+      <div class="slide theme-dark" data-slide="4">
+        <div class="slide-category">Product Architecture</div>
+        <h2 class="slide-title">The Solution: Anna — 24/7 with Sub-500ms Latency</h2>
+        <div class="grid-2">
+          <div style="display:flex; justify-content:center; align-items:center;">
+            <img src="assets/diagram_architecture.png" alt="Architecture Diagram" class="slide-media">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:1rem; justify-content:center;">
+            <div class="card">
+              <h3>Unified Conversational Loop</h3>
+              <p>STT + LLM Orchestrator + TTS integrated natively in a single cloud loop (~430ms total response time).</p>
+            </div>
+            <div class="card">
+              <h3>Warm & Measured Cadence</h3>
+              <p>Eleven v3 Conversational (Jessica) paced at 0.85x speed with patient turn-taking.</p>
+            </div>
+            <div class="card">
+              <h3>Omnichannel Reach</h3>
+              <p>One unified AI brain serving both Telephone PBX (SIP Trunk) and Interactive Web/Mobile Widget.</p>
+            </div>
+          </div>
+        </div>
+        <div class="notes-content" style="display:none;">
+          Show the unified loop architecture and why sub-500ms latency is mandatory for trust.
+        </div>
+      </div>
+
+      <!-- SLIDE 5: 3 Decisions -->
+      <div class="slide" data-slide="5">
+        <div class="slide-category">Engineering Decisions</div>
+        <h2 class="slide-title">3 Core Architectural Trade-Offs</h2>
+        <div style="display:flex; flex-direction:column; gap:1rem;">
+          <div class="card">
+            <h3 style="color:var(--navy);">1. Native ElevenLabs Agent vs. Cascaded Pipeline</h3>
+            <p>Cascaded pipelines (STT→LLM→TTS) exceed 2.0s latency. Native loop achieves ~430ms. For seniors, latency directly equals trust.</p>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--gold);">2. Eleven v3 Conversational vs. Flash Model</h3>
+            <p>Flash is fast (75ms) but sounds robotic. Eleven v3 (~280ms) delivers emotional warmth, prosodic nuance, and empathy.</p>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--sage);">3. Turn Timeout 3.0s & Patient Mode</h3>
+            <p>Default 1.0–1.5s cuts off seniors mid-sentence. 3.0s timeout with patient listening accommodates natural speech pauses.</p>
+          </div>
+        </div>
+        <div class="notes-content" style="display:none;">
+          Every choice was an intentional trade-off between pure benchmark speed vs. domain-specific guest conversion.
+        </div>
+      </div>
+
+      <!-- SLIDE 6: Knowledge Base RAG -->
+      <div class="slide" data-slide="6">
+        <div class="slide-category">Data & Retrieval Strategy</div>
+        <h2 class="slide-title">Knowledge Base (RAG) — Zero Hallucination Policy</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Vector RAG Architecture</h3>
+            <ul class="clean-list">
+              <li><strong>5 Curated Markdown Files:</strong> Access, Treatments, Rooms, Dining, Policies.</li>
+              <li><strong>Prompt Mode:</strong> Pricing and emergency rules permanently loaded in context.</li>
+              <li><strong>Auto Mode:</strong> Semantic chunking for treatment catalogs and driving directions.</li>
+              <li><strong>Scalability:</strong> Scales effortlessly to hundreds of resort documents.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3 style="color:var(--sage);">Balneological Safety Protocol</h3>
+            <ul class="clean-list">
+              <li><strong>Mandatory Screening:</strong> Heart conditions and acute inflammation checks before thermal baths.</li>
+              <li><strong>Strict Grounding:</strong> Missing info triggers immediate warm transfer — never hallucinate.</li>
+              <li><strong>Risk Management:</strong> Hallucinated price = sales issue; Hallucinated medical advice = legal liability.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="notes-content" style="display:none;">
+          Highlight safety and compliance. In medical wellness, a hallucinating AI is worse than no AI.
+        </div>
+      </div>
+
+      <!-- SLIDE 7: Tool Calling -->
+      <div class="slide" data-slide="7">
+        <div class="slide-category">Backend Integration Layer</div>
+        <h2 class="slide-title">Anna Doesn't Just Chat — She Executes Actions</h2>
+        <table class="styled-table" style="margin-top:1rem;">
+          <thead>
+            <tr>
+              <th>Tool Name</th>
+              <th>Action Performed</th>
+              <th>Integration Type</th>
+              <th>Payload Example</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>check_spa_availability</strong></td>
+              <td>Queries available time slots in real time</td>
+              <td>HTTPS POST Webhook</td>
+              <td><code>service_name, date</code></td>
+            </tr>
+            <tr>
+              <td><strong>book_spa_appointment</strong></td>
+              <td>Reserves treatment & returns confirmation code</td>
+              <td>HTTPS POST Webhook</td>
+              <td><code>service, date, time, guest</code></td>
+            </tr>
+            <tr>
+              <td><strong>check_room_availability</strong></td>
+              <td>Validates room inventory & calculates total stay price</td>
+              <td>HTTPS POST Webhook</td>
+              <td><code>room_type, check_in, check_out</code></td>
+            </tr>
+            <tr>
+              <td><strong>send_sms_summary</strong></td>
+              <td>Dispatches SMS/Telegram summary with booking ID</td>
+              <td>HTTPS POST Webhook</td>
+              <td><code>phone_number, summary, id</code></td>
+            </tr>
+            <tr>
+              <td><strong>transfer_to_number</strong></td>
+              <td>Initiates warm transfer to front desk or nurse</td>
+              <td>Native SIP REFER</td>
+              <td><code>destination_phone</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="notes-content" style="display:none;">
+          Explain how deterministic tool calling connects to existing hospitality software (PMS, CRM, Telco).
+        </div>
+      </div>
+
+      <!-- SLIDE 8: Live Demo -->
+      <div class="slide theme-dark" data-slide="8">
+        <div class="slide-category">System Demonstration</div>
+        <h2 class="slide-title">Live Demonstration — 3 Test Scenarios</h2>
+        <div style="display:flex; flex-direction:column; gap:1.2rem;">
+          <div class="card">
+            <h3>Path A: SPA Booking Flow (Happy Path)</h3>
+            <p>Book Sulphur Bath for tomorrow afternoon → Medical contraindication check → Paraphrased confirmation → SMS dispatched with code SPA-4821.</p>
+          </div>
+          <div class="card">
+            <h3>Path B: Grounded Knowledge Retrieval (RAG)</h3>
+            <p>Inquire about diabetic diets and golf cart shuttle transport → Immediate grounded response without hallucination.</p>
+          </div>
+          <div class="card">
+            <h3>Path C: Medical Escalation (Emergency Protocol)</h3>
+            <p>Guest reports acute chest tightness → Immediate empathetic reassurance and priority warm transfer to on-duty nurse desk.</p>
+          </div>
+        </div>
+        <div class="notes-content" style="display:none;">
+          Run the live voice demo. Keep fallback JSON response screenshots ready if network latency spikes.
+        </div>
+      </div>
+
+      <!-- SLIDE 9: Omnichannel -->
+      <div class="slide" data-slide="9">
+        <div class="slide-category">Unified Client Experience</div>
+        <h2 class="slide-title">Two Channels, One Cohesive Voice</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Telephone (SIP PBX Channel)</h3>
+            <ul class="clean-list">
+              <li>Direct SIP Trunking into hotel PBX system.</li>
+              <li>24/7 pickup on +48 18 123 45 67.</li>
+              <li>Turn timeout 3.0s & patient listening.</li>
+              <li>Instant SMS summary sent to caller.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Web / Mobile Widget Channel</h3>
+            <ul class="clean-list">
+              <li>Floating branded gold FAB on website.</li>
+              <li>Animated avatar states (Listening / Speaking / Thinking).</li>
+              <li>Live streaming transcript + Multilingual Chips (PL, EN, DE).</li>
+              <li>Instant booking summary card.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="notes-content" style="display:none;">
+          Same AI agent brain serves both phone and web without duplicated configuration.
+        </div>
+      </div>
+
+      <!-- SLIDE 10: Security -->
+      <div class="slide theme-dark" data-slide="10">
+        <div class="slide-category">Data Governance & Compliance</div>
+        <h2 class="slide-title">Enterprise Security, Healthcare Privacy & GDPR</h2>
+        <div class="grid-2">
+          <div style="display:flex; justify-content:center; align-items:center;">
+            <img src="assets/enterprise_security.png" alt="Security Overview" class="slide-media">
+          </div>
+          <div class="card">
+            <h3>Security Architecture</h3>
+            <ul class="clean-list" style="margin-top:0.75rem;">
+              <li><strong>Zero Retention Mode (ZRM):</strong> Audio streams and transcripts exist strictly in volatile RAM — zero disk storage.</li>
+              <li><strong>PII Redaction:</strong> Automated masking for national ID, phone numbers, and health records in logs.</li>
+              <li><strong>EU Data Residency:</strong> Compute, LLM inference, and vector embeddings located strictly within EU (Frankfurt / Dublin).</li>
+              <li><strong>Signed URLs:</strong> Frontend connects securely via 15-min TTL tokens without exposing server xi-api-key.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="notes-content" style="display:none;">
+          For healthcare and resort management, compliance and security are non-negotiable requirements.
+        </div>
+      </div>
+
+      <!-- SLIDE 11: Multi-Hotel -->
+      <div class="slide" data-slide="11">
+        <div class="slide-category">Multi-Tenant Architecture</div>
+        <h2 class="slide-title">Multi-Hotel Scaling: 1 Master Agent, 10 Properties</h2>
+        <div class="grid-2">
+          <div style="display:flex; justify-content:center; align-items:center;">
+            <img src="assets/diagram_multihotel.png" alt="Multi-hotel Architecture" class="slide-media">
+          </div>
+          <div class="card">
+            <h3>Sub-Linear Scaling Model</h3>
+            <ul class="clean-list" style="margin-top:0.75rem;">
+              <li><strong>The Challenge:</strong> 10 properties typically means 10 separate agents, 10 siloed knowledge bases, and linear maintenance costs.</li>
+              <li><strong>Centralized Master Core:</strong> 1 Master Agent with dynamic variables (hotel_name, location, phone, pms_id).</li>
+              <li><strong>SIP UUI (RFC 7433):</strong> Context metadata injected dynamically inside the telephony header per inbound number.</li>
+              <li><strong>Zero Duplication:</strong> Adding a new hotel requires updating metadata in PMS — zero prompt duplication.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="notes-content" style="display:none;">
+          Key commercial argument — ROI across 10 properties scales sub-linearly.
+        </div>
+      </div>
+
+      <!-- SLIDE 12: Costs & ROI -->
+      <div class="slide" data-slide="12">
+        <div class="slide-category">Commercial Impact & Metrics</div>
+        <h2 class="slide-title">Cost Structure & Hard Business ROI</h2>
+        <table class="styled-table" style="margin-bottom:1.2rem;">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Creator Plan (PoC)</th>
+              <th>Scale Plan (Production)</th>
+              <th>Enterprise Scale (10 Hotels)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Monthly Cost</strong></td>
+              <td>$22 / mo</td>
+              <td>$299 / mo</td>
+              <td>Custom Contract (~$1,200/mo)</td>
+            </tr>
+            <tr>
+              <td><strong>Included Minutes</strong></td>
+              <td>275 min</td>
+              <td>3,738 min (~$0.027/min)</td>
+              <td>20,000+ min shared pool</td>
+            </tr>
+            <tr>
+              <td><strong>Concurrent Lines</strong></td>
+              <td>10 lines</td>
+              <td>30 lines (+Burst 90)</td>
+              <td>100+ dedicated lines</td>
+            </tr>
+            <tr>
+              <td><strong>Labor Parity</strong></td>
+              <td>~$22 ≈ 1h receptionist wage</td>
+              <td>Replaces 1 FTE night shift</td>
+              <td>Saves 3 FTEs across hotel chain</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="card" style="background:var(--warm-white); border-left:4px solid var(--navy);">
+          <h3 style="font-size:1.1rem; color:var(--navy);">Core Financial Insight: The After-Hours Revenue Engine</h3>
+          <p style="font-size:0.9rem;">Average spa stay booking = $400–$800. Capturing just <strong>5 after-hours bookings per month</strong> (when front desk is offline) generates <strong>$2,000–$4,000 in incremental revenue</strong>, paying for the entire annual ElevenLabs contract in under 60 days.</p>
+        </div>
+        <div class="notes-content" style="display:none;">
+          Do not frame AI as a cost-cutting tool — frame it as an after-hours revenue generator.
+        </div>
+      </div>
+
+      <!-- SLIDE 13: Roadmap -->
+      <div class="slide" data-slide="13">
+        <div class="slide-category">Implementation Timeline</div>
+        <h2 class="slide-title">Deployment Roadmap: PoC → Production → Proactive AI</h2>
+        <div class="grid-3">
+          <div class="card" style="border-top:4px solid var(--sage);">
+            <h3 style="color:var(--sage);">Phase I: PoC & Validation</h3>
+            <p style="font-size:0.85rem; color:var(--muted); margin-bottom:0.5rem;">Live Now</p>
+            <ul class="clean-list" style="font-size:0.85rem;">
+              <li>RAG Knowledge Base (5 files)</li>
+              <li>Mock backend (FastAPI, 4 webhooks)</li>
+              <li>Web widget with Quick Reply Chips</li>
+              <li>Acoustic & latency calibration</li>
+            </ul>
+          </div>
+          <div class="card" style="border-top:4px solid var(--gold);">
+            <h3 style="color:var(--gold);">Phase II: Production Pilot</h3>
+            <p style="font-size:0.85rem; color:var(--muted); margin-bottom:0.5rem;">Months 1–2</p>
+            <ul class="clean-list" style="font-size:0.85rem;">
+              <li>Bi-directional PMS API (Opera/Mews)</li>
+              <li>Twilio SMS confirmation pipeline</li>
+              <li>PBX SIP Trunk integration</li>
+              <li>Multilingual expansion (DE, EN, UK)</li>
+            </ul>
+          </div>
+          <div class="card" style="border-top:4px solid var(--navy);">
+            <h3 style="color:var(--navy);">Phase III: Proactive AI</h3>
+            <p style="font-size:0.85rem; color:var(--muted); margin-bottom:0.5rem;">Months 3+</p>
+            <ul class="clean-list" style="font-size:0.85rem;">
+              <li>Automated pre-arrival guest calls</li>
+              <li>Electric shuttle scheduling</li>
+              <li>Personalized medical SPA upselling</li>
+              <li>Deep intent & CSAT analytics</li>
+            </ul>
+          </div>
+        </div>
+        <div class="notes-content" style="display:none;">
+          Phase III transitions the agent from a reactive contact center to a proactive revenue generator.
+        </div>
+      </div>
+
+      <!-- SLIDE 14: Q&A -->
+      <div class="slide theme-dark" data-slide="14">
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
+          <div class="slide-category" style="font-size:1.1rem; letter-spacing:0.2em;">CONCLUSION & DISCUSSION</div>
+          <h1 style="font-family: var(--font-serif); font-size: 3.8rem; color: var(--gold); margin: 1rem 0;">Thank You</h1>
+          <h2 style="font-family: var(--font-serif); font-size: 2.0rem; color: #ffffff; font-weight: 400; margin-bottom: 2rem;">Ready for Questions & Excalidraw System Design</h2>
+          <p style="font-size: 1.1rem; color: var(--cream); opacity: 0.9;">Architecture · Enterprise Security · Latency Calibration · Commercial ROI</p>
+        </div>
+        <div class="notes-content" style="display:none;">
+          Transition actively into collaborative system design.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Presenter Controls -->
+  <div class="deck-controls">
+    <div style="display:flex; align-items:center; gap:1rem;">
+      <span style="font-weight:700; color:var(--gold); font-family:var(--font-serif); font-size:1.1rem;">Bukowy Dwór</span>
+      <span style="color:rgba(255,255,255,0.4);">|</span>
+      <span id="slide-indicator" style="font-size:0.9rem; font-weight:500;">Slide 1 of 14</span>
+    </div>
+    <div style="display:flex; align-items:center; gap:0.75rem;">
+      <button class="btn-nav" id="btn-prev">‹ Previous</button>
+      <button class="btn-nav" id="btn-next">Next ›</button>
+      <button class="btn-nav" id="btn-notes" style="border-color:rgba(255,255,255,0.3);">Notes [N]</button>
+      <button class="btn-nav" id="btn-fullscreen" style="border-color:rgba(255,255,255,0.3);">Fullscreen [F]</button>
+    </div>
+  </div>
+
+  <!-- Presenter Notes Drawer -->
+  <div class="notes-drawer" id="notes-drawer">
+    <div style="font-weight:700; color:var(--gold); text-transform:uppercase; font-size:0.8rem; margin-bottom:0.4rem; letter-spacing:0.1em;">Presenter Notes (Slide <span id="notes-num">1</span>)</div>
+    <div id="notes-text">Loading notes...</div>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 14;
+    const slides = document.querySelectorAll('.slide');
+    const indicator = document.getElementById('slide-indicator');
+    const notesDrawer = document.getElementById('notes-drawer');
+    const notesText = document.getElementById('notes-text');
+    const notesNum = document.getElementById('notes-num');
+
+    function updateSlide(newIdx) {
+      if (newIdx < 1 || newIdx > totalSlides) return;
+      slides.forEach(s => s.classList.remove('active'));
+      const target = document.querySelector(`.slide[data-slide="${newIdx}"]`);
+      if (target) {
+        target.classList.add('active');
+        currentSlide = newIdx;
+        indicator.textContent = `Slide ${currentSlide} of ${totalSlides}`;
+        notesNum.textContent = currentSlide;
+        const note = target.querySelector('.notes-content');
+        notesText.textContent = note ? note.textContent.trim() : 'No notes for this slide.';
+      }
+    }
+
+    document.getElementById('btn-prev').addEventListener('click', () => updateSlide(currentSlide - 1));
+    document.getElementById('btn-next').addEventListener('click', () => updateSlide(currentSlide + 1));
+    
+    document.getElementById('btn-notes').addEventListener('click', () => {
+      notesDrawer.classList.toggle('open');
+    });
+
+    document.getElementById('btn-fullscreen').addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => alert(err.message));
+      } else {
+        document.exitFullscreen();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        updateSlide(currentSlide + 1);
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        updateSlide(currentSlide - 1);
+      } else if (e.key === 'n' || e.key === 'N') {
+        notesDrawer.classList.toggle('open');
+      } else if (e.key === 'f' || e.key === 'F') {
+        if (!document.fullscreenElement) {
+          document.documentElement.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    updateSlide(1);
+  </script>
+</body>
+</html>

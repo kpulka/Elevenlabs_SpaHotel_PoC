@@ -1,0 +1,189 @@
+{
+  "slide_size": "16:9",
+  "slides": [
+    {
+      "layout": "title",
+      "title": "Wirtualny Recepcjonista AI — Bukowy Dwór & SPA",
+      "subtitle": "Case study: ElevenLabs Conversational AI w sieci hoteli uzdrowiskowych — Deployment Strategist, 2026",
+      "background": "1B2A4A",
+      "notes": "Zaczynam od 30 sekund kontekstu biznesowego, nie od architektury."
+    },
+    {
+      "layout": "title_content",
+      "title": "Senior czeka. Recepcja nie odbiera.",
+      "bullets": [
+        "Uzdrowiska i hotele SPA: 60–70% gości to seniorzy 60+ — wolą telefon od aplikacji",
+        "Szczyt połączeń: 8:00–10:00 i 16:00–18:00 — kolejka, oczekiwanie, frustracja",
+        "Niezrealizowana rezerwacja = utracony przychód (zabieg SPA: 80–160 zł)",
+        "Recepcjonista: ~25 zł/h, dostępny 8h/dobę, nie dzwoni do gości przed przyjazdem"
+      ],
+      "notes": "To slajd o problemie, nie rozwiązaniu. Zanim pokażę jak to rozwiązałem — pytania do problemu."
+    },
+    {
+      "layout": "two_content",
+      "title": "Kto dzwoni? Pani Zofia, 72 lata.",
+      "bullets_left": [
+        "Mówi wolno, robi pauzy w środku zdania",
+        "Nie pamięta nazw zabiegów — „ten masaż co na kręgosłup”",
+        "Jeśli agent jej przerwie lub się myli — rozłącza się",
+        "Chce potwierdzenie na SMS (najlepiej do córki)"
+      ],
+      "bullets_right": [
+        "Każda decyzja architektoniczna w tym projekcie wynika z tej persony.",
+        "",
+        "To nie wymyślona persona — to prototyp gościa sanatoryjnego.",
+        ""
+      ],
+      "notes": "To nie jest wymyślona persona. To jest prototyp gościa sanatoryjnego. Od tempa mowy po timeout ciszy."
+    },
+    {
+      "layout": "title_content",
+      "title": "Anna — dostępna 24/7",
+      "bullets": [
+        "ElevenLabs Conversational AI: natywna pętla STT + LLM + TTS",
+        "Latencja ~430 ms · ciepły, zwolniony głos · całodobowo",
+        "Za chwilę pokażę to na żywo — najpierw dlaczego taka architektura."
+      ],
+      "background": "1B2A4A",
+      "notes": "To slajd „co”, nie „jak”. Za chwilę live demo."
+    },
+    {
+      "layout": "title_content",
+      "title": "3 decyzje architektoniczne",
+      "bullets": [
+        {"text": "Natywny agent ElevenLabs, nie Custom LLM — kaskada STT→LLM→TTS: >2s. Natywna pętla ~430ms. Dla seniora każda sekunda ciszy = utrata zaufania.", "level": 0},
+        {"text": "TTS: Eleven v3 Conversational (nie Flash) — Flash 75ms ale robotyczny; v3 280ms z ekspresją. Dla 70-latka ciepło > prędkość.", "level": 0},
+        {"text": "turn_timeout 3s, speed 0.85x, Patient — senior robi pauzy. Domyślne 1–1.5s → agent wchodzi w słowo.", "level": 0}
+      ],
+      "notes": "Każda decyzja to trade-off. Chętnie porozmawiam jeśli macie inne zdanie."
+    },
+    {
+      "layout": "two_content",
+      "title": "Baza wiedzy — bez halucynacji",
+      "bullets_left": [
+        "RAG: 5 plików Markdown (dojazd, SPA, pokoje, restauracja, procedury)",
+        "Tryb prompt (zawsze w kontekście): cennik + procedury",
+        "Tryb auto (semantic search): opisy zabiegów, dojazd",
+        "Skalowanie do setek dokumentów bez zmiany kodu"
+      ],
+      "bullets_right": [
+        "Strict grounding: brak info w bazie = transfer do recepcji, nigdy zmyślanie",
+        "Przed zabiegiem balneologicznym → pytanie o przeciwwskazania",
+        "Zmyślona cena = problem sprzedażowy; zmyślone przeciwwskazanie = ryzyko prawne"
+      ],
+      "notes": "Najważniejszy slajd. W medycynie AI która zmyśla jest gorza niż brak AI."
+    },
+    {
+      "layout": "title_content",
+      "title": "Anna nie tylko mówi — działa",
+      "bullets": [],
+      "tables": [
+        {"left": 0.6, "top": 1.6, "width": 12.3, "height": 3.2,
+         "rows": [
+           ["Narzędzie", "Co robi", "Typ"],
+           ["check_spa_availability", "Wolne terminy zabiegu SPA", "Webhook → mock PMS"],
+           ["book_spa_appointment", "Rezerwuje zabieg", "Webhook → mock PMS"],
+           ["check_room_availability", "Sprawdza dostępność pokoi", "Webhook → mock PMS"],
+           ["send_sms_summary", "Wysyła potwierdzenie SMS/Telegram", "Webhook → bramka"],
+           ["transfer_to_number", "Przekazuje do recepcji", "Natywne ElevenLabs"]
+         ]}
+      ],
+      "notes": "Webhooki trafiają do backendu który symuluje PMS na PoC."
+    },
+    {
+      "layout": "title_content",
+      "title": "Demo — 3 ścieżki",
+      "bullets": [
+        "A. Rezerwacja zabiegu SPA + potwierdzenie (Telegram/SMS)",
+        "B. Pytanie informacyjne z bazy wiedzy, bez halucynacji",
+        "C. Eskalacja medyczna → transfer LIVE",
+        "Na żywo w widgetcie na naszej stronie (lub za chwilę screen)"
+      ],
+      "images": [
+        {"path": "D:/Projects/Elevenlabs/SpaHotels/presentation/assets/anna_live_homepage.png", "left": 0.6, "top": 4.4, "width": 4.2}
+      ],
+      "notes": "Pełny skrypt w presentacją. Fallback: screeny odpowiedzi JSON."
+    },
+    {
+      "layout": "two_content",
+      "title": "Dwa kanały, jeden głos",
+      "bullets_left": [
+        "Telefon (SIP): odbiór 24/7, turn_timeout 3s, parafrazowanie",
+        "TTS v3 — ciepły głos dla seniora",
+        "SMS potwierdzający (opcja: do opiekuna)"
+      ],
+      "bullets_right": [
+        "Widget na stronie www — floating button „Porozmawiaj z Anną”",
+        "Avatar z animacją stanu (słucha/mówi/czeka)",
+        "Transkrypcja live + success card z danymi rezerwacji"
+      ],
+      "images": [
+        {"path": "D:/Projects/Elevenlabs/SpaHotels/presentation/assets/anna_live_spa.png", "left": 7.6, "top": 3.6, "width": 4.2}
+      ],
+      "notes": "Ten sam agent, dwa kanały. Zero duplikacji konfiguracji."
+    },
+    {
+      "layout": "title_content",
+      "title": "Enterprise ready — dane medyczne, RODO",
+      "bullets": [
+        "Zero Retention Mode — audio i transkrypcje tylko w RAM",
+        "Conversation History Redaction — maskowanie PII",
+        "Data Residency EU — przetwarzanie w regionie UE, DPA",
+        "Signed URLs — widget bez exposowania klucza API"
+      ],
+      "notes": "Dla zarządu uzdra RODO decyduje, nie funkcje."
+    },
+    {
+      "layout": "two_content",
+      "title": "Jeden agent, dziesięć hoteli",
+      "bullets_left": [
+        "Problem: 10 hoteli → 10 agentów, 10 baz wiedzy, 10 konfiguracji",
+        "Koszty utrzymania rosną liniowo"
+      ],
+      "bullets_right": [
+        "Jeden centralny agent „Anna”",
+        "Dynamic variables per hotel: hotel_name, location, reception_phone, pms_id",
+        "SIP UUI (RFC 7433) — metadane w sygnale",
+        "Nowy hotel = zmiana zmiennych, nie nowy agent"
+      ],
+      "notes": "Kluczowy argument biznesowy — ROI na 10 hoteli prawie identyczny jak na 1."
+    },
+    {
+      "layout": "title_content",
+      "title": "Koszty — PoC za $22, skala za $299",
+      "bullets": [],
+      "tables": [
+        {"left": 0.6, "top": 1.6, "width": 8, "height": 2,
+         "rows": [
+           ["", "PoC / Demo", "Produkcja"],
+           ["Plan", "Creator ($22/mies.)", "Scale ($299/mies.)"],
+           ["Minuty w pakiecie", "275 min", "3 738 min"],
+           ["Jednoczesne połączenia", "10", "30 (+Burst 90)"]
+         ]}
+      ],
+      "bullets": [
+        "275 min = ok. 1h pracy recepcjonisty = $22 vs $22-25",
+        "Agent AI: 24/7, zero zwolnień, zero „już nie odbieram”",
+        "ROI nie jest w minutach. Jest w rezerwacjach o 23:00."
+      ],
+      "notes": "Nie sprzedaję oszczędności — sprzedaję nowy kanał przychodu."
+    },
+    {
+      "layout": "title_content",
+      "title": "Co dalej — MVP → Faza II → Faza III",
+      "bullets": [
+        "MVP (teraz): RAG + mockupy, 3 ścieżki, live widget",
+        "Faza II: integracja PMS (KWHotel/Opera), Twilio SMS, DE/EN",
+        "Faza III: Outbound — dzwoni przed przyjazdem, potwierdza transport, personalizacja"
+      ],
+      "notes": "Faza III zmienia rolę — agent przestaje odpowiadać, zaczyna inicjować."
+    },
+    {
+      "layout": "title",
+      "title": "Pytania?",
+      "subtitle": "Chętnie pogłębię swój token — architektura, koszty, UX, RODO.",
+      "background": "1B2A4A",
+      "notes": "Otwórz dyskusję aktywnie."
+    }
+  ]
+}
