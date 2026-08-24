@@ -1,16 +1,21 @@
+'use client'
+
 import { Check } from 'lucide-react'
 import Image from 'next/image'
 
 import { HotelButton } from '@/components/hotel-button'
+import { useLanguage } from '@/context/language-context'
 import type { Room } from '@/lib/hotel-data'
 
 export function RoomCard({ room }: { room: Room }) {
+  const { language, t } = useLanguage()
+
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-gold/20 bg-warm-white">
       <div className="relative aspect-[4/3] w-full">
         <Image
           src={room.image}
-          alt={`${room.name} w Bukowym Dworze`}
+          alt={`${room.name} — Bukowy Dwór`}
           fill
           sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
           className="object-cover"
@@ -32,11 +37,11 @@ export function RoomCard({ room }: { room: Room }) {
         </ul>
         <div className="mt-auto flex items-center justify-between gap-4 pt-2">
           <p className="font-serif text-2xl font-bold text-navy">
-            {room.price} zł
-            <span className="text-sm font-normal text-muted-grey"> / doba</span>
+            {room.price} {language === 'pl' ? 'zł' : 'PLN'}
+            <span className="text-sm font-normal text-muted-grey"> {language === 'pl' ? '/ doba' : '/ night'}</span>
           </p>
           <HotelButton href="/kontakt" variant="secondary" className="px-6">
-            Zapytaj o pokój
+            {t.roomsPage.bookRoom}
           </HotelButton>
         </div>
       </div>

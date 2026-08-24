@@ -1,3 +1,5 @@
+'use client'
+
 import { Flower2, Phone, UtensilsCrossed, Waves } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -8,27 +10,40 @@ import { HotelButton } from '@/components/hotel-button'
 import { RoomCard } from '@/components/room-card'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
-import { contactInfo, rooms } from '@/lib/hotel-data'
-
-const highlights = [
-  {
-    icon: Waves,
-    title: 'Baseny termalne 32–34°C',
-    description: 'Dwa baseny o kojących temperaturach, otoczone lasem bukowym.',
-  },
-  {
-    icon: Flower2,
-    title: 'Zabiegi balneologiczne',
-    description: 'Kąpiele siarczkowe, borowinowe i fizykoterapia pod opieką specjalistów.',
-  },
-  {
-    icon: UtensilsCrossed,
-    title: 'Restauracja z dietami leczniczymi',
-    description: 'Posiłki dostosowane do zaleceń dietetycznych i potrzeb zdrowotnych.',
-  },
-]
+import { useLanguage } from '@/context/language-context'
+import { contactInfo, getRooms } from '@/lib/hotel-data'
 
 export default function HomePage() {
+  const { language, t } = useLanguage()
+  const currentRooms = getRooms(language)
+
+  const highlights = [
+    {
+      icon: Waves,
+      title: language === 'pl' ? 'Baseny termalne 32–34°C' : 'Thermal Pools 32–34°C',
+      description:
+        language === 'pl'
+          ? 'Dwa baseny o kojących temperaturach, otoczone lasem bukowym.'
+          : 'Two therapeutic mineral pools with soothing temperatures surrounded by mountain beech woods.',
+    },
+    {
+      icon: Flower2,
+      title: language === 'pl' ? 'Zabiegi balneologiczne' : 'Balneotherapy Treatments',
+      description:
+        language === 'pl'
+          ? 'Kąpiele siarczkowe, borowinowe i fizykoterapia pod opieką specjalistów.'
+          : 'Natural sulphur baths, peat mud therapy, and customized physiotherapy under clinical supervision.',
+    },
+    {
+      icon: UtensilsCrossed,
+      title: language === 'pl' ? 'Restauracja z dietami leczniczymi' : 'Restaurant & Clinical Diets',
+      description:
+        language === 'pl'
+          ? 'Posiłki dostosowane do zaleceń dietetycznych i potrzeb zdrowotnych.'
+          : 'Delicious regional dining paired with 5 specialized therapeutic diet options included.',
+    },
+  ]
+
   return (
     <>
       <SiteHeader />
@@ -36,7 +51,7 @@ export default function HomePage() {
         <section className="relative flex min-h-[640px] items-center overflow-hidden">
           <Image
             src="/images/hero-pool.png"
-            alt="Basen termalny Bukowego Dworu o zachodzie słońca, otoczony lasem"
+            alt="Basen termalny Bukowego Dworu"
             fill
             priority
             className="object-cover"
@@ -45,21 +60,20 @@ export default function HomePage() {
           <div className="relative z-10 mx-auto w-full max-w-[1280px] px-4 py-24 md:px-8">
             <div className="max-w-2xl">
               <p className="text-sm font-semibold tracking-[0.2em] text-gold uppercase">
-                Krynica-Zdrój
+                {t.home.heroTag}
               </p>
               <h1 className="mt-4 text-balance font-serif text-4xl font-bold leading-tight text-white md:text-6xl">
-                Bukowy Dwór — spokój, leczenie i regeneracja
+                {t.home.heroTitle}
               </h1>
               <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/90 md:text-xl">
-                Uzdrowisko termalne w otoczeniu górskiego lasu. Baseny termalne, zabiegi
-                balneologiczne i pokoje przystosowane dla każdego gościa.
+                {t.home.heroSubtitle}
               </p>
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
                 <HotelButton href="/kontakt" variant="primary" className="bg-gold text-navy hover:bg-gold/90">
-                  Zarezerwuj pobyt
+                  {t.nav.bookStay}
                 </HotelButton>
                 <HotelButton href="/pokoje" variant="ghost">
-                  Zobacz pokoje
+                  {t.home.seeAllRooms}
                 </HotelButton>
               </div>
               <a
@@ -79,7 +93,7 @@ export default function HomePage() {
           <div className="mx-auto max-w-[1280px] px-4 md:px-8">
             <div className="mx-auto max-w-2xl text-center">
               <h2 id="highlights-heading" className="font-serif text-3xl font-bold text-navy md:text-4xl">
-                Trzy powody, dla których goście wracają
+                {t.home.featuresTitle}
               </h2>
             </div>
             <div className="mt-12 grid gap-6 sm:grid-cols-3">
@@ -109,21 +123,21 @@ export default function HomePage() {
             <div className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
               <div>
                 <p className="text-sm font-semibold tracking-[0.15em] text-sage uppercase">
-                  Zakwaterowanie
+                  {t.roomsPage.tag}
                 </p>
                 <h2 id="rooms-heading" className="mt-3 font-serif text-3xl font-bold text-navy md:text-4xl">
-                  Pokoje dopasowane do Twoich potrzeb
+                  {t.home.roomsTitle}
                 </h2>
               </div>
               <Link
                 href="/pokoje"
                 className="text-base font-semibold text-navy underline-offset-4 outline-none hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
               >
-                Zobacz wszystkie pokoje →
+                {t.home.seeAllRooms} →
               </Link>
             </div>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {rooms.map((room) => (
+              {currentRooms.map((room) => (
                 <RoomCard key={room.id} room={room} />
               ))}
             </div>
@@ -134,18 +148,18 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-[1280px] gap-10 px-4 md:grid-cols-2 md:items-center md:px-8">
             <div>
               <p className="text-sm font-semibold tracking-[0.15em] text-gold uppercase">
-                Otoczenie
+                {language === 'pl' ? 'Otoczenie' : 'Natural Sanctuary'}
               </p>
               <h2 className="mt-3 font-serif text-3xl font-bold text-white md:text-4xl">
-                Las bukowy tuż za oknem
+                {language === 'pl' ? 'Las bukowy tuż za oknem' : 'Beech Forest Right Outside Your Window'}
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-white/85">
-                Spacerowe alejki, świeże górskie powietrze i cisza — naturalne otoczenie Bukowego
-                Dworu wspiera regenerację ciała i umysłu równie skutecznie, jak zabiegi w naszym
-                SPA.
+                {language === 'pl'
+                  ? 'Spacerowe alejki, świeże górskie powietrze i cisza — naturalne otoczenie Bukowego Dworu wspiera regenerację ciała i umysłu równie skutecznie, jak zabiegi w naszym SPA.'
+                  : 'Serene walking trails, fresh alpine air, and tranquil silence — Bukowy Dwór’s mountain surroundings rejuvenate body and spirit alongside our thermal spa treatments.'}
               </p>
               <HotelButton href="/dojazd" variant="secondary" className="mt-8 border-gold text-white hover:bg-gold hover:text-navy">
-                Sprawdź dojazd i dostępność
+                {language === 'pl' ? 'Sprawdź dojazd i dostępność' : 'Check Directions & Shuttle'}
               </HotelButton>
             </div>
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">

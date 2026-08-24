@@ -1,11 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 // zwraca signed-url dla agenta Anna — bez wystawiania klucza w przeglądarce.
-// Signed URL zawiera podpisany dostęp do rozmowy (agent_id + conversation_signature),
-// nie jest tajemnicą, ale nie chcemy trzymać API key po stronie klienta.
-export async function GET() {
+// Signed URL zawiera podpisany dostęp do rozmowy (agent_id + conversation_signature).
+export async function GET(req: NextRequest) {
   const agentId = 'agent_8401m0n03cggfgebhfh0cj96t7aj'
   const apiKey = process.env.ELEVENLABS_API_KEY
+  const { searchParams } = new URL(req.url)
+  const lang = searchParams.get('lang') || 'pl'
 
   if (!apiKey) {
     return NextResponse.json(
@@ -30,7 +31,10 @@ export async function GET() {
     if (!data.signed_url) {
       return NextResponse.json({ error: 'No signed_url in response' }, { status: 502 })
     }
-    return NextResponse.json({ signed_url: data.signed_url })
+    return NextResponse.json({
+      signed_url: data.signed_url,
+      language: lang,
+    })
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : 'unknown' },

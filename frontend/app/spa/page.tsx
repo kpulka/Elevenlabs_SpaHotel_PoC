@@ -1,4 +1,5 @@
-import type { Metadata } from 'next'
+'use client'
+
 import Image from 'next/image'
 
 import { AnnaInlineBanner } from '@/components/anna-inline-banner'
@@ -6,17 +7,18 @@ import { HotelButton } from '@/components/hotel-button'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { TreatmentCard } from '@/components/treatment-card'
-import { treatments } from '@/lib/hotel-data'
-
-export const metadata: Metadata = {
-  title: 'SPA & Zabiegi — Bukowy Dwór',
-  description:
-    'Baseny termalne, zabiegi balneologiczne, masaże i fizykoterapia w Bukowym Dworze — pod opieką doświadczonego personelu medycznego.',
-}
-
-const categories = ['Baseny termalne', 'Zabiegi balneologiczne', 'Masaże i fizykoterapia'] as const
+import { useLanguage } from '@/context/language-context'
+import { getTreatments } from '@/lib/hotel-data'
 
 export default function SpaPage() {
+  const { language, t } = useLanguage()
+  const currentTreatments = getTreatments(language)
+
+  const categories =
+    language === 'pl'
+      ? ['Baseny termalne', 'Zabiegi balneologiczne', 'Masaże i fizykoterapia']
+      : ['Thermal Pools', 'Balneological Treatments', 'Massage & Physiotherapy']
+
   return (
     <>
       <SiteHeader />
@@ -32,14 +34,13 @@ export default function SpaPage() {
           <div className="absolute inset-0 bg-navy/60" />
           <div className="relative z-10 mx-auto max-w-[1280px] px-4 md:px-8">
             <p className="text-sm font-semibold tracking-[0.2em] text-gold uppercase">
-              Zdrowie i regeneracja
+              {t.spaPage.tag}
             </p>
             <h1 className="mt-3 max-w-2xl text-balance font-serif text-4xl font-bold text-white md:text-5xl">
-              SPA & Zabiegi
+              {t.spaPage.title}
             </h1>
             <p className="mt-4 max-w-2xl text-lg leading-relaxed text-white/90">
-              Baseny termalne i zabiegi balneologiczne prowadzone przez doświadczony personel
-              medyczny, w spokojnym otoczeniu górskiego lasu.
+              {t.spaPage.subtitle}
             </p>
           </div>
         </section>
@@ -51,8 +52,8 @@ export default function SpaPage() {
             <div className="mx-auto max-w-[1280px] px-4 md:px-8">
               <h2 className="font-serif text-3xl font-bold text-navy">{category}</h2>
               <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {treatments
-                  .filter((t) => t.category === category)
+                {currentTreatments
+                  .filter((treatment) => treatment.category === category)
                   .map((treatment) => (
                     <TreatmentCard key={treatment.id} treatment={treatment} />
                   ))}
@@ -73,17 +74,18 @@ export default function SpaPage() {
             </div>
             <div>
               <p className="text-sm font-semibold tracking-[0.15em] text-sage uppercase">
-                Opieka medyczna
+                {language === 'pl' ? 'Opieka medyczna' : 'Clinical Supervision'}
               </p>
               <h2 className="mt-3 font-serif text-3xl font-bold text-navy md:text-4xl">
-                Zabiegi dobrane indywidualnie
+                {language === 'pl' ? 'Zabiegi dobrane indywidualnie' : 'Personalized Treatment Plans'}
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-charcoal/85">
-                Przed każdym pobytem leczniczym umawiamy konsultację z lekarzem uzdrowiskowym, aby
-                dopasować plan zabiegów do stanu zdrowia i zaleceń gościa.
+                {language === 'pl'
+                  ? 'Przed każdym pobytem leczniczym oferujemy konsultację z lekarzem uzdrowiskowym i fizjoterapeutami, aby dobrać bezpieczny plan zabiegów.'
+                  : 'Prior to your therapeutic stay, our balneologists and physiotherapists evaluate your health to design a completely safe and effective treatment schedule.'}
               </p>
               <HotelButton href="/kontakt" variant="secondary" className="mt-8">
-                Umów konsultację
+                {language === 'pl' ? 'Umów konsultację' : 'Schedule Consultation'}
               </HotelButton>
             </div>
           </div>

@@ -1,6 +1,9 @@
+'use client'
+
 import { Bath, Bus, Car, DoorOpen, Hand, MoveVertical } from 'lucide-react'
 
-import { accessibilityFeatures } from '@/lib/hotel-data'
+import { useLanguage } from '@/context/language-context'
+import { getAccessibilityFeatures } from '@/lib/hotel-data'
 
 const icons = {
   'door-open': DoorOpen,
@@ -12,24 +15,28 @@ const icons = {
 }
 
 export function AccessibilitySection() {
+  const { language, t } = useLanguage()
+  const features = getAccessibilityFeatures(language)
+
   return (
     <section aria-labelledby="accessibility-heading" className="bg-warm-white py-16 md:py-24">
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold tracking-[0.15em] text-sage uppercase">
-            Dostępność
+            {language === 'pl' ? 'Dostępność' : 'Accessibility'}
           </p>
           <h2 id="accessibility-heading" className="mt-3 font-serif text-3xl font-bold text-navy md:text-4xl">
-            Ośrodek przyjazny dla każdego gościa
+            {language === 'pl' ? 'Ośrodek przyjazny dla każdego gościa' : 'Resort Designed for Total Comfort & Dignity'}
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-charcoal/80">
-            Bukowy Dwór został zaprojektowany tak, aby osoby starsze i z ograniczoną mobilnością
-            czuły się w nim swobodnie i bezpiecznie.
+            {language === 'pl'
+              ? 'Bukowy Dwór został zaprojektowany tak, aby osoby starsze i z ograniczoną mobilnością czuły się w nim swobodnie i bezpiecznie.'
+              : 'Bukowy Dwór was thoughtfully engineered so senior guests and individuals with reduced mobility feel safe, independent, and cared for.'}
           </p>
         </div>
 
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {accessibilityFeatures.map((feature) => {
+          {features.map((feature) => {
             const Icon = icons[feature.icon]
             return (
               <div

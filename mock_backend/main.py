@@ -125,6 +125,7 @@ class WysylkaSMS(BaseModel):
     phone_number: str
     summary_text: str
     confirmation_id: Optional[str] = ""
+    language: Optional[str] = "pl"  # pl | en — język wybrany przez gościa na stronie
 
 
 class Handoff(BaseModel):
@@ -137,6 +138,7 @@ class Handoff(BaseModel):
     department: Optional[str] = "recepcja"  # recepcja | dyzurka_medyczna
     reason: Optional[str] = ""
     guest_name: Optional[str] = ""
+    language: Optional[str] = "pl"  # pl | en — język wybrany przez gościa na stronie
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -319,11 +321,13 @@ async def send_sms_summary(request: WysylkaSMS):
     Opcjonalnie: wysyła wiadomość na kanał Telegram (jeśli skonfigurowane env vars).
     """
     # Formatowanie treści SMS dla efektu demo
+    is_en = (request.language or "pl").lower() == "en"
     print(f"\n{SEPARATOR}")
     print(f"📱 [SMS] WYSYŁKA PODSUMOWANIA")
     print(f"   Odbiorca : {request.phone_number}")
     if request.confirmation_id:
         print(f"   Nr ref.  : {request.confirmation_id}")
+    print(f"   Język    : {'EN' if is_en else 'PL'}")
     print(f"   ─────────────────────────────────")
     print(f"   📩 TREŚĆ SMS:")
     print(f"   {request.summary_text}")
@@ -333,13 +337,17 @@ async def send_sms_summary(request: WysylkaSMS):
     if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
         await _wyslij_telegram(request)
     else:
-        print(f"   ℹ️  Telegram nie skonfigurowany — SMS tylko w konsoli.")
-        print(f"      (Ustaw TELEGRAM_BOT_TOKEN i TELEGRAM_CHAT_ID w env, aby wysyłać na Telegram)")
+        if is_en:
+            print(f"   ℹ️  Telegram not configured — SMS printed to console only.")
+        else:
+            print(f"   ℹ️  Telegram nie skonfigurowany — SMS tylko w konsoli.")
+            print(f"      (Ustaw TELEGRAM_BOT_TOKEN i TELEGRAM_CHAT_ID w env, aby wysyłać na Telegram)")
 
     return {
         "success": True,
-        "message": "Wiadomość wysłana.",
+        "message": "Message sent." if is_en else "Wiadomość wysłana.",
         "delivered_to": request.phone_number,
+        "language": "en" if is_en else "pl",
     }
 
 
@@ -396,6 +404,7 @@ async def transfer_to_simulated_handoff(request: Handoff):
     na drugim ekranie pojawia się informacja, że Anna prosi o asystę.
     """
     dzial = DZIALY.get((request.department or "").strip().lower(), request.department or "Recepcja")
+    is_en = (request.language or "pl").lower() == "en"
     print(f"\n{SEPARATOR}")
     print(f"🛎️  [HANDOFF] PRZEKAZANIE DO CZŁOWIEKA")
     print(f"   Dział       : {dzial}")
@@ -403,22 +412,27 @@ async def transfer_to_simulated_handoff(request: Handoff):
         print(f"   Gość        : {request.guest_name}")
     if request.reason:
         print(f"   Powód       : {request.reason}")
+    print(f"   Język       : {'EN' if is_en else 'PL'}")
     print(SEPARATOR)
 
     if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
         await _wyslij_handoff_telegram(request, dzial)
     else:
-        print(f"   ℹ️  Telegram nie skonfigurowany — handoff tylko w konsoli.")
-        print(f"      (Ustaw TELEGRAM_BOT_TOKEN i TELEGRAM_CHAT_ID w env, aby wysyłać alert na Telegram)")
+        if is_en:
+            print(f"   ℹ️  Telegram not configured — handoff logged to console only.")
+        else:
+            print(f"   ℹ️  Telegram nie skonfigurowany — handoff tylko w konsoli.")
+            print(f"      (Ustaw TELEGRAM_BOT_TOKEN i TELEGRAM_CHAT_ID w env, aby wysyłać alert na Telegram)")
 
     return {
         "success": True,
         "simulated": True,
-        "message": "Przekazanie do człowieka zasymulowane (PoC — brak telefonii).",
+        "message": "Handoff to a human simulated (PoC — no telephony)." if is_en else "Przekazanie do człowieka zasymulowane (PoC — brak telefonii).",
         "department": dzial,
         "reason": request.reason,
         "guest_name": request.guest_name,
-        "note": "Na produkcji: podpiąć transfer_to_number (SIP) lub notyfikację do live receivable staff.",
+        "language": "en" if is_en else "pl",
+        "note": "On production: wire transfer_to_number (SIP) or notify live reception staff." if is_en else "Na produkcji: podpiąć transfer_to_number (SIP) lub notyfikację do live receivable staff.",
     }
 
 
