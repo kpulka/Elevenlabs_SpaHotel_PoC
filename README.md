@@ -56,8 +56,15 @@ Wymaga `frontend/.env.local` z `ELEVENLABS_API_KEY` (nie ma go w repo — utwór
 2. Utwórz `frontend/.env.local` z kluczem: `ELEVENLABS_API_KEY=sk_...`
 3. Pobierz cloudflared do `mock_backend/tunnel/`:
    `curl -L -o cloudflared.exe https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-windows-amd64.exe`
-4. `cd mock_backend/tunnel && ./podman_start.sh` (lub `start_anna.sh`)
-5. **Wymagany admin** do zapisu wpisu w hosts (omija problem DNS routera bez A-rekordów).
+4. (Opcjonalnie) Telegram: skopiuj `mock_backend/.env.example` → `.env` i uzupełnij token bota + chat_id.
+5. `cd mock_backend/tunnel && ./podman_start.sh` (lub `start_anna.sh`)
+6. **Wymagany admin** do zapisu wpisu w hosts (omija problem DNS routera bez A-rekordów).
+
+## 📱 Telegram (powiadomienia)
+Backend wysyła na Telegram: **potwierdzenia SMS** (`send_sms_summary`) i **alerty handoff** (`transfer_to_simulated_handoff`).
+- Konfiguracja: `mock_backend/.env` → `TELEGRAM_BOT_TOKEN` + `TELEGRAM_CHAT_ID` (skrypt `podman_start.sh` przekazuje je do kontenera automatycznie).
+- Chat_id: napisz `/start` do bota, potem `curl https://api.telegram.org/bot<TOKEN>/getUpdates` → `chat.id`.
+- Bez `.env` backend działa normalnie (SMS/handoff tylko w konsoli).
 
 ## 🗺️ Mapa repozytorium (kluczowe)
 ```

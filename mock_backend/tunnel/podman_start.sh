@@ -25,13 +25,23 @@ HOSTS_MARK="# ElevenLabs Anna - tunnel"
 echo "=== 🐳 Podman demo start ($(date '+%H:%M:%S')) ==="
 
 # 1) kontener
+# Wczytaj env z mock_backend/.env (Telegram) jeśli istnieje
+ENV_FILE_BACKEND="$BACKEND_DIR/.env"
+ENV_ARGS=()
+if [[ -f "$ENV_FILE_BACKEND" ]]; then
+  while IFS='=' read -r k v; do
+    [[ -z "$k" || "$k" == \#* ]] && continue
+    ENV_ARGS+=("-e" "$k=$v")
+  done <"$ENV_FILE_BACKEND"
+  echo "ℹ️  env z .env: ${#ENV_ARGS[@]/#/-e } opcji"
+fi
 if podman ps --format '{{.Names}}' | grep -q '^bukowy-dwor-backend$'; then
   echo "ℹ️  kontener już działa — pomijam start"
 else
   if podman ps -a --format '{{.Names}}' | grep -q '^bukowy-dwor-backend$'; then
     podman start bukowy-dwor-backend
   else
-    podman run -d --name bukowy-dwor-backend -p $PORT:$PORT localhost/bukowy-dwor-backend
+    podman run -d --name bukowy-dwor-backend -p $PORT:$PORT "${ENV_ARGS[@]}" localhost/bukowy-dwor-backend
   fi
   echo "✅ kontener wystartowany (port $PORT)"
 fi
