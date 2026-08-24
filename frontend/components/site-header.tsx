@@ -5,18 +5,21 @@ import Link from 'next/link'
 import { useState } from 'react'
 
 import { HotelButton } from '@/components/hotel-button'
+import { LanguageSwitcher } from '@/components/language-switcher'
+import { useLanguage } from '@/context/language-context'
 import { contactInfo } from '@/lib/hotel-data'
-
-const navItems = [
-  { label: 'Pokoje', href: '/pokoje' },
-  { label: 'SPA & Zabiegi', href: '/spa' },
-  { label: 'Restauracja', href: '/restauracja' },
-  { label: 'Dojazd & Dostępność', href: '/dojazd' },
-  { label: 'Kontakt', href: '/kontakt' },
-]
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
+  const { t } = useLanguage()
+
+  const navItems = [
+    { label: t.nav.rooms, href: '/pokoje' },
+    { label: t.nav.spa, href: '/spa' },
+    { label: t.nav.restaurant, href: '/restauracja' },
+    { label: t.nav.access, href: '/dojazd' },
+    { label: t.nav.contact, href: '/kontakt' },
+  ]
 
   return (
     <header className="sticky top-0 z-50 bg-navy">
@@ -27,7 +30,7 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav aria-label="Menu główne" className="hidden items-center gap-6 lg:flex">
+        <nav aria-label={t.nav.openMenu} className="hidden items-center gap-6 lg:flex">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -40,7 +43,9 @@ export function SiteHeader() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-4 lg:flex">
+        <div className="hidden items-center gap-3 lg:flex">
+          <LanguageSwitcher />
+
           <a
             href={contactInfo.phoneHref}
             className="flex items-center gap-2 text-sm text-white/90 outline-none transition-colors hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
@@ -49,15 +54,17 @@ export function SiteHeader() {
             {contactInfo.phone}
           </a>
           <HotelButton href="/kontakt" variant="secondary" className="border-gold text-white hover:bg-gold hover:text-navy">
-            Zarezerwuj pobyt
+            {t.nav.bookStay}
           </HotelButton>
         </div>
 
-        <div className="flex items-center gap-3 lg:hidden">
+        <div className="flex items-center gap-2 lg:hidden">
+          <LanguageSwitcher />
+
           <a
             href={contactInfo.phoneHref}
-            aria-label={`Zadzwoń do recepcji: ${contactInfo.phone}`}
-            className="flex size-12 items-center justify-center rounded-full text-white outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+            aria-label={`${t.nav.callReception} ${contactInfo.phone}`}
+            className="flex size-10 items-center justify-center rounded-full text-white outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
           >
             <Phone className="size-5" aria-hidden="true" />
           </a>
@@ -65,9 +72,9 @@ export function SiteHeader() {
             type="button"
             aria-expanded={open}
             aria-controls="mobile-menu"
-            aria-label={open ? 'Zamknij menu' : 'Otwórz menu'}
+            aria-label={open ? t.nav.closeMenu : t.nav.openMenu}
             onClick={() => setOpen((v) => !v)}
-            className="flex size-12 items-center justify-center rounded-full text-white outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+            className="flex size-10 items-center justify-center rounded-full text-white outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
           >
             {open ? <X className="size-6" aria-hidden="true" /> : <Menu className="size-6" aria-hidden="true" />}
           </button>
@@ -93,7 +100,7 @@ export function SiteHeader() {
           </nav>
           <div className="mt-8">
             <HotelButton href="/kontakt" variant="secondary" fullWidth className="border-gold text-white hover:bg-gold hover:text-navy" onClick={() => setOpen(false)}>
-              Zarezerwuj pobyt
+              {t.nav.bookStay}
             </HotelButton>
           </div>
         </div>

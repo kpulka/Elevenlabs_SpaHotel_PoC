@@ -1,19 +1,17 @@
+'use client'
+
 import { Clock, Mail, MapPin, Phone } from 'lucide-react'
-import type { Metadata } from 'next'
 import Image from 'next/image'
 
 import { ContactForm } from '@/components/contact-form'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
+import { useLanguage } from '@/context/language-context'
 import { contactInfo } from '@/lib/hotel-data'
 
-export const metadata: Metadata = {
-  title: 'Kontakt — Bukowy Dwór',
-  description:
-    'Skontaktuj się z Bukowym Dworem w Krynicy-Zdroju — zarezerwuj pobyt, zapytaj o pokoje lub zabiegi SPA. Recepcja dostępna całodobowo.',
-}
-
 export default function ContactPage() {
+  const { language, t } = useLanguage()
+
   return (
     <>
       <SiteHeader />
@@ -21,19 +19,21 @@ export default function ContactPage() {
         <section className="relative flex min-h-[420px] items-center overflow-hidden">
           <Image
             src="/images/hero-contact.png"
-            alt="Elegancka i przyjazna recepcja Bukowego Dworu"
+            alt="Recepcja Bukowego Dworu"
             fill
             priority
             className="object-cover"
           />
           <div className="absolute inset-0 bg-navy/60" />
           <div className="relative z-10 mx-auto max-w-[1280px] px-4 md:px-8">
-            <p className="text-sm font-semibold tracking-[0.2em] text-gold uppercase">Kontakt</p>
+            <p className="text-sm font-semibold tracking-[0.2em] text-gold uppercase">
+              {t.nav.contact}
+            </p>
             <h1 className="mt-3 max-w-2xl text-balance font-serif text-4xl font-bold text-white md:text-5xl">
-              Jesteśmy do Twojej dyspozycji
+              {t.contactPage.title}
             </h1>
             <p className="mt-4 max-w-2xl text-lg leading-relaxed text-white/90">
-              Zadzwoń, napisz lub wypełnij formularz — odpowiemy tak szybko, jak to możliwe.
+              {t.contactPage.subtitle}
             </p>
           </div>
         </section>
@@ -44,7 +44,9 @@ export default function ContactPage() {
               <div className="rounded-2xl border border-gold/20 bg-cream p-6">
                 <div className="flex items-center gap-3">
                   <Phone className="size-6 text-sage" aria-hidden="true" />
-                  <h2 className="font-serif text-lg font-semibold text-navy">Telefon</h2>
+                  <h2 className="font-serif text-lg font-semibold text-navy">
+                    {language === 'pl' ? 'Telefon recepcji' : 'Front Desk Phone'}
+                  </h2>
                 </div>
                 <a
                   href={contactInfo.phoneHref}
@@ -52,7 +54,7 @@ export default function ContactPage() {
                 >
                   {contactInfo.phone}
                 </a>
-                <p className="mt-1 text-sm text-muted-grey">{contactInfo.receptionHours}</p>
+                <p className="mt-1 text-sm text-muted-grey">{t.footer.receptionHours}</p>
               </div>
 
               <div className="rounded-2xl border border-gold/20 bg-cream p-6">
@@ -71,7 +73,9 @@ export default function ContactPage() {
               <div className="rounded-2xl border border-gold/20 bg-cream p-6">
                 <div className="flex items-center gap-3">
                   <MapPin className="size-6 text-sage" aria-hidden="true" />
-                  <h2 className="font-serif text-lg font-semibold text-navy">Adres</h2>
+                  <h2 className="font-serif text-lg font-semibold text-navy">
+                    {language === 'pl' ? 'Adres' : 'Address'}
+                  </h2>
                 </div>
                 <p className="mt-3 text-lg leading-relaxed text-charcoal/85">
                   {contactInfo.address}
@@ -81,16 +85,22 @@ export default function ContactPage() {
               <div className="rounded-2xl border border-gold/20 bg-cream p-6">
                 <div className="flex items-center gap-3">
                   <Clock className="size-6 text-sage" aria-hidden="true" />
-                  <h2 className="font-serif text-lg font-semibold text-navy">Recepcja</h2>
+                  <h2 className="font-serif text-lg font-semibold text-navy">
+                    {language === 'pl' ? 'Dostępność' : 'Availability'}
+                  </h2>
                 </div>
-                <p className="mt-3 text-lg leading-relaxed text-charcoal/85">Całodobowo, 24/7</p>
+                <p className="mt-3 text-lg leading-relaxed text-charcoal/85">
+                  {language === 'pl' ? 'Całodobowo (24/7) — telefon, recepcja i Anna AI' : '24/7 Available — Telephone, On-site Front Desk & Anna AI'}
+                </p>
               </div>
             </div>
 
             <div className="rounded-2xl border border-gold/20 bg-cream p-6 md:p-10">
-              <h2 className="font-serif text-2xl font-bold text-navy">Wyślij zapytanie</h2>
+              <h2 className="font-serif text-2xl font-bold text-navy">{t.contactPage.formTitle}</h2>
               <p className="mt-2 text-base leading-relaxed text-charcoal/80">
-                Wypełnij formularz — skontaktujemy się z Tobą w ciągu 24 godzin.
+                {language === 'pl'
+                  ? 'Wypełnij formularz — skontaktujemy się z Tobą telefonicznie w ciągu 2 godzin.'
+                  : 'Submit the inquiry form — our front desk will call you back within 2 business hours.'}
               </p>
               <ContactForm />
             </div>

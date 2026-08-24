@@ -1,36 +1,41 @@
+'use client'
+
 import { Globe, Mail, MapPin, Phone, Share2 } from 'lucide-react'
 import Link from 'next/link'
 
+import { useLanguage } from '@/context/language-context'
 import { contactInfo } from '@/lib/hotel-data'
 
-const quickLinks = [
-  { label: 'Pokoje', href: '/pokoje' },
-  { label: 'SPA & Zabiegi', href: '/spa' },
-  { label: 'Restauracja', href: '/restauracja' },
-  { label: 'Dojazd & Dostępność', href: '/dojazd' },
-  { label: 'Kontakt', href: '/kontakt' },
-]
-
 export function SiteFooter() {
+  const { t, language } = useLanguage()
+
+  const quickLinks = [
+    { label: t.nav.rooms, href: '/pokoje' },
+    { label: t.nav.spa, href: '/spa' },
+    { label: t.nav.restaurant, href: '/restauracja' },
+    { label: t.nav.access, href: '/dojazd' },
+    { label: t.nav.contact, href: '/kontakt' },
+  ]
+
   return (
     <footer className="bg-navy text-white">
       <div className="mx-auto grid max-w-[1280px] gap-10 px-4 py-16 md:grid-cols-2 md:px-8 lg:grid-cols-4">
         <div>
           <span className="font-serif text-2xl font-bold">Bukowy Dwór</span>
           <p className="mt-4 max-w-xs text-base leading-relaxed text-white/80">
-            Uzdrowisko termalne w Krynicy-Zdroju. Miejsce, gdzie ciało wraca do równowagi.
+            {t.footer.tagline}
           </p>
           <div className="mt-6 flex gap-3">
             <a
               href="#"
-              aria-label="Bukowy Dwór na Facebooku"
+              aria-label="Bukowy Dwór Facebook"
               className="flex size-12 items-center justify-center rounded-full border border-white/20 outline-none transition-colors hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
             >
               <Globe className="size-5" aria-hidden="true" />
             </a>
             <a
               href="#"
-              aria-label="Bukowy Dwór na Instagramie"
+              aria-label="Bukowy Dwór Instagram"
               className="flex size-12 items-center justify-center rounded-full border border-white/20 outline-none transition-colors hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
             >
               <Share2 className="size-5" aria-hidden="true" />
@@ -39,7 +44,7 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <h2 className="font-serif text-lg font-semibold">Szybkie linki</h2>
+          <h2 className="font-serif text-lg font-semibold">{t.footer.sections}</h2>
           <ul className="mt-4 flex flex-col gap-3">
             {quickLinks.map((link) => (
               <li key={link.href}>
@@ -55,7 +60,7 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <h2 className="font-serif text-lg font-semibold">Kontakt</h2>
+          <h2 className="font-serif text-lg font-semibold">{t.footer.contactTitle}</h2>
           <ul className="mt-4 flex flex-col gap-4 text-base text-white/80">
             <li className="flex items-start gap-3">
               <MapPin className="mt-1 size-5 shrink-0 text-gold" aria-hidden="true" />
@@ -79,33 +84,32 @@ export function SiteFooter() {
                 {contactInfo.email}
               </a>
             </li>
-            <li>{contactInfo.receptionHours}</li>
+            <li>{t.footer.receptionHours}</li>
           </ul>
         </div>
 
         <div>
-          <h2 className="font-serif text-lg font-semibold">Dojazd</h2>
-          <p className="mt-4 text-base text-white/80">
-            ul. Zdrojowa 15, 33-380 Krynica-Zdrój — 5 minut od centrum, bezpłatny parking dla gości.
-          </p>
-          <Link
-            href="/dojazd"
-            className="mt-4 inline-flex min-h-[44px] items-center rounded-md border border-white/20 px-4 text-sm text-white/90 outline-none transition-colors hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
-          >
-            Zobacz mapę i wskazówki
-          </Link>
+          <h2 className="font-serif text-lg font-semibold">{t.footer.hoursTitle}</h2>
+          <ul className="mt-4 flex flex-col gap-2 text-base text-white/80">
+            <li>{t.footer.poolsHours}</li>
+            <li>{t.footer.treatmentHours}</li>
+            <li>{t.footer.mealsHours}</li>
+          </ul>
+          <div className="mt-4 rounded-lg border border-gold/30 bg-gold/10 p-3 text-xs text-gold">
+            {t.footer.annaBadge}
+          </div>
         </div>
       </div>
 
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-[1280px] flex-col gap-2 px-4 py-6 text-sm text-white/60 md:flex-row md:items-center md:justify-between md:px-8">
-          <p>&copy; 2026 Bukowy Dwór</p>
+          <p>&copy; 2026 Bukowy Dwór. {t.footer.rights}</p>
           <div className="flex gap-4">
             <Link href="#" className="outline-none hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
-              Polityka prywatności
+              {language === 'pl' ? 'Polityka prywatności' : 'Privacy Policy'}
             </Link>
             <Link href="#" className="outline-none hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
-              RODO
+              GDPR / RODO
             </Link>
           </div>
         </div>

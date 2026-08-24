@@ -3,35 +3,34 @@
 import { Mic, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
+import { useLanguage } from '@/context/language-context'
+
 const AGENT_ID = 'agent_8401m0n03cggfgebhfh0cj96t7aj'
-// Self-hosted widget skrypt (public/widget/) — niezależny od zewnętrznego CDN (unpkg.com),
-// który bywał blokowany w przeglądarkach (403/adblock/VPN) → widget się nie ładował
-// i przycisk "Porozmawiaj z Anną" nie otwierał rozmowy.
 const WIDGET_SCRIPT = '/widget/convai-widget-embed.js'
 
 export function AnnaEmbedWidget() {
+  const { language, t } = useLanguage()
   const [signedUrl, setSignedUrl] = useState<string | null>(null)
   const [showHint, setShowHint] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const scriptInserted = useRef(false)
   const widgetRef = useRef<HTMLElement | null>(null)
 
-  // 1. Pobierz Signed URL z serwera (opcjonalny, podwyższone bezpieczeństwo)
+  // 1. Pobierz Signed URL z serwera z parametrem wybranego języka
   useEffect(() => {
     let cancelled = false
-    fetch('/api/anna/signed-url')
+    fetch(`/api/anna/signed-url?lang=${language}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status))))
       .then((d) => {
         if (!cancelled && d?.signed_url) setSignedUrl(d.signed_url)
       })
       .catch((e) => {
-        // Fallback na agent-id jeśli signed-url nie jest dostępny
         console.warn('Signed-url unavailable, fallback to agent-id:', e)
       })
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [language])
 
   // 2. Wstrzyknij oficjalny skrypt widgetu ElevenLabs
   useEffect(() => {
@@ -62,7 +61,7 @@ export function AnnaEmbedWidget() {
     return () => observer.disconnect()
   }, [])
 
-  // 4. Ustaw atrybuty na custom elemencie
+  // 4. Ustaw atrybuty na custom elemencie wraz z dynamic_variables języka
   useEffect(() => {
     const host = widgetRef.current
     if (!host) return
@@ -70,7 +69,16 @@ export function AnnaEmbedWidget() {
     if (signedUrl) {
       host.setAttribute('signed-url', signedUrl)
     }
-  }, [signedUrl])
+
+    // Wstrzyknij zmienną dynamiczną wybranego języka (user_language)
+    const dynVars = JSON.stringify({
+      user_language: language,
+      guest_language: language === 'en' ? 'English' : 'Polish',
+      hotel_name: 'Bukowy Dwór',
+      location: 'Krynica-Zdrój',
+    })
+    host.setAttribute('dynamic-variables', dynVars)
+  }, [signedUrl, language])
 
   // 5. Podpowiedź (hint) po 45s na stronie
   useEffect(() => {
@@ -86,7 +94,6 @@ export function AnnaEmbedWidget() {
       console.warn('Anna: element widgetu nie gotowy')
       return
     }
-    // Spróbuj natywnego API widgetu; shadow-root button klik jako fallback.
     const attempt = () => {
       try {
         if (typeof host.show === 'function') { host.show(); return }
@@ -101,8 +108,6 @@ export function AnnaEmbedWidget() {
         console.error('Błąd otwierania widgetu Anny:', err)
       }
     }
-    // Custom element może się jeszcze nie stworzić: odczekaj krótko i spróbuj ponownie,
-    // jeśli shadowRoot (natywny UI widgetu) jeszcze nie jest gotowy.
     attempt()
     if (!host.shadowRoot) {
       setTimeout(attempt, 400)
@@ -123,13 +128,13 @@ export function AnnaEmbedWidget() {
           <button
             type="button"
             onClick={() => setShowHint(false)}
-            aria-label="Zamknij podpowiedź"
+            aria-label={t.anna.closeHint}
             className="absolute top-2 right-2 flex size-7 items-center justify-center rounded-full text-muted-grey outline-none hover:bg-beige/60 focus-visible:outline-2 focus-visible:outline-gold"
           >
             <X className="size-4" aria-hidden="true" />
           </button>
           <p className="text-sm leading-relaxed text-charcoal">
-            <strong>Potrzebuje Pani/Pan pomocy?</strong> Wystarczy kliknąć przycisk poniżej — Anna pomoże zarezerwować zabieg lub pokój.
+            <strong>{t.anna.hintTitle}</strong> {t.anna.hintText}
           </p>
         </div>
       )}
@@ -140,7 +145,7 @@ export function AnnaEmbedWidget() {
           id="anna-floating-trigger"
           type="button"
           onClick={triggerConvai}
-          aria-label="Porozmawiaj z Anną, wirtualną recepcjonistką Bukowego Dworu"
+          aria-label={t.anna.fabAria}
           className="group relative flex h-14 sm:h-16 items-center gap-2 sm:gap-3 rounded-full bg-gold px-5 sm:px-6 text-navy shadow-2xl outline-none select-none touch-manipulation transition-transform active:scale-95 hover:scale-105 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-navy"
         >
           <span
@@ -148,7 +153,7 @@ export function AnnaEmbedWidget() {
             aria-hidden="true"
           />
           <Mic className="size-6 sm:size-7 shrink-0 text-navy" aria-hidden="true" />
-          <span className="text-sm sm:text-base font-semibold whitespace-nowrap">Porozmawiaj z Anną</span>
+          <span className="text-sm sm:text-base font-semibold whitespace-nowrap">{t.anna.fabButton}</span>
         </button>
       </div>
 
