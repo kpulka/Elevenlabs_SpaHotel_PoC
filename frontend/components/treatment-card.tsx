@@ -1,8 +1,13 @@
+'use client'
+
 import Image from 'next/image'
 
+import { useLanguage } from '@/context/language-context'
 import type { Treatment } from '@/lib/hotel-data'
 
 export function TreatmentCard({ treatment }: { treatment: Treatment }) {
+  const { language } = useLanguage()
+
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-gold/20 bg-warm-white transition-transform hover:-translate-y-1 hover:shadow-lg">
       {treatment.image && (
@@ -19,7 +24,11 @@ export function TreatmentCard({ treatment }: { treatment: Treatment }) {
         <div className="flex items-start justify-between gap-4">
           <h3 className="font-serif text-xl font-semibold text-navy">{treatment.name}</h3>
           <p className="shrink-0 font-serif text-xl font-bold text-navy">
-            {treatment.price === 0 ? 'w cenie' : `${treatment.price} zł`}
+            {treatment.price === 0
+              ? language === 'pl'
+                ? 'w cenie'
+                : 'Included'
+              : `${treatment.price} ${language === 'pl' ? 'zł' : 'PLN'}`}
           </p>
         </div>
         <p className="text-sm font-medium text-sage">{treatment.duration}</p>
