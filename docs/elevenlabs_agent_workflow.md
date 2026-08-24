@@ -127,10 +127,10 @@ flowchart TD
     %% ==========================================
     subgraph SUB_HANDOFF ["🚨 OBSŁUGA ESKALACJI (HUMAN HANDOFF)"]
         EMERGENCY --> CALL_NURSE["🗣️ Komunikat priorytetowy:\n'Pani/Pana zdrowie jest najważniejsze. Natychmiast łączę z dyżurką medyczną.'"]:::handoffNode
-        CALL_NURSE --> EXEC_TRANSFER_NURSE[["🔧 TOOL: transfer_to_number\n(Dyżurka Lekarska / Pielęgniarska)"]]:::handoffNode
+        CALL_NURSE --> EXEC_TRANSFER_NURSE[["🔧 TOOL: transfer_to_simulated_handoff\n(department: dyzurka_medyczna)"]]:::handoffNode
 
         HANDOFF_HUMAN --> CALL_RECEPTION["🗣️ Komunikat:\n'Oczywiście, już łączę z pracownikiem recepcji. Proszę o chwilę cierpliwości.'"]:::handoffNode
-        CALL_RECEPTION --> EXEC_TRANSFER_REC[["🔧 TOOL: transfer_to_number\n(Recepcja Główna)"]]:::handoffNode
+        CALL_RECEPTION --> EXEC_TRANSFER_REC[["🔧 TOOL: transfer_to_simulated_handoff\n(department: recepcja)"]]:::handoffNode
     end
 
     %% ==========================================
