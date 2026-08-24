@@ -113,6 +113,29 @@ class RezerwacjaSPA(BaseModel):
     guest_name: str
 
 
+class AnulowanieSPA(BaseModel):
+    """Żądanie anulowania rezerwacji zabiegu SPA.
+
+    Zgodne z procedurą anulowania (docs/elevenlabs_agent_procedures.md):
+    odwołanie >2h przed terminem = bezpłatne; <2h = 50% opłaty, chyba że
+    powód medyczny (wtedy 100% bezpłatne).
+    """
+    confirmation_id: str  # numer rezerwacji SPA-XXXX
+    reason: Optional[str] = ""  # np. "pogorszenie stanu zdrowia", "zmiana planów"
+    medical_release: Optional[bool] = False  # True = zwolnienie medyczne (bez opłat)
+    language: Optional[str] = "pl"
+
+
+class PrzelozenieSPA(BaseModel):
+    """Żądanie zmiany terminu zabiegu SPA (reschedule)."""
+    confirmation_id: str  # numer rezerwacji SPA-XXXX
+    service_name: str
+    new_date: str
+    new_time: str
+    guest_name: Optional[str] = ""
+    language: Optional[str] = "pl"
+
+
 class SprawdzeniePokoj(BaseModel):
     """Żądanie sprawdzenia dostępności pokoju."""
     room_type: str
@@ -224,6 +247,82 @@ async def book_spa_appointment(request: RezerwacjaSPA):
         "time": request.time,
         "guest_name": request.guest_name,
         "message": "Rezerwacja potwierdzona.",
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ENDPOINT 2b: Anulowanie rezerwacji zabiegu SPA
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.post("/cancel_spa_appointment")
+async def cancel_spa_appointment(request: AnulowanieSPA):
+    """
+    Anuluje rezerwację zabiegu SPA.
+
+    Zgodnie z procedurą (docs/elevenlabs_agent_procedures.md):
+    - Odwołanie >2h przed terminem: bezpłatna anulacja.
+    - Odwołanie <2h: 50% opłaty, CHYBA ŻE medical_release=True (zwolnienie
+      medyczne — wtedy 100% bezpłatne).
+    PoC: zawsze zwraca sukces (brak realnego PMS), loguje decyzję.
+    """
+    is_en = (request.language or "pl").lower() == "en"
+    bezplatna = bool(request.medical_release)
+    opłata = 0 if bezplatna else 0.5  # PoC: 50% opłaty gdy <2h bez zwolnienia
+
+    print(f"\n{SEPARATOR}")
+    print(f"🗑️  [SPA] ANULOWANIE REZERWACJI")
+    print(f"   ID Potwierdzenia : {request.confirmation_id}")
+    if request.reason:
+        print(f"   Powód            : {request.reason}")
+    print(f"   Zwolnienie med.  : {'TAK (bez opłat)' if bezplatna else 'NIE'}")
+    print(f"   Opłata           : {'0 PLN (100% bezpłatne)' if bezplatna else '50% opłaty (anulacja <2h)'}")
+    print(SEPARATOR)
+
+    return {
+        "success": True,
+        "confirmation_id": request.confirmation_id,
+        "cancelled": True,
+        "fee": opłata,
+        "medical_release": bezplatna,
+        "message": "Reservation cancelled." if is_en else "Rezerwacja anulowana.",
+        "note": "Free of charge." if bezplatna else "Standard cancellation fee applies (50%) if within 2h of the appointment.",
+    }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ENDPOINT 2c: Zmiana terminu zabiegu SPA (reschedule)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.post("/reschedule_spa_appointment")
+async def reschedule_spa_appointment(request: PrzelozenieSPA):
+    """
+    Zmienia termin zabiegu SPA (reschedule).
+
+    Zgodnie z procedurą: bezpłatna zmiana terminu w miarę dostępności
+    grafiku fizjoterapeutów i balneologów.
+    PoC: zawsze zwraca sukces, loguje nowy termin.
+    """
+    is_en = (request.language or "pl").lower() == "en"
+    nowy_confirm = f"SPA-{random.randint(1000, 9999)}"
+
+    print(f"\n{SEPARATOR}")
+    print(f"🔁 [SPA] ZMIANA TERMINU ZABIEGU")
+    print(f"   ID Potwierdzenia : {request.confirmation_id} → {nowy_confirm}")
+    print(f"   Zabieg           : {request.service_name}")
+    print(f"   Nowy termin      : {request.new_date} {request.new_time}")
+    if request.guest_name:
+        print(f"   Gość             : {request.guest_name}")
+    print(SEPARATOR)
+
+    return {
+        "success": True,
+        "confirmation_id": nowy_confirm,
+        "service_name": request.service_name,
+        "new_date": request.new_date,
+        "new_time": request.new_time,
+        "guest_name": request.guest_name,
+        "message": "Appointment rescheduled." if is_en else "Termin zabiegu zmieniony.",
+        "note": "Rescheduling is free of charge." if is_en else "Zmiana terminu jest bezpłatna.",
     }
 
 
@@ -479,6 +578,8 @@ async def root():
         "endpointy": [
             "POST /check_spa_availability",
             "POST /book_spa_appointment",
+            "POST /cancel_spa_appointment",
+            "POST /reschedule_spa_appointment",
             "POST /check_room_availability",
             "POST /send_sms_summary",
             "POST /transfer_to_simulated_handoff",
