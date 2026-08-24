@@ -46,3 +46,7 @@ Thumbs.db
 # ── Inne narzędzia ───────────────────────────────────────────
 .tmp/
 *.tmp
+
+# Binary narzędzi (pobierane osobno)
+mock_backend/tunnel/cloudflared.exe
+mock_backend/tunnel/*.exe
