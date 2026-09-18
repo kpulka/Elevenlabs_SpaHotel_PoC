@@ -19,7 +19,6 @@ export function LanguageSwitcher({ className = '' }: { className?: string }) {
             : 'text-white/80 hover:text-gold hover:bg-white/5'
         }`}
       >
-        <span className="text-sm">🇵🇱</span>
         <span>PL</span>
       </button>
 
@@ -34,7 +33,6 @@ export function LanguageSwitcher({ className = '' }: { className?: string }) {
             : 'text-white/80 hover:text-gold hover:bg-white/5'
         }`}
       >
-        <span className="text-sm">🇬🇧</span>
         <span>EN</span>
       </button>
     </div>

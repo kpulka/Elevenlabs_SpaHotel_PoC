@@ -50,3 +50,6 @@ Thumbs.db
 # Binary narzędzi (pobierane osobno)
 mock_backend/tunnel/cloudflared.exe
 mock_backend/tunnel/*.exe
+
+# dopisane przez agenta przy porzadkach 2026-09-18
+mock_backend/tunnel/*.log
