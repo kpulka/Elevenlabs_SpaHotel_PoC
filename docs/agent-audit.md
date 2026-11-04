@@ -7,7 +7,7 @@
 
 ---
 
-## 1. What Is Working Well (verified state ✓)
+## 1. What Is Working Well (verified state)
 
 - **Strict grounding:** hard rules in the prompt (never invent prices, availability or medical results) plus `temperature 0.1`. Strong anti-hallucination guardrails.
 - **Knowledge base is correct:** 5 files, with `usage_mode` set as intended. 03_rooms and 05_procedures are set to `prompt` (full context); the remaining files are set to `auto` (RAG). This matches the functional specification.

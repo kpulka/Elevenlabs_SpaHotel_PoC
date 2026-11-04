@@ -19,7 +19,7 @@ export default function ContactPage() {
         <section className="relative flex min-h-[420px] items-center overflow-hidden">
           <Image
             src="/images/hero-contact.png"
-            alt={language === 'pl' ? 'Recepcja Bukowego Dworu' : 'Bukowy DwÃ³r front desk'}
+            alt={language === 'pl' ? 'Recepcja Bukowego Dworu' : 'Bukowy Dwór front desk'}
             fill
             priority
             className="object-cover"
