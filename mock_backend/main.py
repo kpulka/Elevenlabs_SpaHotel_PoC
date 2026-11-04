@@ -120,7 +120,7 @@ class SpaBookingRequest(BaseModel):
 class SpaCancellationRequest(BaseModel):
     """Request to cancel an SPA treatment booking.
 
-    Follows the cancellation procedure (docs/elevenlabs_agent_procedures.md):
+    Follows the cancellation procedure (docs/operating-procedures.md):
     cancellation more than 2h before the appointment is free of charge; less than
     2h before, a 50% fee applies unless there is a medical reason (then 100% free).
     """
@@ -268,7 +268,7 @@ async def cancel_spa_appointment(request: SpaCancellationRequest):
     """
     Cancels an SPA treatment booking.
 
-    Per the cancellation procedure (docs/elevenlabs_agent_procedures.md):
+    Per the cancellation procedure (docs/operating-procedures.md):
     - Cancellation more than 2h before the appointment: free of charge.
     - Cancellation less than 2h before: 50% fee, UNLESS medical_release=True
       (medical release: 100% free of charge).

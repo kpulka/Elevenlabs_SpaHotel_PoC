@@ -32,17 +32,17 @@ flowchart TB
     classDef secLayer fill:#F8D7DA,stroke:#721C24,stroke-width:2px,color:#721C24;
 
     %% 1. INBOUND
-    subgraph INBOUND ["📱 1. OMNICHANNEL INBOUND CHANNELS"]
+    subgraph INBOUND [" 1. OMNICHANNEL INBOUND CHANNELS"]
         direction LR
-        PHONE["☎️ Standard Telephony<br/>(PSTN / GSM / VoLTE)"]:::clientLayer
-        SIP_TRUNK["🏢 Hotel PBX Central Switch<br/>(Twilio / Asterisk / FreePBX)<br/>SIP Trunking RFC 3261"]:::clientLayer
-        WEB_CLIENT["💻 Web / Mobile WebRTC Client<br/>(Next.js 16 + React 19)<br/>@elevenlabs/convai-widget-embed"]:::clientLayer
-        
+        PHONE[" Standard Telephony<br/>(PSTN / GSM / VoLTE)"]:::clientLayer
+        SIP_TRUNK[" Hotel PBX Central Switch<br/>(Twilio / Asterisk / FreePBX)<br/>SIP Trunking RFC 3261"]:::clientLayer
+        WEB_CLIENT[" Web / Mobile WebRTC Client<br/>(Next.js 16 + React 19)<br/>@elevenlabs/convai-widget-embed"]:::clientLayer
+
         PHONE -->|"G.711 / Opus Audio"| SIP_TRUNK
     end
 
     %% 2. EDGE & SECURITY
-    subgraph EDGE ["🔒 2. EDGE GATEWAY & SECURITY"]
+    subgraph EDGE [" 2. EDGE GATEWAY & SECURITY"]
         direction TB
         SIP_URI["ElevenLabs SIP Gateway<br/>sip:agent_id@sip.elevenlabs.io<br/>+ SIP UUI RFC 7433 Headers"]:::edgeLayer
         SIGNED_URL_API["Next.js Route Handler<br/>GET /api/anna/signed-url<br/>(15-min TTL Signed Tokens)"]:::edgeLayer
@@ -54,28 +54,28 @@ flowchart TB
     SIGNED_URL_API -->|"WSS Secure Handshake"| WSS_CONN
 
     %% 3. ELEVENLABS AI CORE
-    subgraph AI_CORE ["⚡ 3. ELEVENLABS CONVERSATIONAL AI ENGINE (EU CLOUD)"]
+    subgraph AI_CORE [" 3. ELEVENLABS CONVERSATIONAL AI ENGINE (EU CLOUD)"]
         direction TB
-        
-        WSS_CONN["🌐 Transport Layer:<br/>WebSockets / WebRTC Opus Audio"]:::aiSub
-        
+
+        WSS_CONN[" Transport Layer:<br/>WebSockets / WebRTC Opus Audio"]:::aiSub
+
         subgraph LOOP ["Unified Conversational Loop (~430ms)"]
-            STT["🎙️ STT: Scribe v2 Realtime<br/>• Latency: ~150ms<br/>• Language: pl-PL with VAD<br/>• Noise Suppression & Voice Activity"]:::aiSub
-            
-            ORCHESTRATOR["🧠 LLM Orchestrator & State Machine<br/>• Model: GPT-4o Mini / Gemini 2.5 Flash<br/>• Temp: 0.1 (Strict Grounding)<br/>• Workflows & SOP Procedures"]:::aiCore
-            
-            TTS["🔊 TTS: Eleven v3 Conversational<br/>• Latency: ~280ms<br/>• Voice ID: Jessica (Warm/Calm)<br/>• Speed: 0.85x (Senior Acoustic Tuning)"]:::aiSub
-            
+            STT[" STT: Scribe v2 Realtime<br/>• Latency: ~150ms<br/>• Language: pl-PL with VAD<br/>• Noise Suppression & Voice Activity"]:::aiSub
+
+            ORCHESTRATOR[" LLM Orchestrator & State Machine<br/>• Model: GPT-4o Mini / Gemini 2.5 Flash<br/>• Temp: 0.1 (Strict Grounding)<br/>• Workflows & SOP Procedures"]:::aiCore
+
+            TTS[" TTS: Eleven v3 Conversational<br/>• Latency: ~280ms<br/>• Voice ID: Jessica (Warm/Calm)<br/>• Speed: 0.85x (Senior Acoustic Tuning)"]:::aiSub
+
             STT -->|"Real-time streaming text"| ORCHESTRATOR
             ORCHESTRATOR -->|"Streaming response tokens"| TTS
         end
 
-        subgraph RAG_KB ["📚 Vector Knowledge Base"]
-            KB1["01_informacje_ogolne_i_dojazd.md"]:::aiSub
-            KB2["02_katalog_zabiegow_spa_i_zdrowie.md"]:::aiSub
-            KB3["03_pokoje_i_cennik.md"]:::aiSub
-            KB4["04_restauracja_i_diety.md"]:::aiSub
-            KB5["05_procedury_i_polityki.md"]:::aiSub
+        subgraph RAG_KB [" Vector Knowledge Base"]
+            KB1["01_general_info_and_directions.md"]:::aiSub
+            KB2["02_spa_treatments_and_health.md"]:::aiSub
+            KB3["03_rooms_and_pricing.md"]:::aiSub
+            KB4["04_restaurant_and_diets.md"]:::aiSub
+            KB5["05_procedures_and_policies.md"]:::aiSub
         end
 
         ORCHESTRATOR <-->|"Semantic Search / Prompt Injection"| RAG_KB
@@ -88,10 +88,10 @@ flowchart TB
     WSS_CONN -->|"Full-duplex audio stream"| SIP_TRUNK
 
     %% 4. TOOL CALLING & INTEGRATION
-    subgraph INTEGRATION ["🔧 4. TOOL CALLING & INTEGRATION LAYER"]
+    subgraph INTEGRATION [" 4. TOOL CALLING & INTEGRATION LAYER"]
         direction TB
         TOOL_ROUTER["Tool Dispatcher - ElevenLabs Client Tools<br/>HTTPS POST with JSON Body + Bearer Token"]:::webhookLayer
-        
+
         subgraph TOOLS ["Registered Tools (Client Tools)"]
             T1["check_spa_availability"]:::webhookLayer
             T2["book_spa_appointment"]:::webhookLayer
@@ -111,15 +111,15 @@ flowchart TB
     TOOL_ROUTER -->|"JSON payload response"| ORCHESTRATOR
 
     %% 5. BACKEND & PMS
-    subgraph BACKEND ["🏨 5. HOSPITALITY BACKEND, PMS & COMMUNICATIONS"]
+    subgraph BACKEND [" 5. HOSPITALITY BACKEND, PMS & COMMUNICATIONS"]
         direction TB
-        
+
         FASTAPI_GW["Gateway PoC: FastAPI mock_backend<br/>• Uvicorn ASGI Server<br/>• Pydantic v2 Validation<br/>• ngrok / Cloudflare Tunnel for HTTPS"]:::backendLayer
-        
+
         PMS_CORE["Hotel PMS / ERP Database<br/>(Opera Cloud / Mews / Protel / KWHotel)<br/>• Balneology treatment schedule<br/>• Room inventory & folio management"]:::pmsLayer
-        
+
         SMS_GW["Messaging & Notification Gateway<br/>• Twilio / SMSAPI / Infobip REST API<br/>• Telegram Bot API"]:::backendLayer
-        
+
         HUMAN_ESC["Human Staff Escalation<br/>• Front Desk: +48 18 123 45 67<br/>• Nurse Station: +48 18 123 45 99<br/>(SIP REFER Native Transfer)"]:::pmsLayer
     end
 
@@ -165,6 +165,8 @@ flowchart TB
   3. `check_room_availability(room_type, check_in, check_out)` → Checks room inventory and total pricing.
   4. `send_sms_summary(phone_number, summary_text, id)` → Dispatches SMS/Telegram confirmation.
   5. `transfer_to_number(phone_number)` → Initiates SIP transfer to human desk.
+
+  In the proof of concept, the web widget has no telephony line, so the handoff is simulated by a mock webhook (`transfer_to_simulated_handoff`) that logs the request and can raise a Telegram alert. The native SIP transfer applies once the telephone channel is connected.
 
 ### E. Enterprise Security & GDPR Compliance
 - **Zero Retention Mode (ZRM):** Audio streams are processed strictly in volatile RAM and destroyed upon session termination.

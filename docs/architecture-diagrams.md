@@ -1,6 +1,6 @@
 ﻿# Architecture Diagrams — Virtual AI Receptionist "Bukowy Dwór"
 
-> Production-ready Mermaid.js diagrams translated to English for presentation slides, technical documentation, system design reviews, and Excalidraw whiteboarding.
+> Mermaid.js diagrams for presentation slides, technical documentation and system design reviews.
 
 ---
 
@@ -8,22 +8,22 @@
 
 ```mermaid
 flowchart LR
-    CALLER(["📞 Hotel Guest Calling\n(Senior 60+)"])
+    CALLER([" Hotel Guest Calling\n(Senior 60+)"])
 
-    subgraph EL ["☁️ ElevenLabs Conversational AI (EU Cloud)"]
-        STT["🎙️ STT Engine\nScribe v2 Realtime\n~150 ms"]
-        LLM["🧠 LLM Orchestrator\nGPT-4o Mini / Gemini 2.5\ntemp: 0.1 (Strict Grounding)"]
-        TTS["🔊 TTS Engine\nEleven v3 Conversational\n~280 ms, 0.85x speed"]
-        KB[("📚 Vector RAG Knowledge Base\n5 Curated Markdown Files")]
-        TOOLS["🔧 Tool Calling Engine\n4 HTTPS Webhooks"]
+    subgraph EL [" ElevenLabs Conversational AI (EU Cloud)"]
+        STT[" STT Engine\nScribe v2 Realtime\n~150 ms"]
+        LLM[" LLM Orchestrator\nGPT-4o Mini / Gemini 2.5\ntemp: 0.1 (Strict Grounding)"]
+        TTS[" TTS Engine\nEleven v3 Conversational\n~280 ms, 0.85x speed"]
+        KB[(" Vector RAG Knowledge Base\n5 Curated Markdown Files")]
+        TOOLS[" Tool Calling Engine\n4 HTTPS Webhooks"]
     end
 
-    subgraph BACKEND ["🖥️ PMS & Telephony Gateway"]
-        PMS["📋 Hotel PMS Gateway\ncheck_spa_availability\nbook_spa_appointment\ncheck_room_availability"]
-        SMS["📱 SMS & Messaging Gateway\nsend_sms_summary\n(Twilio / Telegram)"]
+    subgraph BACKEND [" PMS & Telephony Gateway"]
+        PMS[" Hotel PMS Gateway\ncheck_spa_availability\nbook_spa_appointment\ncheck_room_availability"]
+        SMS[" SMS & Messaging Gateway\nsend_sms_summary\n(Twilio / Telegram)"]
     end
 
-    HUMAN(["👤 On-Duty Human Staff\nFront Desk / Nurse Desk\nSIP REFER Transfer"])
+    HUMAN([" On-Duty Human Staff\nFront Desk / Nurse Desk\nSIP REFER Transfer"])
 
     CALLER -->|"Voice stream (Opus)"| STT
     STT -->|"Real-time text transcript"| LLM
@@ -43,27 +43,27 @@ flowchart LR
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Guest as 👴 Guest (Senior 60+)
-    participant Phone as 📞 WebRTC / SIP Phone
-    participant STT as 🎙️ STT (Scribe v2)
-    participant LLM as 🧠 LLM Orchestrator
-    participant RAG as 📚 Vector RAG KB
-    participant Tools as 🔧 Tool Calling
-    participant PMS as 🏨 Hotel PMS Gateway
-    participant SMS as 📲 SMS Gateway
-    participant TTS as 🔊 TTS (Eleven v3)
+    actor Guest as  Guest (Senior 60+)
+    participant Phone as  WebRTC / SIP Phone
+    participant STT as  STT (Scribe v2)
+    participant LLM as  LLM Orchestrator
+    participant RAG as  Vector RAG KB
+    participant Tools as  Tool Calling
+    participant PMS as  Hotel PMS Gateway
+    participant SMS as  SMS Gateway
+    participant TTS as  TTS (Eleven v3)
 
     Guest->>Phone: "Hello, I would like to book a mud bath for tomorrow..."
     Phone->>STT: Stream audio frames (Opus codec)
     STT->>LLM: Streamed transcript (~150 ms)
-    LLM->>RAG: Semantic search (02_katalog_zabiegow_spa_i_zdrowie.md)
+    LLM->>RAG: Semantic search (02_spa_treatments_and_health.md)
     RAG-->>LLM: Match: "Thermal Mud Bath, 30 min, 130 PLN. Check cardiac contraindications."
     LLM->>TTS: "Certainly. Before checking times, do you have any heart conditions or acute inflammation?"
     TTS-->>Guest: Warm spoken voice (~280 ms)
     Guest->>Phone: "No, my doctor approved it."
     Phone->>STT: Audio stream
     STT->>LLM: "No, doctor approved"
-    LLM->>Tools: check_spa_availability(service_name="kąpiel borowinowa", date="2026-08-25")
+    LLM->>Tools: check_spa_availability(service_name="mud bath", date="2026-08-25")
     Tools->>PMS: POST /check_spa_availability
     PMS-->>Tools: {"available": true, "slots": ["10:00", "14:30", "15:00"]}
     Tools-->>LLM: Available slots injected into context
@@ -77,7 +77,7 @@ sequenceDiagram
     Guest->>Phone: "Yes, exactly."
     Phone->>STT: Audio stream
     STT->>LLM: "Yes"
-    LLM->>Tools: book_spa_appointment(service="kąpiel borowinowa", date="2026-08-25", time="14:30", guest_name="John Smith")
+    LLM->>Tools: book_spa_appointment(service="mud bath", date="2026-08-25", time="14:30", guest_name="John Smith")
     Tools->>PMS: POST /book_spa_appointment
     PMS-->>Tools: {"success": true, "confirmation_id": "SPA-4821"}
     LLM->>Tools: send_sms_summary(phone="+48600111222", summary="Mud Bath booked for 2:30 PM", id="SPA-4821")
@@ -93,14 +93,14 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    QUERY["🗣️ Guest Inbound Query"] --> CHECK{"Clinical Safety Check:\n1. Emergency Symptoms (chest pain, shortness of breath)?\n2. Balneology Contraindications?\n3. Answer completely missing from RAG?"}
+    QUERY[" Guest Inbound Query"] --> CHECK{"Clinical Safety Check:\n1. Emergency Symptoms (chest pain, shortness of breath)?\n2. Balneology Contraindications?\n3. Answer completely missing from RAG?"}
 
-    CHECK -->|"YES — Emergency Symptom"| NURSE["🚨 Protocol A: Medical Emergency\n1. Empathetic reassuring message\n2. Immediate priority SIP transfer to Nurse Desk"]
-    CHECK -->|"YES — Missing RAG Info"| FRONTDESK["👤 Protocol B: Human Handoff\n1. Transparent explanation\n2. Warm transfer to Front Desk"]
-    CHECK -->|"NO — Grounded In Knowledge Base"| SAFE["✅ Normal Conversational Flow\nDirect grounded response from curated KB"]
+    CHECK -->|"YES — Emergency Symptom"| NURSE[" Protocol A: Medical Emergency\n1. Empathetic reassuring message\n2. Immediate priority SIP transfer to Nurse Desk"]
+    CHECK -->|"YES — Missing RAG Info"| FRONTDESK[" Protocol B: Human Handoff\n1. Transparent explanation\n2. Warm transfer to Front Desk"]
+    CHECK -->|"NO — Grounded In Knowledge Base"| SAFE[" Normal Conversational Flow\nDirect grounded response from curated KB"]
 
-    NURSE --> TRANSFER_NURSE[["🔧 transfer_to_number(+48 18 123 45 99)"]]
-    FRONTDESK --> TRANSFER_REC[["🔧 transfer_to_number(+48 18 123 45 67)"]]
+    NURSE --> TRANSFER_NURSE[[" transfer_to_number(+48 18 123 45 99)"]]
+    FRONTDESK --> TRANSFER_REC[[" transfer_to_number(+48 18 123 45 67)"]]
 ```
 
 ---
@@ -120,11 +120,11 @@ flowchart TD
     end
 
     subgraph ELEVENLABS ["ElevenLabs Conversational AI Engine"]
-        MASTER_AGENT["🧠 1 Master Agent Core (Anna)\nDynamic Context Injection via Variables"]
+        MASTER_AGENT[" 1 Master Agent Core (Anna)\nDynamic Context Injection via Variables"]
     end
 
     subgraph DATA_SOURCES ["Multi-Tenant Knowledge & PMS Layer"]
-        PMS_MULTI["🏨 Central PMS API / Database Router\nQueries partition based on hotel_id"]
+        PMS_MULTI[" Central PMS API / Database Router\nQueries partition based on hotel_id"]
     end
 
     H1 & H2 & H3 --> SIP_HEADER
@@ -147,15 +147,15 @@ flowchart TB
     classDef pmsLayer fill:#FFF3CD,stroke:#856404,stroke-width:2px,color:#856404,font-weight:bold;
     classDef secLayer fill:#F8D7DA,stroke:#721C24,stroke-width:2px,color:#721C24;
 
-    subgraph INBOUND ["📱 1. OMNICHANNEL INBOUND CHANNELS"]
+    subgraph INBOUND [" 1. OMNICHANNEL INBOUND CHANNELS"]
         direction LR
-        PHONE["☎️ Telephony PSTN / GSM / VoLTE"]:::clientLayer
-        SIP_TRUNK["🏢 Hotel PBX Central Switch\n(Twilio / Asterisk / FreePBX)\nSIP Trunking RFC 3261"]:::clientLayer
-        WEB_CLIENT["💻 Web / Mobile WebRTC App\n(Next.js 16 + React 19)\n@elevenlabs/convai-widget-embed"]:::clientLayer
+        PHONE[" Telephony PSTN / GSM / VoLTE"]:::clientLayer
+        SIP_TRUNK[" Hotel PBX Central Switch\n(Twilio / Asterisk / FreePBX)\nSIP Trunking RFC 3261"]:::clientLayer
+        WEB_CLIENT[" Web / Mobile WebRTC App\n(Next.js 16 + React 19)\n@elevenlabs/convai-widget-embed"]:::clientLayer
         PHONE -->|"G.711 / Opus Audio"| SIP_TRUNK
     end
 
-    subgraph EDGE ["🔒 2. EDGE GATEWAY & SECURITY"]
+    subgraph EDGE [" 2. EDGE GATEWAY & SECURITY"]
         direction TB
         SIP_URI["ElevenLabs SIP Gateway\nsip:agent_id@sip.elevenlabs.io\n+ SIP UUI RFC 7433 Headers"]:::edgeLayer
         SIGNED_URL_API["Next.js Route Handler\nGET /api/anna/signed-url\n(15-min TTL Signed Tokens)"]:::edgeLayer
@@ -166,24 +166,24 @@ flowchart TB
     WEB_CLIENT -->|"Fetch Signed URL"| SIGNED_URL_API
     SIGNED_URL_API -->|"WSS Secure Handshake"| WSS_CONN
 
-    subgraph AI_CORE ["⚡ 3. ELEVENLABS CONVERSATIONAL AI ENGINE (EU CLOUD)"]
+    subgraph AI_CORE [" 3. ELEVENLABS CONVERSATIONAL AI ENGINE (EU CLOUD)"]
         direction TB
-        WSS_CONN["🌐 Transport Layer:\nWebSockets / WebRTC Opus Audio"]:::aiSub
-        
+        WSS_CONN[" Transport Layer:\nWebSockets / WebRTC Opus Audio"]:::aiSub
+
         subgraph LOOP ["Unified Conversational Loop (~430ms)"]
-            STT["🎙️ STT: Scribe v2 Realtime\n• Latency: ~150ms\n• Acoustic Model: pl-PL with VAD\n• Background Noise Suppression"]:::aiSub
-            ORCHESTRATOR["🧠 LLM Orchestrator & State Machine\n• Model: GPT-4o Mini / Gemini 2.5 Flash\n• Temp: 0.1 (Strict Grounding)\n• Dynamic Workflows & SOP Procedures"]:::aiCore
-            TTS["🔊 TTS: Eleven v3 Conversational\n• Latency: ~280ms\n• Voice ID: Jessica (Warm/Calm)\n• Speed: 0.85x (Senior Acoustic Tuning)"]:::aiSub
+            STT[" STT: Scribe v2 Realtime\n• Latency: ~150ms\n• Acoustic Model: pl-PL with VAD\n• Background Noise Suppression"]:::aiSub
+            ORCHESTRATOR[" LLM Orchestrator & State Machine\n• Model: GPT-4o Mini / Gemini 2.5 Flash\n• Temp: 0.1 (Strict Grounding)\n• Dynamic Workflows & SOP Procedures"]:::aiCore
+            TTS[" TTS: Eleven v3 Conversational\n• Latency: ~280ms\n• Voice ID: Jessica (Warm/Calm)\n• Speed: 0.85x (Senior Acoustic Tuning)"]:::aiSub
             STT -->|"Real-time streaming text"| ORCHESTRATOR
             ORCHESTRATOR -->|"Streaming response tokens"| TTS
         end
 
-        subgraph RAG_KB ["📚 Vector Knowledge Base"]
-            KB1["01_informacje_ogolne_i_dojazd.md"]:::aiSub
-            KB2["02_katalog_zabiegow_spa_i_zdrowie.md"]:::aiSub
-            KB3["03_pokoje_i_cennik.md"]:::aiSub
-            KB4["04_restauracja_i_diety.md"]:::aiSub
-            KB5["05_procedury_i_polityki.md"]:::aiSub
+        subgraph RAG_KB [" Vector Knowledge Base"]
+            KB1["01_general_info_and_directions.md"]:::aiSub
+            KB2["02_spa_treatments_and_health.md"]:::aiSub
+            KB3["03_rooms_and_pricing.md"]:::aiSub
+            KB4["04_restaurant_and_diets.md"]:::aiSub
+            KB5["05_procedures_and_policies.md"]:::aiSub
         end
         ORCHESTRATOR <-->|"Semantic search & prompt injection"| RAG_KB
     end
@@ -194,7 +194,7 @@ flowchart TB
     WSS_CONN -->|"Full-duplex audio stream"| WEB_CLIENT
     WSS_CONN -->|"Full-duplex audio stream"| SIP_TRUNK
 
-    subgraph INTEGRATION ["🔧 4. TOOL CALLING & INTEGRATION LAYER"]
+    subgraph INTEGRATION [" 4. TOOL CALLING & INTEGRATION LAYER"]
         direction TB
         TOOL_ROUTER["Tool Dispatcher (Client Tools)\nHTTPS POST + Bearer Auth"]:::webhookLayer
         subgraph TOOLS ["Registered Tools"]
@@ -210,7 +210,7 @@ flowchart TB
     ORCHESTRATOR -->|"Tool invocation trigger (JSON Schema)"| TOOL_ROUTER
     TOOL_ROUTER -->|"JSON payload response"| ORCHESTRATOR
 
-    subgraph BACKEND ["🏨 5. HOSPITALITY BACKEND, PMS & COMMUNICATIONS"]
+    subgraph BACKEND [" 5. HOSPITALITY BACKEND, PMS & COMMUNICATIONS"]
         direction TB
         FASTAPI_GW["PMS Gateway: FastAPI Server\n• Uvicorn ASGI Server\n• Pydantic v2 Validation\n• ngrok / Cloudflare Tunnel"]:::backendLayer
         PMS_CORE["Hotel PMS / ERP Database\n(Opera Cloud / Mews / Protel)\n• Spa treatment schedules\n• Room inventory & folio management"]:::pmsLayer

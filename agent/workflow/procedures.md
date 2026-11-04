@@ -1,5 +1,5 @@
-# 7 procedur do wdrożenia (z docs/elevenlabs_agent_procedures.md)
-# Format: free_form, content = markdown z inline reference [tool id="..."]
+# 7 operating procedures deployed to the agent (see docs/operating-procedures.md)
+# Format: free_form, content = markdown with inline reference [tool id="..."]
 
 # Tool IDs (istniejące w agencie):
 # tool_4801m0ncs38tf8t93f45jfj992dt = check_spa_availability

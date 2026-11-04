@@ -43,7 +43,7 @@ export function HotelButton({
 
   if (href) {
     return (
-      <Link href={href} className={classes} {...(props as ComponentProps<typeof Link>)}>
+      <Link {...(props as ComponentProps<typeof Link>)} href={href} className={classes}>
         {children}
       </Link>
     )

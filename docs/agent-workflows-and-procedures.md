@@ -1,6 +1,6 @@
 ﻿# Agent Workflows & Standard Operating Procedures (SOP) — Virtual AI Receptionist "Bukowy Dwór"
 
-> Complete technical specification for conversation flow graphs (**ElevenLabs Agent Workflows**) and dynamic standard operating procedures (**ElevenLabs Agent Procedures**) translated to English.
+> Complete technical specification for conversation flow graphs (**ElevenLabs Agent Workflows**) and dynamic standard operating procedures (**ElevenLabs Agent Procedures**).
 
 ---
 
@@ -19,80 +19,80 @@ flowchart TD
     classDef ragNode fill:#EBF3EB,stroke:#7A9E7E,stroke-width:2px,color:#1B2A4A;
 
     %% 1. START & GREETING
-    START(["📞 Inbound Call / WebRTC Init\n(Inject dynamic variables: hotel_name, location)"]):::startNode
-    GREETING["🗣️ Anna Greeting:\n'Good day, this is Anna, receptionist at Bukowy Dwór.\nHow may I assist you today?'"]:::stateNode
-    
+    START([" Inbound Call / WebRTC Init\n(Inject dynamic variables: hotel_name, location)"]):::startNode
+    GREETING[" Anna Greeting:\n'Good day, this is Anna, receptionist at Bukowy Dwór.\nHow may I assist you today?'"]:::stateNode
+
     START --> GREETING
-    GREETING --> ROUTER{"🧠 Intent Router Node\n(NLU Classification of Guest Speech)"}:::routerNode
+    GREETING --> ROUTER{" Intent Router Node\n(NLU Classification of Guest Speech)"}:::routerNode
 
     %% 2. ROUTER BRANCHES
     ROUTER -->|"1. SPA / Treatment Booking"| SPA_IDENTIFY["Identify Requested Treatment:\n(e.g., sulphur bath, mud therapy, massage)"]:::stateNode
     ROUTER -->|"2. Room / Stay Booking"| ROOM_PARAMS["Collect Stay Parameters:\n(dates, party size, room tier, mobility needs)"]:::stateNode
-    ROUTER -->|"3. General Inquiries (RAG)"| RAG_SEARCH["🔍 Semantic Vector Search (RAG):\n(Access, dietary menus, resort rules)"]:::ragNode
-    ROUTER -->|"4. Request Human Agent"| HANDOFF_HUMAN["👤 Speak to Human Front Desk"]:::handoffNode
-    ROUTER -->|"5. Medical Emergency / Distress"| EMERGENCY["🚨 Urgent Medical Distress / Pain"]:::handoffNode
+    ROUTER -->|"3. General Inquiries (RAG)"| RAG_SEARCH[" Semantic Vector Search (RAG):\n(Access, dietary menus, resort rules)"]:::ragNode
+    ROUTER -->|"4. Request Human Agent"| HANDOFF_HUMAN[" Speak to Human Front Desk"]:::handoffNode
+    ROUTER -->|"5. Medical Emergency / Distress"| EMERGENCY[" Urgent Medical Distress / Pain"]:::handoffNode
 
     %% 3. SPA SUBSYSTEM (WITH BALNEOLOGICAL SAFETY GUARDRAIL)
-    subgraph SUB_SPA ["🧖‍♀️ SPA & MEDICAL WELLNESS SUBSYSTEM"]
+    subgraph SUB_SPA [" SPA & MEDICAL WELLNESS SUBSYSTEM"]
         SPA_IDENTIFY --> SPA_CHECK_GUARD{"Is treatment thermal or balneological?"}:::guardNode
-        
-        SPA_CHECK_GUARD -->|"YES (Sulphur/Mud bath)"| SPA_TRIAGE["⚠️ Medical Safety Check:\n'Do you have any acute heart conditions,\ncirculatory issues, or skin inflammation?'"]:::guardNode
+
+        SPA_CHECK_GUARD -->|"YES (Sulphur/Mud bath)"| SPA_TRIAGE[" Medical Safety Check:\n'Do you have any acute heart conditions,\ncirculatory issues, or skin inflammation?'"]:::guardNode
         SPA_CHECK_GUARD -->|"NO (Standard massage)"| SPA_DATE_TIME["Determine Preferred Date & Time of Day"]:::stateNode
-        
+
         SPA_TRIAGE -->|"Contraindication Detected"| SPA_REJECT["Explain Clinical Risk\n+ Recommend Doctor Consultation"]:::guardNode
         SPA_REJECT --> SPA_ALT{"Guest selects alternative?"}:::routerNode
         SPA_ALT -->|"YES"| SPA_IDENTIFY
         SPA_ALT -->|"NO (Wants Medical Staff)"| EMERGENCY
 
         SPA_TRIAGE -->|"No Contraindications (Safe)"| SPA_DATE_TIME
-        
-        SPA_DATE_TIME --> SPA_CALL_AVAIL[["🔧 TOOL: check_spa_availability(service, date)"]]:::toolNode
+
+        SPA_DATE_TIME --> SPA_CALL_AVAIL[[" TOOL: check_spa_availability(service, date)"]]:::toolNode
         SPA_CALL_AVAIL --> SPA_AVAIL_RES{"Available slots in PMS?"}:::routerNode
-        
+
         SPA_AVAIL_RES -->|"No Open Slots"| SPA_NO_SLOTS["Propose Alternative Day or Time Window"]:::stateNode
         SPA_NO_SLOTS --> SPA_DATE_TIME
 
         SPA_AVAIL_RES -->|"Slots Found"| SPA_PROPOSE["Present 2-3 Concrete Options:\n'I have 10:00 AM, 2:30 PM, and 3:00 PM available. Which suits you best?'"]:::stateNode
         SPA_PROPOSE --> SPA_COLLECT["Capture Selection + Guest Full Name"]:::stateNode
-        
-        SPA_COLLECT --> SPA_PARAPHRASE["🗣️ Paraphrased Confirmation Gate:\n'To confirm: Sulphur Bath on August 27th at 2:30 PM for Mr. John Smith. Is that correct?'"]:::stateNode
+
+        SPA_COLLECT --> SPA_PARAPHRASE[" Paraphrased Confirmation Gate:\n'To confirm: Sulphur Bath on August 27th at 2:30 PM for Mr. John Smith. Is that correct?'"]:::stateNode
         SPA_PARAPHRASE --> SPA_CONFIRM_CHECK{"Guest explicit agreement?"}:::routerNode
-        
+
         SPA_CONFIRM_CHECK -->|"Correction Requested"| SPA_DATE_TIME
-        SPA_CONFIRM_CHECK -->|"YES, confirmed"| SPA_BOOK_EXEC[["🔧 TOOL: book_spa_appointment(service, date, time, guest)"]]:::toolNode
-        
-        SPA_BOOK_EXEC --> SPA_SEND_SMS[["🔧 TOOL: send_sms_summary(phone, summary, confirmation_id)"]]:::toolNode
-        SPA_SEND_SMS --> SPA_SUCCESS["🗣️ Spoken Confirmation with Booking ID:\n'Booked! Your confirmation number is SPA-4821. I have sent an SMS summary.'"]:::stateNode
+        SPA_CONFIRM_CHECK -->|"YES, confirmed"| SPA_BOOK_EXEC[[" TOOL: book_spa_appointment(service, date, time, guest)"]]:::toolNode
+
+        SPA_BOOK_EXEC --> SPA_SEND_SMS[[" TOOL: send_sms_summary(phone, summary, confirmation_id)"]]:::toolNode
+        SPA_SEND_SMS --> SPA_SUCCESS[" Spoken Confirmation with Booking ID:\n'Booked! Your confirmation number is SPA-4821. I have sent an SMS summary.'"]:::stateNode
     end
 
     %% 4. ROOMS SUBSYSTEM
-    subgraph SUB_ROOMS ["🛏️ ROOM & STAY RESERVATIONS"]
-        ROOM_PARAMS --> ROOM_AVAIL_EXEC[["🔧 TOOL: check_room_availability(room_type, check_in, check_out)"]]:::toolNode
+    subgraph SUB_ROOMS [" ROOM & STAY RESERVATIONS"]
+        ROOM_PARAMS --> ROOM_AVAIL_EXEC[[" TOOL: check_room_availability(room_type, check_in, check_out)"]]:::toolNode
         ROOM_AVAIL_EXEC --> ROOM_RES{"Inventory available?"}:::routerNode
         ROOM_RES -->|"Sold Out"| ROOM_NO_AVAIL["Propose Alternative Dates or Room Categories"]:::stateNode
         ROOM_NO_AVAIL --> ROOM_PARAMS
 
         ROOM_RES -->|"Available"| ROOM_PRICE_QUOTE["Quote Total Stay Price & Amenities:\n(Elevator access, step-free shower, orthopedic bed)"]:::stateNode
         ROOM_PRICE_QUOTE --> ROOM_GUEST_DATA["Collect Guest Contact & Confirmation Phone"]:::stateNode
-        ROOM_GUEST_DATA --> ROOM_SMS[["🔧 TOOL: send_sms_summary(Provisional Booking ID)"]]:::toolNode
-        ROOM_SMS --> ROOM_SUCCESS["🗣️ Confirm Provisional Room Reservation"]:::stateNode
+        ROOM_GUEST_DATA --> ROOM_SMS[[" TOOL: send_sms_summary(Provisional Booking ID)"]]:::toolNode
+        ROOM_SMS --> ROOM_SUCCESS[" Confirm Provisional Room Reservation"]:::stateNode
     end
 
     %% 5. RAG KNOWLEDGE BASE
-    subgraph SUB_RAG ["📚 GROUNDED KNOWLEDGE RETRIEVAL"]
+    subgraph SUB_RAG [" GROUNDED KNOWLEDGE RETRIEVAL"]
         RAG_SEARCH --> RAG_EVAL{"Information verified in KB?"}:::routerNode
-        RAG_EVAL -->|"YES"| RAG_ANSWER["🗣️ Calm, factual, grounded response"]:::ragNode
+        RAG_EVAL -->|"YES"| RAG_ANSWER[" Calm, factual, grounded response"]:::ragNode
         RAG_EVAL -->|"NO (Missing in KB)"| RAG_UNKNOWN["'I do not have this information in my system.\nLet me connect you with the front desk to assist you.'"]:::stateNode
         RAG_UNKNOWN --> HANDOFF_HUMAN
     end
 
     %% 6. ESCALATIONS
-    subgraph SUB_HANDOFF ["🚨 HUMAN HANDOFF & ESCALATIONS"]
-        EMERGENCY --> CALL_NURSE["🗣️ 'Your health is our top priority. I am immediately connecting you to the on-duty nurse station.'"]:::handoffNode
-        CALL_NURSE --> EXEC_TRANSFER_NURSE[["🔧 TOOL: transfer_to_number(+48 18 123 45 99)"]]:::handoffNode
+    subgraph SUB_HANDOFF [" HUMAN HANDOFF & ESCALATIONS"]
+        EMERGENCY --> CALL_NURSE[" 'Your health is our top priority. I am immediately connecting you to the on-duty nurse station.'"]:::handoffNode
+        CALL_NURSE --> EXEC_TRANSFER_NURSE[[" TOOL: transfer_to_number(+48 18 123 45 99)"]]:::handoffNode
 
-        HANDOFF_HUMAN --> CALL_RECEPTION["🗣️ 'Certainly, I am transferring you to a receptionist now. Please hold a moment.'"]:::handoffNode
-        CALL_RECEPTION --> EXEC_TRANSFER_REC[["🔧 TOOL: transfer_to_number(+48 18 123 45 67)"]]:::handoffNode
+        HANDOFF_HUMAN --> CALL_RECEPTION[" 'Certainly, I am transferring you to a receptionist now. Please hold a moment.'"]:::handoffNode
+        CALL_RECEPTION --> EXEC_TRANSFER_REC[[" TOOL: transfer_to_number(+48 18 123 45 67)"]]:::handoffNode
     end
 
     %% 7. WRAP-UP & TERMINATION
@@ -101,8 +101,8 @@ flowchart TD
     RAG_ANSWER --> WRAP_UP
 
     WRAP_UP -->|"YES — additional inquiry"| ROUTER
-    WRAP_UP -->|"NO — that is all, thank you"| GOODBYE["🗣️ Warm Closing:\n'Thank you very much for calling. Have a wonderful day, and we look forward to welcoming you to Bukowy Dwór!'"]:::endNode
-    GOODBYE --> END_SESSION(["🔴 End Call Session"]):::endNode
+    WRAP_UP -->|"NO — that is all, thank you"| GOODBYE[" Warm Closing:\n'Thank you very much for calling. Have a wonderful day, and we look forward to welcoming you to Bukowy Dwór!'"]:::endNode
+    GOODBYE --> END_SESSION([" End Call Session"]):::endNode
 ```
 
 ---
