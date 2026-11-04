@@ -1,4 +1,4 @@
-﻿# Enterprise System Architecture & Tech Stack — Virtual AI Receptionist (Bukowy Dwór)
+# Enterprise System Architecture & Tech Stack — Virtual AI Receptionist (Bukowy Dwór)
 
 > Technical implementation reference, enterprise architecture, interfaces, connectors, and communication protocols connecting **ElevenLabs Conversational AI** with hotel and medical resort infrastructure.
 
