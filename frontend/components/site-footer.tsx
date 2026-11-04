@@ -10,11 +10,11 @@ export function SiteFooter() {
   const { t, language } = useLanguage()
 
   const quickLinks = [
-    { label: t.nav.rooms, href: '/pokoje' },
+    { label: t.nav.rooms, href: '/rooms' },
     { label: t.nav.spa, href: '/spa' },
-    { label: t.nav.restaurant, href: '/restauracja' },
-    { label: t.nav.access, href: '/dojazd' },
-    { label: t.nav.contact, href: '/kontakt' },
+    { label: t.nav.restaurant, href: '/restaurant' },
+    { label: t.nav.access, href: '/directions' },
+    { label: t.nav.contact, href: '/contact' },
   ]
 
   return (
@@ -28,14 +28,14 @@ export function SiteFooter() {
           <div className="mt-6 flex gap-3">
             <a
               href="#"
-              aria-label="Bukowy Dwór Facebook"
+              aria-label="Bukowy Dwór on Facebook"
               className="flex size-12 items-center justify-center rounded-full border border-white/20 outline-none transition-colors hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
             >
               <Globe className="size-5" aria-hidden="true" />
             </a>
             <a
               href="#"
-              aria-label="Bukowy Dwór Instagram"
+              aria-label="Bukowy Dwór on Instagram"
               className="flex size-12 items-center justify-center rounded-full border border-white/20 outline-none transition-colors hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
             >
               <Share2 className="size-5" aria-hidden="true" />

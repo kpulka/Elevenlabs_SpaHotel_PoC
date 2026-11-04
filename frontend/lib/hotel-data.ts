@@ -14,8 +14,8 @@ export type Room = {
 
 export const rooms: Room[] = [
   {
-    id: "jednoosobowy",
-    slug: "pokoj-jednoosobowy",
+    id: "single",
+    slug: "single-room",
     name: "Pokój jednoosobowy",
     price: 350,
     capacity: "1 osoba",
@@ -34,8 +34,8 @@ export const rooms: Room[] = [
     ],
   },
   {
-    id: "dwuosobowy",
-    slug: "pokoj-dwuosobowy",
+    id: "double",
+    slug: "double-room",
     name: "Pokój dwuosobowy",
     price: 500,
     capacity: "2 osoby",
@@ -54,8 +54,8 @@ export const rooms: Room[] = [
     ],
   },
   {
-    id: "apartament",
-    slug: "apartament",
+    id: "suite",
+    slug: "apartment-suite",
     name: "Apartament",
     price: 750,
     capacity: "2–3 osoby",
@@ -77,7 +77,7 @@ export const rooms: Room[] = [
 
 export const roomsEn: Room[] = [
   {
-    id: "jednoosobowy",
+    id: "single",
     slug: "single-room",
     name: "Single Comfort Room",
     price: 350,
@@ -97,7 +97,7 @@ export const roomsEn: Room[] = [
     ],
   },
   {
-    id: "dwuosobowy",
+    id: "double",
     slug: "double-room",
     name: "Double Comfort Room",
     price: 500,
@@ -117,7 +117,7 @@ export const roomsEn: Room[] = [
     ],
   },
   {
-    id: "apartament",
+    id: "suite",
     slug: "apartment-suite",
     name: "Executive Health Suite",
     price: 750,
@@ -138,9 +138,11 @@ export const roomsEn: Room[] = [
   },
 ]
 
+export type TreatmentCategory = "thermal" | "balneo" | "physio"
+
 export type Treatment = {
   id: string
-  category: "Baseny termalne" | "Zabiegi balneologiczne" | "Masaże i fizykoterapia" | "Thermal Pools" | "Balneological Treatments" | "Massage & Physiotherapy"
+  category: TreatmentCategory
   name: string
   duration: string
   price: number
@@ -150,8 +152,8 @@ export type Treatment = {
 
 export const treatments: Treatment[] = [
   {
-    id: "basen-32",
-    category: "Baseny termalne",
+    id: "pool-32",
+    category: "thermal",
     name: "Basen termalny 32°C",
     duration: "bez limitu w godzinach otwarcia",
     price: 0,
@@ -160,8 +162,8 @@ export const treatments: Treatment[] = [
       "Basen relaksacyjny o łagodnej temperaturze, dostępny dla wszystkich gości hotelowych bez dodatkowych opłat.",
   },
   {
-    id: "basen-34",
-    category: "Baseny termalne",
+    id: "pool-34",
+    category: "thermal",
     name: "Basen termalny 34°C",
     duration: "bez limitu w godzinach otwarcia",
     price: 0,
@@ -170,8 +172,8 @@ export const treatments: Treatment[] = [
       "Cieplejszy basen o właściwościach rozluźniających mięśnie, polecany szczególnie przy dolegliwościach reumatycznych.",
   },
   {
-    id: "kapiel-siarczkowa",
-    category: "Zabiegi balneologiczne",
+    id: "sulphur-bath",
+    category: "balneo",
     name: "Kąpiel siarczkowa",
     duration: "20 min",
     price: 65,
@@ -180,8 +182,8 @@ export const treatments: Treatment[] = [
       "Kąpiel w wodzie siarczkowej wspomagająca leczenie chorób stawów i skóry, wykonywana pod nadzorem personelu medycznego.",
   },
   {
-    id: "kapiel-borowinowa",
-    category: "Zabiegi balneologiczne",
+    id: "peat-mud-bath",
+    category: "balneo",
     name: "Kąpiel borowinowa",
     duration: "20 min",
     price: 70,
@@ -190,8 +192,8 @@ export const treatments: Treatment[] = [
       "Zabieg z użyciem naturalnego torfu leczniczego, łagodzący bóle stawów i wspomagający krążenie.",
   },
   {
-    id: "jonoforeza",
-    category: "Zabiegi balneologiczne",
+    id: "iontophoresis",
+    category: "balneo",
     name: "Jonoforeza",
     duration: "15 min",
     price: 45,
@@ -200,8 +202,8 @@ export const treatments: Treatment[] = [
       "Zabieg fizykoterapeutyczny wykorzystujący prąd stały do wprowadzania leków przeciwbólowych przez skórę.",
   },
   {
-    id: "masaz-leczniczy",
-    category: "Masaże i fizykoterapia",
+    id: "therapeutic-massage",
+    category: "physio",
     name: "Masaż leczniczy",
     duration: "30 min",
     price: 90,
@@ -210,8 +212,8 @@ export const treatments: Treatment[] = [
       "Masaż wykonywany przez wykwalifikowanego fizjoterapeutę, dopasowany indywidualnie do stanu zdrowia gościa.",
   },
   {
-    id: "gimnastyka-lecznicza",
-    category: "Masaże i fizykoterapia",
+    id: "group-gymnastics",
+    category: "physio",
     name: "Gimnastyka lecznicza (grupowa)",
     duration: "45 min",
     price: 30,
@@ -223,8 +225,8 @@ export const treatments: Treatment[] = [
 
 export const treatmentsEn: Treatment[] = [
   {
-    id: "basen-32",
-    category: "Thermal Pools",
+    id: "pool-32",
+    category: "thermal",
     name: "Thermal Relaxation Pool 32°C",
     duration: "Unlimited during opening hours",
     price: 0,
@@ -233,18 +235,18 @@ export const treatmentsEn: Treatment[] = [
       "Gentle mineral relaxation pool, open to all resort guests at no extra charge.",
   },
   {
-    id: "basen-34",
-    category: "Thermal Pools",
+    id: "pool-34",
+    category: "thermal",
     name: "Thermal Hydrotherapy Pool 34°C",
     duration: "Unlimited during opening hours",
     price: 0,
     image: "/images/hero-pool.png",
     description:
-      "Warm mineral hydrotherapy pool with muscle-relaxing jets, recommended for rheumatic relief.",
+      "Warm mineral hydrotherapy pool with muscle-relaxing jets, recommended for rheumatic conditions.",
   },
   {
-    id: "kapiel-siarczkowa",
-    category: "Balneological Treatments",
+    id: "sulphur-bath",
+    category: "balneo",
     name: "Mineral Sulphur Bath",
     duration: "20 min",
     price: 65,
@@ -253,8 +255,8 @@ export const treatmentsEn: Treatment[] = [
       "Natural thermal sulphur bath aiding in joint, spine, and skin rehabilitation under medical oversight.",
   },
   {
-    id: "kapiel-borowinowa",
-    category: "Balneological Treatments",
+    id: "peat-mud-bath",
+    category: "balneo",
     name: "Therapeutic Peat Mud Bath",
     duration: "20 min",
     price: 70,
@@ -263,8 +265,8 @@ export const treatmentsEn: Treatment[] = [
       "Natural medical peat mud wrap, relieving deep joint pain and boosting circulation.",
   },
   {
-    id: "jonoforeza",
-    category: "Balneological Treatments",
+    id: "iontophoresis",
+    category: "balneo",
     name: "Iontophoresis Electrotherapy",
     duration: "15 min",
     price: 45,
@@ -273,8 +275,8 @@ export const treatmentsEn: Treatment[] = [
       "Physiotherapy treatment using direct electrical current to deliver anti-inflammatory analgesics through skin.",
   },
   {
-    id: "masaz-leczniczy",
-    category: "Massage & Physiotherapy",
+    id: "therapeutic-massage",
+    category: "physio",
     name: "Therapeutic Back Massage",
     duration: "30 min",
     price: 90,
@@ -283,8 +285,8 @@ export const treatmentsEn: Treatment[] = [
       "Customized back and spine massage delivered by certified medical physiotherapists.",
   },
   {
-    id: "gimnastyka-lecznicza",
-    category: "Massage & Physiotherapy",
+    id: "group-gymnastics",
+    category: "physio",
     name: "Therapeutic Group Gymnastics",
     duration: "45 min",
     price: 30,
@@ -302,19 +304,19 @@ export type Diet = {
 
 export const diets: Diet[] = [
   {
-    id: "cukrzycowa",
+    id: "diabetic",
     name: "Dieta cukrzycowa",
     description:
       "Posiłki o kontrolowanej zawartości cukru i węglowodanów, przygotowywane pod nadzorem dietetyka.",
   },
   {
-    id: "lekkostrawna",
+    id: "light-digestive",
     name: "Dieta lekkostrawna",
     description:
       "Łagodne dla żołądka posiłki, polecane po zabiegach oraz w okresie rekonwalescencji.",
   },
   {
-    id: "bezglutenowa",
+    id: "gluten-free",
     name: "Dieta bezglutenowa",
     description:
       "Posiłki przygotowywane bez produktów zawierających gluten, z zachowaniem pełnej wartości odżywczej.",
@@ -323,22 +325,22 @@ export const diets: Diet[] = [
 
 export const dietsEn: Diet[] = [
   {
-    id: "cukrzycowa",
+    id: "diabetic",
     name: "Diabetic Menu (Low-GI)",
     description:
       "Controlled carbohydrates and low glycemic index meals supervised by a clinical dietitian.",
   },
   {
-    id: "lekkostrawna",
+    id: "light-digestive",
     name: "Light Digestive Menu",
     description:
       "Gentle, easily digestible dishes recommended during recovery and post-treatment rest.",
   },
   {
-    id: "bezglutenowa",
+    id: "gluten-free",
     name: "Gluten-Free Menu",
     description:
-      "Meals prepared in dedicated allergen-safe environment preserving complete nutritional balance.",
+      "Meals prepared in a dedicated allergen-safe kitchen, preserving full nutritional value.",
   },
 ]
 
@@ -445,5 +447,4 @@ export const contactInfo = {
   phone: "+48 18 123 45 67",
   phoneHref: "tel:+48181234567",
   email: "recepcja@bukowydwor.pl",
-  receptionHours: "Recepcja: całodobowo, 24 godziny na dobę",
 }
