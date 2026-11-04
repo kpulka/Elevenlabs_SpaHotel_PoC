@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
     unoptimized: true,
   },
@@ -16,8 +13,8 @@ const nextConfig = {
           { key: 'Strict-Transport-Security', value: 'max-age=63072000' },
           {
             key: 'Permissions-Policy',
-            // Uwaga: mikrofon musi być włączony — widget ElevenLabs używa getUserMedia.
-            // Domyślnie (bez klauzuli) mikrofon jest dozwolony; camerę/geo zostawiamy zablokowane.
+            // The microphone must stay enabled: the ElevenLabs widget uses getUserMedia.
+            // Camera and geolocation are disabled because the site does not need them.
             value: 'camera=(), geolocation=()',
           },
         ],

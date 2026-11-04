@@ -16,7 +16,7 @@ export function AnnaEmbedWidget() {
   const scriptInserted = useRef(false)
   const widgetRef = useRef<HTMLElement | null>(null)
 
-  // 1. Pobierz Signed URL z serwera z parametrem wybranego języka
+  // 1. Fetch a signed URL from our API route, passing the active language.
   useEffect(() => {
     let cancelled = false
     fetch(`/api/anna/signed-url?lang=${language}`)
@@ -25,14 +25,15 @@ export function AnnaEmbedWidget() {
         if (!cancelled && d?.signed_url) setSignedUrl(d.signed_url)
       })
       .catch((e) => {
-        console.warn('Signed-url unavailable, fallback to agent-id:', e)
+        console.warn('Signed URL unavailable, falling back to agent-id:', e)
       })
     return () => {
       cancelled = true
     }
   }, [language])
 
-  // 2. Wstrzyknij oficjalny skrypt widgetu ElevenLabs
+  // 2. Load the ElevenLabs ConvAI widget script. It is self-hosted under /public/widget
+  // because third-party CDN requests are often blocked by ad blockers or corporate networks.
   useEffect(() => {
     if (scriptInserted.current) return
     scriptInserted.current = true
@@ -44,7 +45,7 @@ export function AnnaEmbedWidget() {
     document.head.appendChild(el)
   }, [])
 
-  // 3. Sprawdź uprawnienia microphone dla każdego iframe ElevenLabs
+  // 3. Make sure every ElevenLabs iframe is allowed to use the microphone.
   useEffect(() => {
     const observer = new MutationObserver(() => {
       const frames = document.querySelectorAll<HTMLIFrameElement>(
@@ -61,7 +62,7 @@ export function AnnaEmbedWidget() {
     return () => observer.disconnect()
   }, [])
 
-  // 4. Ustaw atrybuty na custom elemencie wraz z dynamic_variables języka
+  // 4. Set the widget attributes, including dynamic variables for the active language.
   useEffect(() => {
     const host = widgetRef.current
     if (!host) return
@@ -70,7 +71,7 @@ export function AnnaEmbedWidget() {
       host.setAttribute('signed-url', signedUrl)
     }
 
-    // Wstrzyknij zmienną dynamiczną wybranego języka (user_language)
+    // Pass the active language to the agent as dynamic variables.
     const dynVars = JSON.stringify({
       user_language: language,
       guest_language: language === 'en' ? 'English' : 'Polish',
@@ -80,18 +81,18 @@ export function AnnaEmbedWidget() {
     host.setAttribute('dynamic-variables', dynVars)
   }, [signedUrl, language])
 
-  // 5. Podpowiedź (hint) po 45s na stronie
+  // 5. Show a hint bubble after 45 seconds on the page.
   useEffect(() => {
     const timer = setTimeout(() => setShowHint(true), 45000)
     return () => clearTimeout(timer)
   }, [])
 
-  // 6. Funkcja uruchamiania rozmowy
+  // 6. Open the conversation.
   function triggerConvai() {
     setShowHint(false)
     const host = widgetRef.current as any
     if (!host) {
-      console.warn('Anna: element widgetu nie gotowy')
+      console.warn('Anna: widget element is not ready')
       return
     }
     const attempt = () => {
@@ -105,7 +106,7 @@ export function AnnaEmbedWidget() {
         }
         host.click?.()
       } catch (err) {
-        console.error('Błąd otwierania widgetu Anny:', err)
+        console.error('Anna: failed to open the widget:', err)
       }
     }
     attempt()
@@ -114,7 +115,7 @@ export function AnnaEmbedWidget() {
     }
   }
 
-  // 7. Nasłuchuj globalnego eventu 'open-anna-widget'
+  // 7. Listen for the global "open-anna-widget" event.
   useEffect(() => {
     window.addEventListener('open-anna-widget', triggerConvai)
     return () => window.removeEventListener('open-anna-widget', triggerConvai)
@@ -122,7 +123,7 @@ export function AnnaEmbedWidget() {
 
   return (
     <>
-      {/* Pływający pasek podpowiedzi */}
+      {/* Floating hint bubble */}
       {showHint && (
         <div className="fixed right-4 bottom-24 z-[998] max-w-[280px] rounded-2xl border border-gold/30 bg-warm-white p-4 pr-9 shadow-2xl motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 sm:right-6">
           <button
@@ -139,7 +140,7 @@ export function AnnaEmbedWidget() {
         </div>
       )}
 
-      {/* Główny, markowy przycisk pływający na dole ekranu */}
+      {/* Main floating call-to-action button */}
       <div className="fixed right-4 bottom-4 z-[999] sm:right-6 sm:bottom-6">
         <button
           id="anna-floating-trigger"
@@ -157,7 +158,7 @@ export function AnnaEmbedWidget() {
         </button>
       </div>
 
-      {/* Oficjalny komponent ElevenLabs ConvAI */}
+      {/* Official ElevenLabs ConvAI web component */}
       <elevenlabs-convai
         ref={(el: any) => {
           widgetRef.current = el

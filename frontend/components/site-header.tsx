@@ -14,11 +14,11 @@ export function SiteHeader() {
   const { t } = useLanguage()
 
   const navItems = [
-    { label: t.nav.rooms, href: '/pokoje' },
+    { label: t.nav.rooms, href: '/rooms' },
     { label: t.nav.spa, href: '/spa' },
-    { label: t.nav.restaurant, href: '/restauracja' },
-    { label: t.nav.access, href: '/dojazd' },
-    { label: t.nav.contact, href: '/kontakt' },
+    { label: t.nav.restaurant, href: '/restaurant' },
+    { label: t.nav.access, href: '/directions' },
+    { label: t.nav.contact, href: '/contact' },
   ]
 
   return (
@@ -30,7 +30,7 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav aria-label={t.nav.openMenu} className="hidden items-center gap-6 lg:flex">
+        <nav aria-label={t.nav.mainNav} className="hidden items-center gap-6 lg:flex">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -53,7 +53,7 @@ export function SiteHeader() {
             <Phone className="size-4" aria-hidden="true" />
             {contactInfo.phone}
           </a>
-          <HotelButton href="/kontakt" variant="secondary" className="border-gold text-white hover:bg-gold hover:text-navy">
+          <HotelButton href="/contact" variant="secondary" className="border-gold text-white hover:bg-gold hover:text-navy">
             {t.nav.bookStay}
           </HotelButton>
         </div>
@@ -86,7 +86,7 @@ export function SiteHeader() {
           id="mobile-menu"
           className="fixed inset-x-0 top-[64px] bottom-0 z-40 flex flex-col bg-navy px-6 py-8 lg:hidden"
         >
-          <nav aria-label="Menu mobilne" className="flex flex-col gap-2">
+          <nav aria-label={t.nav.mobileNav} className="flex flex-col gap-2">
             {navItems.map((item) => (
               <Link
                 key={item.href}
@@ -99,7 +99,7 @@ export function SiteHeader() {
             ))}
           </nav>
           <div className="mt-8">
-            <HotelButton href="/kontakt" variant="secondary" fullWidth className="border-gold text-white hover:bg-gold hover:text-navy" onClick={() => setOpen(false)}>
+            <HotelButton href="/contact" variant="secondary" fullWidth className="border-gold text-white hover:bg-gold hover:text-navy" onClick={() => setOpen(false)}>
               {t.nav.bookStay}
             </HotelButton>
           </div>
