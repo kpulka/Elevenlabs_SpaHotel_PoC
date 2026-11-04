@@ -1,31 +1,36 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# podman_start.sh — START demo na żądanie (Podman kontener + tunel + webhooki)
-# Uzdrowisko Bukowy Dwór (ElevenLabs PoC)
+# podman_start.sh — start the on-demand demo (Podman container + tunnel + webhooks)
+# Bukowy Dwór health resort (ElevenLabs PoC)
 #
-# Odpala całość TYLKO gdy chcesz pokazać projekt:
-#   1. Uruchamia kontener `bukowy-dwor-backend` (mock backend, port 8011).
-#   2. Uruchamia cloudflared tunnel (trycloudflare) → localhost:8011.
-#   3. Wyłapuje publiczny URL, aktualizuje wpis w hosts (IPv4) — omija DNS routera.
-#   4. Aktualizuje 5 narzędzi webhook agenta ElevenLabs na nowy URL.
-# Zatrzymanie: ./podman_stop.sh
+# Runs everything only when you want to show the project:
+#   1. Starts the container `bukowy-dwor-backend` (mock backend, port 8011).
+#   2. Starts a cloudflared tunnel (trycloudflare) -> localhost:8011.
+#   3. Reads the public URL and updates the hosts file (IPv4), bypassing the router DNS.
+#   4. Points the agent's 5 webhook tools at the new URL.
+# Stop with: ./podman_stop.sh
+#
+# Optional environment overrides:
+#   CLOUDFLARED   path to the cloudflared binary
+#   HOSTS_FILE    path to the hosts file (Windows default is used if unset)
 # ─────────────────────────────────────────────────────────────────────────────
 set -u
 
+CONTAINER_NAME="bukowy-dwor-backend"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 BACKEND_DIR="$PROJECT_ROOT/mock_backend"
 TUNNEL_DIR="$BACKEND_DIR/tunnel"
 STATE_FILE="$TUNNEL_DIR/state.json"
 PORT=8011
-CLOUDFLARED="$TUNNEL_DIR/cloudflared.exe"
-HOSTS_FILE="/c/Windows/System32/drivers/etc/hosts"
+CLOUDFLARED="${CLOUDFLARED:-$TUNNEL_DIR/cloudflared.exe}"
+HOSTS_FILE="${HOSTS_FILE:-/c/Windows/System32/drivers/etc/hosts}"
 HOSTS_MARK="# ElevenLabs Anna - tunnel"
 
-echo "=== 🐳 Podman demo start ($(date '+%H:%M:%S')) ==="
+echo "=== Podman demo start ($(date '+%H:%M:%S')) ==="
 
-# 1) kontener
-# Wczytaj env z mock_backend/.env (Telegram) jeśli istnieje
+# 1) Container
+# Load environment variables from mock_backend/.env (e.g. Telegram settings) if present.
 ENV_FILE_BACKEND="$BACKEND_DIR/.env"
 ENV_ARGS=()
 if [[ -f "$ENV_FILE_BACKEND" ]]; then
@@ -33,22 +38,22 @@ if [[ -f "$ENV_FILE_BACKEND" ]]; then
     [[ -z "$k" || "$k" == \#* ]] && continue
     ENV_ARGS+=("-e" "$k=$v")
   done <"$ENV_FILE_BACKEND"
-  echo "ℹ️  env z .env: ${#ENV_ARGS[@]/#/-e } opcji"
+  echo "[info] loaded $(( ${#ENV_ARGS[@]} / 2 )) variable(s) from .env"
 fi
-if podman ps --format '{{.Names}}' | grep -q '^bukowy-dwor-backend$'; then
-  echo "ℹ️  kontener już działa — pomijam start"
+if podman ps --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+  echo "[info] container already running, skipping start"
 else
-  if podman ps -a --format '{{.Names}}' | grep -q '^bukowy-dwor-backend$'; then
-    podman start bukowy-dwor-backend
+  if podman ps -a --format '{{.Names}}' | grep -q "^${CONTAINER_NAME}$"; then
+    podman start "$CONTAINER_NAME"
   else
-    podman run -d --name bukowy-dwor-backend -p $PORT:$PORT "${ENV_ARGS[@]}" localhost/bukowy-dwor-backend
+    podman run -d --name "$CONTAINER_NAME" -p $PORT:$PORT "${ENV_ARGS[@]}" "localhost/$CONTAINER_NAME"
   fi
-  echo "✅ kontener wystartowany (port $PORT)"
+  echo "[ok] container started (port $PORT)"
 fi
 sleep 2
 
-# 2) tunel (zawsze nowy — trycloudflare zmienia URL)
-# Najpierw ubij stare nasze tunel (taskkill po PID, nie pkill — Windows exe)
+# 2) Tunnel (always a new one; trycloudflare changes the URL on every start)
+# Stop our previous tunnel first. Matched by PID via taskkill, since pkill does not work on Windows executables.
 OUR_PIDS="$(powershell -NoProfile -Command "Get-CimInstance Win32_Process -Filter \"Name like '%cloudflared%'\" | Where-Object { \$_.CommandLine -match 'localhost:8011' } | Select-Object -ExpandProperty ProcessId" 2>/dev/null | tr -d '\r')"
 for pid in $OUR_PIDS; do taskkill /F /PID "$pid" >/dev/null 2>&1; done
 rm -f "$TUNNEL_DIR/tunnel.log"
@@ -62,12 +67,12 @@ for i in $(seq 1 40); do
   sleep 1
 done
 if [[ -z "$URL" ]]; then
-  echo "❌ nie udało się uzyskać URL tunelu (sprawdź tunnel.log)"
+  echo "[error] could not get the tunnel URL (see tunnel.log)"
   exit 1
 fi
-echo "✅ URL tunelu: $URL"
+echo "[ok] tunnel URL: $URL"
 
-# 3) wpis w hosts (IPv4 — omija router bez A-rekordów)
+# 3) Hosts file entry (IPv4; bypasses the router, which has no A records for this host)
 update_hosts() {
   local host="$1" ip=""
   for attempt in 1 2 3 4 5; do
@@ -75,15 +80,15 @@ update_hosts() {
     [[ -n "$ip" ]] && break
     sleep 3
   done
-  [[ -z "$ip" ]] && { echo "⚠️  brak IP dla $host — pomijam hosts"; return; }
+  [[ -z "$ip" ]] && { echo "[warn] no IP for $host, skipping hosts entry"; return; }
   cp "$HOSTS_FILE" "$HOSTS_FILE.bak" 2>/dev/null || true
   sed -i "/$HOSTS_MARK/d; /${host}/d" "$HOSTS_FILE" 2>/dev/null || true
   printf "\n%s\n%s  %s\n" "$HOSTS_MARK" "$ip" "$host" >>"$HOSTS_FILE" 2>/dev/null && \
-    echo "✅ hosts: $ip $host" || echo "⚠️  brak uprawnień do hosts"
+    echo "[ok] hosts: $ip $host" || echo "[warn] no permission to write the hosts file"
 }
 update_hosts "$(echo "$URL" | sed 's|https://||; s|/||')"
 
-# 4) webhooki agenta
+# 4) Agent webhooks
 ENV_FILE="$PROJECT_ROOT/frontend/.env.local"
 if [[ -f "$ENV_FILE" ]] && grep -q 'ELEVENLABS_API_KEY=' "$ENV_FILE"; then
   KEY="$(grep -oE 'ELEVENLABS_API_KEY=[^ ]+' "$ENV_FILE" | head -1 | cut -d= -f2 | tr -d '\r\n"')"
@@ -107,25 +112,25 @@ def api(m,path,b=None):
     except urllib.error.HTTPError as e: return e.code,e.read().decode()[:200]
 for tid,name in tools.items():
     st,d=api('GET',f'/v1/convai/tools/{tid}')
-    if st!=200: print(f"  ⚠️ {name}: GET {st}"); continue
+    if st!=200: print(f"  [warn] {name}: GET {st}"); continue
     tc=d.get('tool_config',d)
     tc['api_schema']['url']=newurl+"/"+name
     st2,_=api('PATCH',f'/v1/convai/tools/{tid}',{'tool_config':tc})
-    print(f"  {'✅' if st2 in (200,201) else '❌'} {name}: {st2}")
+    print(f"  [{'ok' if st2 in (200,201) else 'error'}] {name}: {st2}")
 PYEOF
 else
-  echo "⚠️  brak klucza — nie zaktualizowano webhooków"
+  echo "[warn] no API key in $ENV_FILE, webhooks NOT updated"
 fi
 
-# 5) stan
+# 5) State
 cat >"$STATE_FILE" <<EOF
-{"port": $PORT, "backend": "podman: bukowy-dwor-backend", "tunnel_pid": $TUNNEL_PID, "url": "$URL"}
+{"port": $PORT, "backend": "podman: $CONTAINER_NAME", "tunnel_pid": $TUNNEL_PID, "url": "$URL"}
 EOF
 
 echo
 echo "============================================================"
-echo "  🐳 Anna demo READY (Podman)"
-echo "  Backend : kontener bukowy-dwor-backend :$PORT"
+echo "  Anna demo READY (Podman)"
+echo "  Backend : container $CONTAINER_NAME on :$PORT"
 echo "  URL     : $URL"
 echo "  Stop    : ./podman_stop.sh"
 echo "============================================================"

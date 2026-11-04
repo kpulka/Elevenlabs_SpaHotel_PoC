@@ -51,7 +51,7 @@ export default function HomePage() {
         <section className="relative flex min-h-[640px] items-center overflow-hidden">
           <Image
             src="/images/hero-pool.png"
-            alt="Basen termalny Bukowego Dworu"
+            alt={language === 'pl' ? 'Basen termalny Bukowego Dworu' : 'Thermal pool at Bukowy Dwór'}
             fill
             priority
             className="object-cover"
@@ -69,10 +69,10 @@ export default function HomePage() {
                 {t.home.heroSubtitle}
               </p>
               <div className="mt-10 flex flex-col gap-4 sm:flex-row">
-                <HotelButton href="/kontakt" variant="primary" className="bg-gold text-navy hover:bg-gold/90">
+                <HotelButton href="/contact" variant="primary" className="bg-gold text-navy hover:bg-gold/90">
                   {t.nav.bookStay}
                 </HotelButton>
-                <HotelButton href="/pokoje" variant="ghost">
+                <HotelButton href="/rooms" variant="ghost">
                   {t.home.seeAllRooms}
                 </HotelButton>
               </div>
@@ -130,7 +130,7 @@ export default function HomePage() {
                 </h2>
               </div>
               <Link
-                href="/pokoje"
+                href="/rooms"
                 className="text-base font-semibold text-navy underline-offset-4 outline-none hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
               >
                 {t.home.seeAllRooms} →
@@ -158,14 +158,14 @@ export default function HomePage() {
                   ? 'Spacerowe alejki, świeże górskie powietrze i cisza — naturalne otoczenie Bukowego Dworu wspiera regenerację ciała i umysłu równie skutecznie, jak zabiegi w naszym SPA.'
                   : 'Serene walking trails, fresh alpine air, and tranquil silence — Bukowy Dwór’s mountain surroundings rejuvenate body and spirit alongside our thermal spa treatments.'}
               </p>
-              <HotelButton href="/dojazd" variant="secondary" className="mt-8 border-gold text-white hover:bg-gold hover:text-navy">
+              <HotelButton href="/directions" variant="secondary" className="mt-8 border-gold text-white hover:bg-gold hover:text-navy">
                 {language === 'pl' ? 'Sprawdź dojazd i dostępność' : 'Check Directions & Shuttle'}
               </HotelButton>
             </div>
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
               <Image
                 src="/images/nature-path.png"
-                alt="Ścieżka w lesie bukowym w okolicy Bukowego Dworu"
+                alt={language === 'pl' ? 'Ścieżka w lesie bukowym w okolicy Bukowego Dworu' : 'Forest path through the beech woods near Bukowy Dwór'}
                 fill
                 className="object-cover"
               />

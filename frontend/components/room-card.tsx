@@ -40,7 +40,7 @@ export function RoomCard({ room }: { room: Room }) {
             {room.price} {language === 'pl' ? 'zł' : 'PLN'}
             <span className="text-sm font-normal text-muted-grey"> {language === 'pl' ? '/ doba' : '/ night'}</span>
           </p>
-          <HotelButton href="/kontakt" variant="secondary" className="px-6">
+          <HotelButton href="/contact" variant="secondary" className="px-6">
             {t.roomsPage.bookRoom}
           </HotelButton>
         </div>
