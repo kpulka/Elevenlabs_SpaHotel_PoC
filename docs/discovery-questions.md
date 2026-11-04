@@ -1,4 +1,4 @@
-﻿# Client Discovery Workshop: Question Bank
+# Client Discovery Workshop: Question Bank
 
 > **How the workshop runs:**
 > The facilitator opens with a deliberately broad brief, for example "Design a voice assistant for the hotel."

@@ -1,4 +1,4 @@
-﻿# Demo Walkthrough: Three Scenario Paths
+# Demo Walkthrough: Three Scenario Paths
 
 > Script for the presenter running the stakeholder demonstration.
 > Each path contains: setup, the conversation to run, and the points to draw out with the audience.

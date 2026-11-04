@@ -1,6 +1,6 @@
 {
   "agent_id": "agent_8401m0n03cggfgebhfh0cj96t7aj",
-  "tunel": "https://usually-stranger-leslie-casey.trycloudflare.com",
+  "tunel": "https://example-tunnel.trycloudflare.com",
   "odpowiedzi": {
     "check_spa_availability": {
       "available": true,

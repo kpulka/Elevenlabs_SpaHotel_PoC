@@ -1,4 +1,4 @@
-﻿{
+{
   "slide_size": "16:9",
   "slides": [
     {
@@ -155,7 +155,7 @@
     },
     {
       "layout": "title_content",
-      "title": "Multi-Tenant Scaling: 1 Core Agent, 10 Hotel Properties",
+      "title": "Multi-Tenant Scaling: 1 Agent, 10 Hotels",
       "bullets": [
         "The challenge: 10 properties would typically mean 10 separate agents, 10 siloed knowledge bases and linear maintenance cost",
         "The solution: 1 master agent core with dynamic variables (hotel_name, location, reception_phone, pms_id)",
@@ -192,7 +192,7 @@
     },
     {
       "layout": "title_content",
-      "title": "Implementation Roadmap: PoC → Phase II → Phase III",
+      "title": "Roadmap: PoC → Phase II → Phase III",
       "bullets": [
         "Phase I (MVP, live now): standalone conversational agent, RAG grounding, webhook tool calling, live web widget",
         "Phase II (production pilot): two-way PMS synchronisation (Opera Cloud / Mews), Twilio SIP trunking, multilingual routing (PL / EN / DE)",

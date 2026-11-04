@@ -1,4 +1,4 @@
-﻿# Design Rationale and Discovery Approach
+# Design Rationale and Discovery Approach
 
 > **Purpose:** This document records how the guest-communication problem at Bukowy Dwór was framed, which design decisions were taken and why, and how the main concerns raised by the steering committee are addressed. It is intended for the client steering committee and the delivery team.
 
