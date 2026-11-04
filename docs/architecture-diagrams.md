@@ -1,4 +1,4 @@
-﻿# Architecture Diagrams — Virtual AI Receptionist "Bukowy Dwór"
+# Architecture Diagrams — Virtual AI Receptionist "Bukowy Dwór"
 
 > Mermaid.js diagrams for presentation slides, technical documentation and system design reviews.
 

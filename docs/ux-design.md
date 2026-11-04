@@ -1,4 +1,4 @@
-﻿# UX Design: Virtual Receptionist Anna
+# UX Design: Virtual Receptionist Anna
 
 Two channels, two user experiences. This document covers both.
 
