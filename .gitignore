@@ -50,3 +50,6 @@ Thumbs.db
 # Binary narzędzi (pobierane osobno)
 mock_backend/tunnel/cloudflared.exe
 mock_backend/tunnel/*.exe
+
+# Python caches / local venvs
+.venv/
