@@ -34,13 +34,36 @@ rozjechana z obecnym `main`; do tego ~40 nieużywanych kluczy w `frontend/lib/tr
 6. **Ochrona gałęzi (opcjonalnie):** wymagany zielony CI na `main` (Settings → Branches).
 
 ## Weryfikacja (DoD)
-- [ ] `git branch -r` → tylko `origin/main`; `git tag` → `v1.0.0` (+ ewentualny tag archiwalny).
-- [ ] Release `v1.0.0` widoczny publicznie, link w README opcjonalnie.
-- [ ] `homepage` ustawiony; Wiki wyłączone; 0 otwartych issues nieaktualnych.
-- [ ] `pnpm i18n:check` i `pnpm build` zielone po usunięciu kluczy; `grep` nie znajduje usuniętych nazw.
-- [ ] CI zielone na tagu (workflow działa też dla tagów albo release nie wymaga runu).
+- [x] `git branch -r` → tylko `origin/main`; `git tag` → `v1.0.0` + `archive/english-wip-2026-11-04`.
+- [x] Release `v1.0.0` widoczny publicznie, link w README.
+- [x] `homepage` ustawiony (`https://kpulka.github.io/Elevenlabs_SpaHotel_PoC/`); Wiki wyłączone; 0 otwartych issues.
+- [x] `i18n:check` i `build` zielone po usunięciu kluczy; `grep` nie znajduje usuniętych nazw.
+- [x] CI zielone na commicie tagu (workflow startuje z `push` na `main`; tag wskazuje ten sam SHA).
 
 ## Kluczowe / ryzyka
 - Usuwanie gałęzi na remote jest nieodwracalne bez reflog po stronie GitHuba — dlatego najpierw tag.
 - Martwe klucze usuwać partiami z buildem po każdej partii; `i18n:check` sprawdza tylko parytet,
   więc błąd „klucz używany, ale usunięty” wyjdzie dopiero w `tsc`/`build`.
+
+## Wynik (2026-11-09, done)
+
+| element | stan |
+|---|---|
+| gałęzie na remote | tylko `origin/main` (obca gałąź → tag `archive/english-wip-2026-11-04`, zrobione w K1) |
+| tag | `v1.0.0` annotated na `57755ab` (commit z zielonym CI: run 42712220369) |
+| release | [v1.0.0](https://github.com/kpulka/Elevenlabs_SpaHotel_PoC/releases/tag/v1.0.0) — 5 sekcji (co działa / czego nie ma / jak uruchomić / bramki / dokumentacja) + oba PPTX jako assety (4 148 952 B i 4 147 856 B) |
+| topics | `ai-agent`, `case-study`, `conversational-ai`, `elevenlabs`, `fastapi`, `nextjs`, `podman`, `voice-agent`, `pytest`, `voice-ai` (dodane `pytest`, `voice-ai`) |
+| homepage | `https://kpulka.github.io/Elevenlabs_SpaHotel_PoC/` |
+| Wiki | wyłączone (`hasWikiEnabled=false`) |
+| issues | 0 otwartych |
+| martwe klucze i18n | **44 usunięte**, 182 → **138** kluczy w PL i EN; skan `k4_i18n.py`: **0 nieużywanych liści**; `check-i18n` 138/138, `tsc` clean, `next build` 11 stron |
+| bramki inne | `pytest` **68 passed**, `sync-data --check` 3 pokoje / 6 zabiegów |
+
+**Pages z deckiem:** `presentation/index.html` (dwujęzyczna strona-wejście) + `.github/workflows/pages.yml`
+(artefakt = katalog `presentation/`, bez builda). Deploy: run 42712684119 → success; sprawdzone HTTP:
+landing 200 (3 614 B), `prezentacja.html` 200, `presentation_en.html` 200, `assets/anna_widget_success.jpg`
+200, `Bukowy_Dwor_Case_Study.pptx` 200. Repo ma teraz realny link do pokazania rekruterowi bez klonowania.
+
+**Świadomie nie zrobione:** ochrona gałęzi `main` (krok 6, opcjonalny) — wymuszałaby PR-y przy pracy
+jednoosobowej; można włączyć później w Settings → Branches. CI nie ma triggera na tagi (tag wskazuje
+commit z zielonym runem, więc release jest pokryty).

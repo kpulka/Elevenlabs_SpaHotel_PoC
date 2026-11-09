@@ -3,6 +3,7 @@
 Osobny deliverable: prezentacja case study „Wirtualny Recepcjonista AI — Bukowy Dwór" (ElevenLabs Deployment Strategist) plus surowce, z których powstała. Dokumentacja systemu jest w `docs/` (`docs/INDEX.md`).
 
 **Co otworzyć pierwsze:**
+- Online: [kpulka.github.io/Elevenlabs_SpaHotel_PoC](https://kpulka.github.io/Elevenlabs_SpaHotel_PoC/) — strona-wejście `index.html` z linkami do obu decków (GitHub Pages z tego katalogu, `.github/workflows/pages.yml`).
 - `prezentacja.html` — wersja PL decku w przeglądarce, bez zależności (to pokazujesz na rozmowie). EN: `presentation_en.html`.
 - `Bukowy_Dwor_Case_Study.pptx` / `Bukowy_Dwor_Case_Study_EN.pptx` — te same slajdy do edycji w PowerPoint/Google Slides.
 - `deck_spec.json` / `deck_spec_en.json` — specyfikacja slajdów (layout, teksty, notatki prelegenta). To źródło treści, nie do prezentowania.
