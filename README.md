@@ -16,6 +16,9 @@ agent lives on, the CI that guards all of it, and the scripts that keep the demo
 
 ![A live conversation with Anna](presentation/assets/anna_widget_rozmowa.jpg)
 
+**Case-study deck (online):** [kpulka.github.io/Elevenlabs_SpaHotel_PoC](https://kpulka.github.io/Elevenlabs_SpaHotel_PoC/) — 14 slides, PL and EN, opens in the browser.
+Editable `PPTX` files are attached to [release v1.0.0](https://github.com/kpulka/Elevenlabs_SpaHotel_PoC/releases/tag/v1.0.0).
+
 ---
 
 ## What is actually running
