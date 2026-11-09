@@ -38,6 +38,7 @@ import os
 import sys
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from datetime import date, datetime, timedelta
 from pathlib import Path
@@ -135,6 +136,56 @@ def find_slot(backend: Client, service: str, day: date,
         if 0 < delta <= within_hours:
             return slot
     return None
+
+
+def _sync_module() -> Any:
+    """Import sync_agent_tools whether we run as a module or as a plain script."""
+    try:
+        from tunnel import sync_agent_tools as sync
+        return sync
+    except ImportError:
+        import importlib.util
+
+        path = Path(__file__).with_name("sync_agent_tools.py")
+        spec = importlib.util.spec_from_file_location("anna_sync_agent_tools", path)
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)  # type: ignore[union-attr]
+        return module
+
+
+def tool_health(key: str, timeout: int = 20) -> List[Dict[str, Any]]:
+    """Resolve every webhook tool URL and report whether its host answers /health.
+
+    A stale quick-tunnel URL is the classic reason a simulation fails mid-call:
+    the agent reaches the tool, the webhook host is dead, the procedure stops.
+    """
+    sync = _sync_module()
+
+    client = sync.Client(key)
+    bases: Dict[str, List[str]] = {}
+    seen: set = set()
+    for tool in client.list_tools():
+        name = sync.tool_name(tool)
+        if name not in sync.TOOL_PATHS or name in seen:
+            continue  # the workspace also holds unrelated tools (other projects)
+        seen.add(name)
+        config = tool.get("tool_config") or {}
+        url = str(sync.api_schema_of(config).get("url") or "")
+        if not url:
+            raise SystemExit(f"narzędzie {name} nie ma URL-a webhooka")
+        parts = urllib.parse.urlsplit(url)
+        bases.setdefault(f"{parts.scheme}://{parts.netloc}", []).append(name)
+    missing = sorted(set(sync.TOOL_PATHS) - seen)
+    if missing:
+        raise SystemExit("brakujące narzędzia agenta: " + ", ".join(missing))
+    report = []
+    for base, names in bases.items():
+        try:
+            status, _ = Client(base).call("GET", "/health", timeout=timeout)
+        except Exception as err:  # noqa: BLE001 - DNS/timeout means a dead host
+            status = f"ERR {err}"
+        report.append({"base": base, "tools": names, "status": status})
+    return report
 
 
 def seed(backend: Client, days_ahead: int, service: str, slot: Optional[str],
@@ -371,6 +422,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--dry-run", action="store_true", help="zbuduj payloady, nic nie uruchamiaj")
     parser.add_argument("--keep-tests", action="store_true", help="nie usuwaj poprzednich testów K2-*")
     parser.add_argument("--skip-scenario3", action="store_true", help="pomiń scenariusz <2 h")
+    parser.add_argument("--skip-tools-check", action="store_true",
+                        help="nie sprawdzaj, czy hosty webhooków agenta odpowiadają")
     args = parser.parse_args(argv)
 
     key = api_key(args.api_key)
@@ -387,6 +440,29 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"Backend {args.backend} nie odpowiada (HTTP {status}). Uruchom mock_backend.")
         return 2
     print(f"Backend: {json.dumps(health, ensure_ascii=False)}")
+
+    if not args.skip_tools_check:
+        try:
+            report = tool_health(key)
+        except Exception as err:  # noqa: BLE001 - surface any API/network failure as config error
+            print(f"nie mogę sprawdzić narzędzi agenta: {err}")
+            return 2
+        if not report:
+            print("agent nie ma narzędzi z URL-em webhooka — uruchom sync_agent_tools.py")
+            return 2
+        dead = []
+        for entry in report:
+            host_status = entry["status"]
+            host_ok = isinstance(host_status, int) and 200 <= host_status < 300
+            print(f"  webhooki @ {entry['base']}: {host_status} "
+                  f"({len(entry['tools'])} narzędzi: {', '.join(entry['tools'])})")
+            if not host_ok:
+                dead.append(entry["base"])
+        if dead:
+            print("Martwy host webhooków: " + ", ".join(dead))
+            print("Uruchom tunel i przepnij narzędzia: "
+                  "python mock_backend/tunnel/sync_agent_tools.py --base-url https://<tunel>")
+            return 2
 
     if args.check:
         status, _branch = el.call("GET", f"/v1/convai/agents/{args.agent_id}/branches/{args.branch_id}")
@@ -434,12 +510,6 @@ def main(argv: Optional[List[str]] = None) -> int:
     payloads = scenario_payloads(seeds)
     if args.skip_scenario3:
         payloads = [p for p in payloads if not p["slug"].startswith("03")]
-
-    if args.dry_run:
-        print("\n--- dry run: payloady (bez POST) ---")
-        print(json.dumps([p["body"] for p in payloads], ensure_ascii=False, indent=2))
-        print("--- koniec; nic nie utworzono, nic nie uruchomiono ---")
-        return 0
 
     if not args.keep_tests:
         cleanup_old_tests(el)

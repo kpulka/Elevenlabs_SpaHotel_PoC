@@ -41,7 +41,9 @@ python mock_backend/tunnel/run_simulations.py              # pełny przebieg
 ```
 
 Skrypt sam seeduje rezerwacje i wplata ich numery `SPA-XXXX` w scenariusze (backend liczy opłatę
-z `appointment_datetime` vs `now`, więc daty są liczone w momencie uruchomienia). Exit codes:
-`0` wszystko przeszło, `1` test nie przeszedł, `2` konfiguracja/backend, `3` brak kredytów,
-`4` timeout. Scenariusz <2 h wymaga wolnego slotu w najbliższych 2 h — uruchom między 08:00 a 16:00
-albo dodaj `--skip-scenario3`.
+z `appointment_datetime` vs `now`, więc daty są liczone w momencie uruchomienia). Przed startem
+sprawdza też, czy **hosty webhooków siedmiu narzędzi Anny** odpowiadają na `/health` (filtruje po
+`TOOL_PATHS`, więc obce narzędzia z workspace'u nie zaśmiecają wyniku) — martwy tunel kończy się
+exit 2 zamiast trzech nieudanych symulacji. Exit codes: `0` wszystko przeszło, `1` test nie przeszedł,
+`2` konfiguracja/backend, `3` brak kredytów, `4` timeout. Scenariusz <2 h wymaga wolnego slotu
+w najbliższych 2 h — uruchom między 08:00 a 16:00 albo dodaj `--skip-scenario3`.
