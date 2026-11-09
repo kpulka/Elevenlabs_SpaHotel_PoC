@@ -608,11 +608,11 @@ def test_every_catalogue_entry_has_price_and_duration():
     for usluga in main.USLUGI:
         assert usluga.cena_pln > 0, f"{usluga.kod} bez ceny"
         assert usluga.czas_min > 0, f"{usluga.kod} bez czasu trwania"
-        assert usluga.zrodlo_ceny in {"baza_wiedzy", "strona_www"}, usluga.kod
+        assert usluga.zrodlo_ceny == "baza_wiedzy", usluga.kod
 
 
 def test_catalogue_prices_are_the_knowledge_base_values():
-    """Ceny kanoniczne = baza wiedzy agenta (80/120/100/70/160), nie strona (65/70/45/90/30)."""
+    """Ceny kanoniczne = baza wiedzy agenta (80/120/100/70/160/30); strona generuje je z backendu."""
     cennik = {usluga.kod: (usluga.cena_pln, usluga.czas_min) for usluga in main.USLUGI}
     assert cennik["kapiel_siarczkowa"] == (80, 20)
     assert cennik["masaz_leczniczy"] == (120, 30)

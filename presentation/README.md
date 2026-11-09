@@ -16,6 +16,8 @@ python presentation/generate_deck.py
 
 Uwaga: skrypt odtwarza wyłącznie deck PL — wersja `_EN.pptx` i oba HTML-e nie mają generatora w repo, więc zmiany w nich wprowadzaj ręcznie.
 
+> **Stan plików `.pptx` (2026-11):** oba binaries powstały **przed** korektą faktów z listopada (ówczesny deck mówił „4 webhooki", port 8000 i `transfer_to_number`). Źródła (`prezentacja.html`, `presentation_en.html`, `deck_spec*.json`, `generate_deck.py`) są już poprawione, ale **PPTX-y nie zostały przegenerowane** — jeśli pokazujesz PowerPointa, uruchom `python presentation/generate_deck.py` (PL), a EN popraw ręcznie albo generuj z `presentation_en.html`. HTML-e są aktualne i to one są rekomendowane na rozmowę.
+
 **Pliki `.md`** to materiał wejściowy i przygotowanie do rozmów, w kolejności procesu: `00_brief_prezentacja.md` (co ma osiągnąć deck), `01_diagram_architektury.md` + `01_architecture_diagrams_en.md` (diagramy Mermaid), `02/03/04` (tok myślenia V1, narracja demo, outline slajdów), `05/06/09` (materiały V2: pytania, Excalidraw, przygotowanie do Hiring Managera), `07` (UX), `08` (wytyczne UI strony hotelu).
 
 **`assets/`** — zrzuty żywego demo (`anna_live_homepage.png`, `anna_live_spa.png`, `anna_widget_*.jpg`) trafiają na slajdy produktowe; `diagram_architecture.png`, `diagram_multihotel.png`, `enterprise_security.png` na slajdy architektury/bezpieczeństwa; `persona_zofia.png` na slajd persony; `webhook_responses.json` to surowe odpowiedzi mock backendu użyte w przykładach.

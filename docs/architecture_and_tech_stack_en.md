@@ -170,8 +170,8 @@ flowchart TB
 - **7 Client Tools** (+ built-in `end_call`; there is no `transfer_to_human` tool, and `transfer_to_number` is not wired — no telephony in the PoC):
   1. `check_spa_availability(service_name, date)` → Queries real-time slot calendar in PMS.
   2. `book_spa_appointment(service_name, date, time, guest_name)` → Locks slot, creates folio, returns `SPA-XXXX`.
-  3. `cancel_spa_appointment(appointment_id, appointment_datetime, reason)` → Cancels a treatment; free >2h before, 50% fee <2h, waived with medical exemption.
-  4. `reschedule_spa_appointment(appointment_id, new_date, new_time)` → Moves a treatment free of charge and returns a new `SPA-XXXX`.
+  3. `cancel_spa_appointment(confirmation_id, appointment_datetime, reason, medical_release, language)` → Cancels a treatment; free >2h before, 50% fee <2h, waived with medical exemption.
+  4. `reschedule_spa_appointment(confirmation_id, service_name, new_date, new_time, guest_name, language)` → Moves a treatment free of charge and returns a new `SPA-XXXX`.
   5. `check_room_availability(room_type, check_in, check_out)` → Checks room inventory and total pricing.
   6. `send_sms_summary(phone_number, summary_text, id, language)` → Dispatches SMS/Telegram confirmation.
   7. `transfer_to_simulated_handoff(department, reason, language)` → Simulated human handoff (log + optional Telegram alert).

@@ -1,6 +1,6 @@
 {
   "_comment": "Seed kalendarza SPA dla Uzdrowiska Bukowy Dwór. Wczytywany przez aplikację przy starcie (catalog.py) jako JEDYNE źródło listy zabiegów, aliasów, godzin, CEN i CZASÓW. Plik NIE jest nadpisywany przez backend — stan rezerwacji żyje tylko w pamięci procesu.",
-  "_ceny_zrodlo": "Ceny i czasy pochodzą z bazy wiedzy agenta (docs/baza_wiedzy_rag_bukowy_dwor/02_katalog_zabiegow_spa_i_zdrowie.md) — to wartości, które Anna wypowiada na głos, więc są kanoniczne. Wyjątek: gimnastyka_lecznicza nie występuje w bazie wiedzy, więc jej cena/czas pochodzą ze strony marketingowej (frontend/lib/hotel-data.ts: 30 PLN / 45 min). Pole zrodlo_ceny mówi wprost, skąd wzięły się liczby.",
+  "_ceny_zrodlo": "Ceny i czasy pochodzą z bazy wiedzy agenta (docs/baza_wiedzy_rag_bukowy_dwor/02_katalog_zabiegow_spa_i_zdrowie.md) — to wartości, które Anna wypowiada na głos, więc są kanoniczne. Gimnastyka_lecznicza (30 PLN / 45 min) również jest w bazie wiedzy (sekcja 6), więc strona marketingowa nie jest źródłem żadnej ceny — generuje je stąd przez frontend/scripts/sync-data.mjs. Pole zrodlo_ceny mówi wprost, skąd wzięły się liczby.",
   "_baseny": "Basen termalny 32°C i basen solankowy 34°C to UDOGODNIENIA strefy basenowej (wstęp w cenie pobytu), a nie zabiegi do rezerwacji — dlatego nie ma ich w 'zabiegi' i agent nie może ich zarezerwować.",
   "horyzont_dni": 14,
   "sloty_domyslne": ["10:00", "11:00", "14:00", "14:30", "15:00", "16:00"],
@@ -73,7 +73,7 @@
       ],
       "price_pln": 30,
       "duration_min": 45,
-      "zrodlo_ceny": "strona_www"
+      "zrodlo_ceny": "baza_wiedzy"
     }
   ]
 }

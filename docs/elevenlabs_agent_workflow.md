@@ -75,7 +75,7 @@ flowchart TD
         SPA_TRIAGE -->|"Brak przeciwwskazań (Bezpiecznie)"| SPA_DATE_TIME
         
         %% Wywołanie narzędzia dostępności
-        SPA_DATE_TIME --> SPA_CALL_AVAIL[["🔧 TOOL: check_spa_availability\n(service_name, date)"]]:::toolNode
+        SPA_DATE_TIME --> SPA_CALL_AVAIL[["🔧 TOOL: check_spa_availability\n(service_name, date, language)"]]:::toolNode
         SPA_CALL_AVAIL --> SPA_AVAIL_RES{"Dostępne sloty w PMS?"}:::routerNode
         
         SPA_AVAIL_RES -->|"Brak wolnych miejsc"| SPA_NO_SLOTS["Zaproponowanie innego dnia lub godziny"]:::stateNode
@@ -89,9 +89,9 @@ flowchart TD
         SPA_PARAPHRASE --> SPA_CONFIRM_CHECK{"Zgoda gościa?"}:::routerNode
         
         SPA_CONFIRM_CHECK -->|"Poprawka / Zmiana"| SPA_DATE_TIME
-        SPA_CONFIRM_CHECK -->|"TAK, potwierdzam"| SPA_BOOK_EXEC[["🔧 TOOL: book_spa_appointment\n(service_name, date, time, guest_name)"]]:::toolNode
+        SPA_CONFIRM_CHECK -->|"TAK, potwierdzam"| SPA_BOOK_EXEC[["🔧 TOOL: book_spa_appointment\n(service_name, date, time, guest_name, language)"]]:::toolNode
         
-        SPA_BOOK_EXEC --> SPA_SEND_SMS[["🔧 TOOL: send_sms_summary\n(phone, summary, confirmation_id)"]]:::toolNode
+        SPA_BOOK_EXEC --> SPA_SEND_SMS[["🔧 TOOL: send_sms_summary\n(phone, summary, confirmation_id, language)"]]:::toolNode
         SPA_SEND_SMS --> SPA_SUCCESS["🗣️ Potwierdzenie z kodem rezerwacji:\n'Zarezerwowane! Numer: SPA-4821. Wysłałam potwierdzenie SMS.'"]:::stateNode
     end
 
@@ -100,7 +100,7 @@ flowchart TD
     %% ==========================================
     subgraph SUB_ROOMS ["🛏️ MODUŁ REZERWACJI POKOI"]
         ROOM_INTENT --> ROOM_PARAMS["Zebranie wymagań:\n(termin check-in/out, liczba osób, typ pokoju)"]:::stateNode
-        ROOM_PARAMS --> ROOM_AVAIL_EXEC[["🔧 TOOL: check_room_availability\n(room_type, check_in, check_out)"]]:::toolNode
+        ROOM_PARAMS --> ROOM_AVAIL_EXEC[["🔧 TOOL: check_room_availability\n(room_type, check_in, check_out, language)"]]:::toolNode
         
         ROOM_AVAIL_EXEC --> ROOM_RES{"Dostępność w terminie?"}:::routerNode
         ROOM_RES -->|"Brak miejsc"| ROOM_NO_AVAIL["Propozycja innego terminu lub pokoju"]:::stateNode
@@ -116,7 +116,7 @@ flowchart TD
     %% 5. SUBSYSTEM BAZA WIEDZY RAG
     %% ==========================================
     subgraph SUB_RAG ["📚 BAZA WIEDZY RAG (STRICT GROUNDING)"]
-        RAG_INTENT --> RAG_SEARCH["🔍 Semantic Search / RAG Lookup:\n• 01_dojazd.md (parking, meleks)\n• 04_restauracja.md (diety, godziny posiłków)\n• 05_procedury.md (pakiety, opłata uzdrowiskowa)"]:::ragNode
+        RAG_INTENT --> RAG_SEARCH["🔍 Semantic Search / RAG Lookup:\n• 01_informacje_ogolne_i_dojazd.md (parking, meleks)\n• 04_restauracja_i_diety.md (diety, godziny posiłków)\n• 05_procedury_i_polityki.md (polityka anulacji, zadatek)"]:::ragNode
         RAG_SEARCH --> RAG_EVAL{"Czy informacja istnieje w bazie?"}:::routerNode
         
         RAG_EVAL -->|"TAK — precyzyjna odpowiedź"| RAG_ANSWER["🗣️ Spokojna, rzeczowa odpowiedź gościowi"]:::ragNode
