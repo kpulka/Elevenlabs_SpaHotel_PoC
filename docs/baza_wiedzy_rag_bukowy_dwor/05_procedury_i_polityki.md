@@ -1,8 +1,10 @@
 # Procedury, Zmiany i Komunikacja SMS
 
 ## Polityka Anulacji i Zmian Terminów
-- **Anulacja do 14 dni przed przyjazdem:** Zwrot 100% zadatku.
-- **Anulacja poniżej 14 dni:** Zadatek przypada, chyba że anulacja wynika z nagłego pobytu w szpitalu (wymagane oświadczenie/wypis - agent powinien o tym informować z empatią, proponując przeniesienie terminu zamiast anulacji).
+- **Anulacja powyżej 14 dni przed przyjazdem:** Zwrot 100% zadatku LUB bezterminowy voucher na pobyt o wartości 110% zadatku.
+- **Anulacja 7–14 dni przed przyjazdem:** Zwrot 50% zadatku LUB voucher na 100% wartości do wykorzystania w ciągu 12 miesięcy.
+- **Anulacja poniżej 7 dni:** Zadatek przepada.
+- **Wyjątek medyczny:** nagły pobyt w szpitalu lub zwolnienie lekarskie (wymagane zaświadczenie na recepcja@bukowydwor.pl) — pełen zwrot. Agent powinien o tym informować z empatią, proponując przeniesienie terminu zamiast anulacji.
 - **Zmiana terminu:** Pierwsza zmiana terminu na inny (w ciągu 6 miesięcy) jest bezpłatna, niezależnie od momentu zgłoszenia.
 
 ## Komunikacja SMS (Asystent Pobytu)

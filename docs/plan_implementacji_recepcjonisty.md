@@ -154,11 +154,11 @@ Podczas prezentacji dane będą zamockowane, ale proces wywołań w tle będzie 
   "parameters": {
     "type": "object",
     "properties": {
-      "appointment_id": { "type": "string", "description": "Kod rezerwacji SPA-XXXX." },
+      "confirmation_id": { "type": "string", "description": "Kod rezerwacji SPA-XXXX." },
       "appointment_datetime": { "type": "string", "description": "Termin zabiegu ISO 8601 z godziną, np. 2026-11-09T18:30." },
       "reason": { "type": "string", "description": "Powód anulowania." }
     },
-    "required": ["appointment_id", "reason"]
+    "required": ["confirmation_id", "reason"]
   }
 }
 ```
@@ -173,11 +173,11 @@ Podczas prezentacji dane będą zamockowane, ale proces wywołań w tle będzie 
   "parameters": {
     "type": "object",
     "properties": {
-      "appointment_id": { "type": "string", "description": "Kod rezerwacji SPA-XXXX." },
+      "confirmation_id": { "type": "string", "description": "Kod rezerwacji SPA-XXXX." },
       "new_date": { "type": "string", "description": "YYYY-MM-DD" },
       "new_time": { "type": "string", "description": "HH:MM" }
     },
-    "required": ["appointment_id", "new_date", "new_time"]
+    "required": ["confirmation_id", "service_name", "new_date", "new_time"]
   }
 }
 ```

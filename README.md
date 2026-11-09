@@ -4,7 +4,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A working deployment case study for **ElevenLabs Conversational AI**: a Polish/English voice agent that
-takes calls and website chats for a thermal spa resort, books treatments, checks room availability,
+handles website voice conversations and chat for a thermal spa resort (telephony-ready), books treatments, checks room availability,
 cancels and reschedules appointments, sends confirmations, and hands the guest over to a human when it
 should.
 

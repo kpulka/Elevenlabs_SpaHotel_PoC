@@ -220,16 +220,13 @@ Wartości kanoniczne = **baza wiedzy agenta**
 (`docs/baza_wiedzy_rag_bukowy_dwor/02_katalog_zabiegow_spa_i_zdrowie.md`):
 80 / 120 / 100 / 70 / 160 PLN. To te liczby Anna wypowiada gościowi na głos —
 nie wolno ich zmieniać po cichu tylko dlatego, że inny plik podaje inne.
-Jedyny wyjątek: `gimnastyka_lecznicza` nie występuje w bazie wiedzy, więc jej
-30 PLN / 45 min pochodzi ze strony (`frontend/lib/hotel-data.ts`) i jest
-oznaczone jako `zrodlo_ceny: "strona_www"`.
+`gimnastyka_lecznicza` (30 PLN / 45 min) też jest w bazie wiedzy — doszła tam razem
+z porządkami 2026-11, więc wszystkie sześć pozycji ma `zrodlo_ceny: "baza_wiedzy"`.
 
-Pliki, które nadal wiozą **nieaktualne ceny** i muszą zostać przegenerowane
-z backendu (poza zakresem tego repo-backendu — nie ruszamy `frontend/`):
-`frontend/lib/hotel-data.ts` (`treatmentCopy`: 65 / 70 / 45 / 90 / 30 PLN,
-brak wpisu dla masażu klasycznego; czasy też się różnią: borowinowa 20 vs 25 min,
-jonoforeza 15 vs 20 min). Po zmianie ceny w seedzie trzeba je odtworzyć
-z `/` (sekcja `catalog.uslugi`) albo z `check_spa_availability`.
+Strona nie trzyma własnej kopii cen: `frontend/scripts/sync-data.mjs` generuje
+`frontend/lib/generated/hotel-facts.ts` z tego pliku i z `rooms.json`, a `pnpm data:check`
+(w CI) wywala build, jeśli wygenerowany plik rozjedzie się z backendem. Po zmianie ceny
+w seedzie wystarczy `pnpm data:sync`.
 
 ### Model zasobu dla slotów (świadome ograniczenie)
 

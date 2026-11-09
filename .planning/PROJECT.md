@@ -8,7 +8,7 @@ Dokonać wdrożenia żywego agenta „Anna" w ElevenLabs (PoC → wizja docelowa
 ## Punkt startowy (co już jest)
 - ✅ Dokumentacja ujednolicona: `docs/specyfikacja_recepcjonista_ai.md` (CO), `docs/plan_implementacji_recepcjonisty.md` (JAK), `docs/anna_system_prompt_v3.md` (prompt).
 - ✅ Baza wiedzy RAG: 5 plików `.md` (`docs/baza_wiedzy_rag_bukowy_dwor/`).
-- ✅ Mock backend: `mock_backend/` (FastAPI, 4 endpointy webhook + dane).
+- ✅ Mock backend: `mock_backend/` (FastAPI, 7 endpointów webhook + dane; stan bieżący — patrz `mock_backend/README.md`).
 - ✅ Materiały prezentacyjne: `presentation/` (brief, outline 14 slajdów, diagramy, narracja, V2).
 - ❌ Brak: żywy agent w ElevenLabs, tool calling, działające demo, gotowy deck.
 
@@ -38,7 +38,7 @@ Dokonać wdrożenia żywego agenta „Anna" w ElevenLabs (PoC → wizja docelowa
 - **MCP ElevenLabs** (Hersys toolset): `create_agent`, `add_knowledge_base_to_agent`, `get_agent`, `list_agents`, `list_models`, `search_voices`, `get_voice`.
   - ⚠️ MCP NIE obsługuje: tool-calling (webhooki), `turn_eagerness`, `speed`, trybów `usage_mode` KB → te elementy wymagają panelu ElevenLabs / pełnego API (patrz `docs/plan_implementacji_recepcjonisty.md` §8).
   - ⚠️ KB przyjmuje tylko `epub/pdf/docx/txt/html` → konwersja `.md → .txt`.
-- **Mock backend:** FastAPI na `localhost:8000`; tunel `ngrok` dla webhooków.
+- **Mock backend:** FastAPI na `localhost:8011`; tunel `cloudflared` (trycloudflare) dla webhooków.
 - **Środowisko wykonawcze:** Windows (Hermes CLI), ścieżki Windows.
 
 ## Konwencja wykonania (GSD)

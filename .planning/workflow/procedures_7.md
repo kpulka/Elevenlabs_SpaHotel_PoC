@@ -67,7 +67,7 @@ content: |
   6. Zapisz w uwagach do rezerwacji szacowaną godzinę przyjazdu (priorytet dla serwisu sprzątającego).
 
 ## 5. procedura_zgloszenia_diety_leczniczej
-trigger: "Gdy gość informuje o cukrzycy, celiakii, diecie lekkostrawnej, bezmlecznej lub ograniczeniu soli."
+trigger: "Gdy gość informuje o cukrzycy, diecie lekkostrawnej albo diecie bezglutenowej i bezmlecznej."
 type: free_form
 content: |
   1. Zapytaj o dokładny rodzaj diety i ewentualne alergie pokarmowe.
@@ -83,7 +83,7 @@ content: |
   1. Ustal godzinę przyjazdu pociągu/autobusu na stację Krynica-Zdrój oraz numer połączenia/przewoźnika.
   2. Zapytaj o liczbę osób, bagaży oraz ewentualne wózki inwalidzkie lub balkoniki rehabilitacyjne.
   3. Poinformuj, że transfer hotelowym busem/meleksem jest bezpłatny dla wszystkich gości uzdrowiska.
-  4. Wygeneruj zlecenie transferu dla kierowcy (wywołaj [tool id="tool_6001m0ntyt8xefgsx1e8mcqnsw1n"] z department="recepcja").
+  4. Przekaż zgłoszenie do recepcji, żeby recepcja zamówiła meleks (wywołaj [tool id="tool_6001m0ntyt8xefgsx1e8mcqnsw1n"] z department="recepcja"; to alert, nie połączenie telefoniczne).
   5. Wyślij SMS z potwierdzeniem i numerem kontaktowym do dyżurnego kierowcy przez [tool id="tool_8101m0ncs38xe6tb29923tjt9045"].
 
 ## 7. procedura_reklamacji_i_trudnego_goscia

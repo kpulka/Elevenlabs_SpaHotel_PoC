@@ -34,7 +34,7 @@ Status faz oceniam po tym, czy **artefakt istnieje w repo** — nie po checkboxa
 | phase-F9 test E2E procedur | F Procedury | ? | brak logu symulacji/live |
 | phase-F10 dokumentacja | F Procedury | done | porządki dokumentacji 2026-11 (`docs/INDEX.md`) |
 | phase-G1 diagnoza awarii | G Stabilizacja | done | opis w pliku fazy (webhooki nieaktywne) |
-| phase-G2 naprawa port/tunel | G Stabilizacja | done | `tunnel/state.json` — port 8011, podman, tunel |
+| phase-G2 naprawa port/tunel | G Stabilizacja | done | `mock_backend/tunnel/podman_start.sh` (port 8011; `state.json` jest lokalny, poza repo) |
 | phase-G3 skrypt startowy | G Stabilizacja | done | `mock_backend/tunnel/start_anna.sh` |
-| phase-G4 autostart | G Stabilizacja | done | `mock_backend/tunnel/autostart.log` |
+| phase-G4 autostart | G Stabilizacja | done | `mock_backend/tunnel/start_anna.sh` (log autostartu jest lokalny, poza repo) |
 | phase-H1/H2/H3 widget frontend | H Naprawa widgetu | done | `frontend/public/widget/convai-widget-embed.js` (self-host) |

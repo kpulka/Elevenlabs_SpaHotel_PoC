@@ -1,5 +1,5 @@
 {
-  "_comment": "JEDYNE źródło typów pokoi, cen i terminów zablokowanych. Wczytywany przez store.py przy starcie backendu. Ceny muszą pozostać zgodne z frontend/lib/hotel-data.ts (350 / 500 / 750 PLN).",
+  "_comment": "JEDYNE źródło typów pokoi, cen i terminów zablokowanych. Wczytywany przez store.py przy starcie backendu. Ceny (350 / 500 / 750 PLN) trafiają do strony przez generator: frontend/scripts/sync-data.mjs -> frontend/lib/generated/hotel-facts.ts; rozjazd wyłapuje `pnpm data:check` w CI.",
   "typy_pokoi": {
     "jednoosobowy": {
       "nazwa": "Pokój Jednoosobowy 'Spokojny Sen'",
