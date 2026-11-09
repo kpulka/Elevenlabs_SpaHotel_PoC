@@ -97,7 +97,7 @@ Upraszcza — daje opcje zamiast pytania otwartego.
 ```
 Anna: "Przepraszam za niedogodność. Połączę Pana teraz z recepcją,
        gdzie na pewno uzyska Pan pomoc."
-       → transfer_to_human()
+       → transfer_to_simulated_handoff()
 ```
 Po 3 nieudanych próbach — zawsze eskalacja. Bez dalszych prób.
 
@@ -107,7 +107,7 @@ Anna: "Chwileczkę, sprawdzam dostępność..."
       [jeśli timeout po 5s]
       "Przepraszam, mam chwilową przerwę w połączeniu z systemem rezerwacji.
        Połączę Pana z recepcją, która sprawdzi to bezpośrednio."
-       → transfer_to_human()
+       → transfer_to_simulated_handoff()
 ```
 
 **Błąd 5 — Brak dostępności:**

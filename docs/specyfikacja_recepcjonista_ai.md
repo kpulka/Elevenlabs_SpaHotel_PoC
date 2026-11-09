@@ -19,14 +19,14 @@
 System realizuje zadania recepcjonisty hotelowego w kanale głosowym. Na platformie ElevenLabs łączy:
 - natywny silnik konwersacyjny (**ElevenLabs Agents**) — STT + LLM orchestrator + TTS w jednej pętli konwersacyjnej,
 - bazę wiedzy (**RAG** — 5 plików Markdown),
-- narzędzia (**Tool Calling / Webhook**) do PMS/SPA/bramki SMS,
-- natywne przekierowanie połączeń (**Human Handoff**).
+- narzędzia (**Tool Calling / Webhook** — 7 narzędzi) do PMS/SPA/bramki SMS,
+- przekazanie do człowieka (**Human Handoff** — w PoC symulowane webhookiem; docelowo natywne SIP `transfer_to_number`).
 
 ### Stack modeli (szczegóły w planie implementacji §1.2)
 | Warstwa | Wybór |
 |---|---|
 | STT | Scribe v2 Realtime (~150 ms) |
-| LLM | GPT-4o Mini lub Gemini 2.5 Flash |
+| LLM | `gemini-3.5-flash-lite` (temperatura 0.1) |
 | TTS | Eleven v3 Conversational (~280 ms, wysoka ekspresja) |
 
 > Cel: zminimalizować latencję przy zachowaniu naturalnej, ciepłej barwy głosu — kluczowej dla seniorów.
@@ -81,7 +81,7 @@ Na potrzeby prezentacji agent płynnie obsłuży 3 ścieżki (dane z mockupów):
 
 **B. Informacyjna (RAG)** — gość pyta o godziny posiłków / czy basen wymaga czepka; agent odpowiada wyłącznie z bazy wiedzy.
 
-**C. Eskalacja (Human Handoff)** — nietypowa prośba / skarga / wymogi medyczne → agent rozpoznaje brak kompetencji i przekierowuje do „prawdziwej recepcji" (transfer do numeru).
+**C. Eskalacja (Human Handoff)** — nietypowa prośba / skarga / wymogi medyczne → agent rozpoznaje brak kompetencji i uruchamia `transfer_to_simulated_handoff` (symulowane przekazanie: log + alert Telegram; docelowo natywny transfer SIP).
 
 ---
 
@@ -93,9 +93,13 @@ Pełne schematy JSON — w planie implementacji §4. Lista spójna dla PoC i wer
 |---|---|---|
 | `check_spa_availability` | wolne godziny zabiegu SPA | Webhook (mock PMS) |
 | `book_spa_appointment` | zapis zabiegu SPA | Webhook (mock PMS) |
+| `cancel_spa_appointment` | anulowanie zabiegu (polityka 2 h; 50 % opłaty, 0 % przy zwolnieniu medycznym) | Webhook (mock PMS) |
+| `reschedule_spa_appointment` | zmiana terminu zabiegu (bezpłatna, nowy kod SPA) | Webhook (mock PMS) |
 | `check_room_availability` | wolne pokoje w terminie | Webhook (mock PMS) |
 | `send_sms_summary` | podsumowanie rezerwacji na telefon | Webhook (Telegram/WhatsApp PoC → Twilio Faza II) |
-| `transfer_to_human` | przekierowanie do recepcji/dyżurki | natywne `transfer_to_number` |
+| `transfer_to_simulated_handoff` | przekazanie do recepcji/dyżurki (symulowane) | Webhook (log + alert Telegram) |
+
+> Razem 7 narzędzi webhook + wbudowane `end_call`. Nie istnieje narzędzie `transfer_to_human`, a natywne `transfer_to_number` nie jest podpięte (brak telefonii/SIP w PoC).
 
 ---
 
@@ -109,7 +113,7 @@ Pięć plików Markdown (Bukowy Dwór). Przypisanie trybów (`usage_mode`):
 | `auto` (semantic search / RAG) | `01_informacje_ogolne_i_dojazd.md`, `02_katalog_zabiegow_spa_i_zdrowie.md`, `04_restauracja_i_diety.md` | obszerne opisy, wstrzykujemy tylko dopasowane fragmenty |
 
 ### Strict Grounding (eliminacja halucynacji)
-Agent odpowiada w 100% w oparciu o bazę wiedzy i wyniki narzędzi. Brak informacji → uprzejma odmowa + `transfer_to_human`. Nigdy nie wymyśla cen, terminów ani diet.
+Agent odpowiada w 100% w oparciu o bazę wiedzy i wyniki narzędzi. Brak informacji → uprzejma odmowa + `transfer_to_simulated_handoff` (handoff symulowany webhookiem; brak telefonii w PoC). Nigdy nie wymyśla cen, terminów ani diet.
 
 ---
 
@@ -156,7 +160,7 @@ Pełna tabela — plan implementacji §7.
 1. RAG z kompletną bazą wiedzy (5 plików, tryby `prompt`/`auto`).
 2. Narzędzia availability/booking na mockupach PMS.
 3. Rezerwacje wstępne + SMS (webhook Telegram/WhatsApp).
-4. Płynny transfer do żywego recepcjonisty (`transfer_to_number`).
+4. Przekazanie do człowieka: symulowany handoff webhookiem (`transfer_to_simulated_handoff`); natywny `transfer_to_number` — Faza II, po podpięciu telefonii.
 
 ### Faza II (rozszerzenie)
 1. Integracja z systemem rozliczeń medycznych i e-kartoteką SPA.

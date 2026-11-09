@@ -85,7 +85,7 @@
            ["book_spa_appointment", "Books appointment and generates confirmation code", "HTTPS POST Webhook → PMS Gateway"],
            ["check_room_availability", "Validates room inventory and calculates total stay price", "HTTPS POST Webhook → PMS Gateway"],
            ["send_sms_summary", "Dispatches SMS/Telegram summary with booking ID", "HTTPS POST Webhook → SMS Gateway"],
-           ["transfer_to_number", "Initiates warm transfer to front desk or medical nurse", "Native ElevenLabs SIP REFER"]
+           ["transfer_to_simulated_handoff", "Alerts front desk or medical nurse (webhook + Telegram)", "PoC: no SIP/telephony"]
          ]}
       ],
       "notes": "Explain how deterministic tool calling connects to existing hospitality software (PMS, CRM, Telco)."

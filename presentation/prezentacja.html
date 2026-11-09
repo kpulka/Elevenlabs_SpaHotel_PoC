@@ -346,7 +346,7 @@
           <div style="display: flex; flex-direction: column; gap: 1.2rem;">
             <div class="card">
               <h3>⚡ Zunifikowany Silnik (~430 ms)</h3>
-              <p>STT (Scribe v2) + LLM (GPT-4o Mini) + TTS (Eleven v3) w jednej pętli WebRTC/SIP, eliminując 2-sekundowe opóźnienia kaskady.</p>
+              <p>STT (Scribe v2) + LLM (Gemini 3.5 Flash Lite) + TTS (Eleven v3) w jednej pętli WebRTC/SIP, eliminując 2-sekundowe opóźnienia kaskady.</p>
             </div>
             <div class="card">
               <h3>📚 Strict Grounding (RAG)</h3>
@@ -416,7 +416,7 @@
       </div>
 
       <!-- SLIDE 7: Tools Table -->
-      <div class="slide theme-cream" data-notes="Zwróć uwagę, że transfer to human jest natywną funkcją ElevenLabs SIP, a nie skomplikowanym custom webhookiem.">
+      <div class="slide theme-cream" data-notes="Zwróć uwagę, że handoff do człowieka jest w PoC symulowany webhookiem (log + alert Telegram), bo nie ma telefonii/SIP — docelowo zastąpi go natywne SIP REFER.">
         <div>
           <div class="tag">TOOL CALLING & INTEGRACJE</div>
           <h2 class="slide-title">Anna nie tylko rozmawia — działa w systemie PMS</h2>
@@ -441,6 +441,16 @@
               <td>POST Webhook (FastAPI/PMS)</td>
             </tr>
             <tr>
+              <td><strong>cancel_spa_appointment</strong></td>
+              <td>Anulowanie zabiegu (bezpłatnie &gt;2 h, 50% opłaty &lt;2 h, 0% przy zwolnieniu medycznym)</td>
+              <td>POST Webhook (FastAPI/PMS)</td>
+            </tr>
+            <tr>
+              <td><strong>reschedule_spa_appointment</strong></td>
+              <td>Zmiana terminu zabiegu (bezpłatna, nowy kod SPA)</td>
+              <td>POST Webhook (FastAPI/PMS)</td>
+            </tr>
+            <tr>
               <td><strong>check_room_availability</strong></td>
               <td>Sprawdzenie terminów pokoi i kalkulacja ceny pobytu</td>
               <td>POST Webhook (FastAPI/PMS)</td>
@@ -451,16 +461,16 @@
               <td>POST Webhook (Bramka SMS)</td>
             </tr>
             <tr>
-              <td><strong>transfer_to_number</strong></td>
-              <td>Przełączenie na numer telefonu żywego recepcjonisty</td>
-              <td>Natywne ElevenLabs SIP</td>
+              <td><strong>transfer_to_simulated_handoff</strong></td>
+              <td>Przekazanie do recepcji / dyżurki medycznej (log + alert Telegram)</td>
+              <td>POST Webhook (handoff symulowany — brak SIP)</td>
             </tr>
           </tbody>
         </table>
       </div>
 
       <!-- SLIDE 8: Omnichannel -->
-      <div class="slide theme-navy" data-notes="Jeden agent w panelu ElevenLabs obsługuje zarówno połączenia telefoniczne, jak i widget na stronie.">
+      <div class="slide theme-navy" data-notes="W PoC agent działa jako widget webowy (brak telefonii). Kanał telefoniczny przez SIP Trunk to ścieżka docelowa — ten sam agent, ta sama konfiguracja.">
         <div>
           <div class="tag">OMNICHANNEL DEPLOYMENT</div>
           <h2 class="slide-title">Dwa kanały, jeden zunifikowany asystent</h2>
@@ -469,8 +479,8 @@
           <img src="assets/anna_widget_chips.jpg" alt="Widget z chipami" class="slide-img">
           <div style="display: flex; flex-direction: column; gap: 1.2rem;">
             <div class="card">
-              <h3>📞 Infolinia Telefoniczna (SIP Trunk)</h3>
-              <p>Odbiór 24/7, `turn_timeout: 3.0s`, parafrazowanie ustaleń przed rezerwacją, wysyłka SMS po zakończeniu połączenia.</p>
+              <h3>📞 Infolinia Telefoniczna (SIP Trunk) — ścieżka docelowa</h3>
+              <p>Ten sam agent i prompt po podpięciu SIP Trunk (Faza II — telefonii nie ma w PoC): odbiór 24/7, `turn_timeout: 3.0s`, parafrazowanie ustaleń przed rezerwacją, wysyłka SMS po zakończeniu połączenia.</p>
             </div>
             <div class="card">
               <h3>🌐 Widget Webowy na Stronie Hotelu</h3>
@@ -609,7 +619,7 @@
             <p style="font-size: 0.85rem; font-weight: 600; color: var(--muted);">OBECNIE (UKOŃCZONE)</p>
             <ul style="margin-left: 1.2rem; margin-top: 0.8rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
               <li>Baza wiedzy RAG (5 plików)</li>
-              <li>Mock backend (FastAPI, 4 webhooki)</li>
+              <li>Mock backend (FastAPI, 7 narzędzi webhook)</li>
               <li>Widget webowy z Quick Reply Chips</li>
               <li>Testy latencji i promptu</li>
             </ul>

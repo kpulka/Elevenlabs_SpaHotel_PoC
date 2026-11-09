@@ -61,7 +61,7 @@ Użyj tej struktury gdy dostaniesz otwarte pytanie:
 ## NARRACJA TECHNICZNA — jak wytłumaczyć architekturę nie-technikowi
 
 **Złe (za technicznie):**
-> „Używamy Scribe v2 Realtime z VAD i WebRTC transport layer, który feed-uje do GPT-4o Mini z RAG..."
+> „Używamy Scribe v2 Realtime z VAD i WebRTC transport layer, który feed-uje do Gemini 3.5 Flash Lite z RAG..."
 
 **Dobre (technika przez pryzmat wartości):**
 > „System działa tak: gość mówi, Anna słyszy go w czasie rzeczywistym — w ciągu 150 milisekund zamienia mowę na tekst. Potem myśli — sprawdza naszą bazę wiedzy o hotelu i wykonuje akcje jak sprawdzenie wolnych terminów. Na koniec mówi — w sposób naturalny, ciepły, specjalnie zwolniony dla starszych gości. Cały cykl trwa mniej niż pół sekundy. Dla gościa to brzmi jak normalna rozmowa z człowiekiem."

@@ -12,10 +12,10 @@ flowchart LR
 
     subgraph EL ["☁️ ElevenLabs Conversational AI (EU Cloud)"]
         STT["🎙️ STT Engine\nScribe v2 Realtime\n~150 ms"]
-        LLM["🧠 LLM Orchestrator\nGPT-4o Mini / Gemini 2.5\ntemp: 0.1 (Strict Grounding)"]
+        LLM["🧠 LLM Orchestrator\nGemini 3.5 Flash Lite\ntemp: 0.1 (Strict Grounding)"]
         TTS["🔊 TTS Engine\nEleven v3 Conversational\n~280 ms, 0.85x speed"]
         KB[("📚 Vector RAG Knowledge Base\n5 Curated Markdown Files")]
-        TOOLS["🔧 Tool Calling Engine\n4 HTTPS Webhooks"]
+        TOOLS["🔧 Tool Calling Engine\n7 HTTPS Webhooks"]
     end
 
     subgraph BACKEND ["🖥️ PMS & Telephony Gateway"]
@@ -23,7 +23,7 @@ flowchart LR
         SMS["📱 SMS & Messaging Gateway\nsend_sms_summary\n(Twilio / Telegram)"]
     end
 
-    HUMAN(["👤 On-Duty Human Staff\nFront Desk / Nurse Desk\nSIP REFER Transfer"])
+    HUMAN(["👤 On-Duty Human Staff\nFront Desk / Nurse Desk\nsimulated handoff (no SIP in PoC)"])
 
     CALLER -->|"Voice stream (Opus)"| STT
     STT -->|"Real-time text transcript"| LLM
@@ -99,8 +99,8 @@ flowchart TD
     CHECK -->|"YES — Missing RAG Info"| FRONTDESK["👤 Protocol B: Human Handoff\n1. Transparent explanation\n2. Warm transfer to Front Desk"]
     CHECK -->|"NO — Grounded In Knowledge Base"| SAFE["✅ Normal Conversational Flow\nDirect grounded response from curated KB"]
 
-    NURSE --> TRANSFER_NURSE[["🔧 transfer_to_number(+48 18 123 45 99)"]]
-    FRONTDESK --> TRANSFER_REC[["🔧 transfer_to_number(+48 18 123 45 67)"]]
+    NURSE --> TRANSFER_NURSE[["🔧 transfer_to_simulated_handoff(department='dyzurka_medyczna')"]]
+    FRONTDESK --> TRANSFER_REC[["🔧 transfer_to_simulated_handoff(department='recepcja')"]]
 ```
 
 ---
@@ -172,7 +172,7 @@ flowchart TB
         
         subgraph LOOP ["Unified Conversational Loop (~430ms)"]
             STT["🎙️ STT: Scribe v2 Realtime\n• Latency: ~150ms\n• Acoustic Model: pl-PL with VAD\n• Background Noise Suppression"]:::aiSub
-            ORCHESTRATOR["🧠 LLM Orchestrator & State Machine\n• Model: GPT-4o Mini / Gemini 2.5 Flash\n• Temp: 0.1 (Strict Grounding)\n• Dynamic Workflows & SOP Procedures"]:::aiCore
+            ORCHESTRATOR["🧠 LLM Orchestrator & State Machine\n• Model: Gemini 3.5 Flash Lite\n• Temp: 0.1 (Strict Grounding)\n• Dynamic Workflows & SOP Procedures"]:::aiCore
             TTS["🔊 TTS: Eleven v3 Conversational\n• Latency: ~280ms\n• Voice ID: Jessica (Warm/Calm)\n• Speed: 0.85x (Senior Acoustic Tuning)"]:::aiSub
             STT -->|"Real-time streaming text"| ORCHESTRATOR
             ORCHESTRATOR -->|"Streaming response tokens"| TTS
@@ -200,11 +200,14 @@ flowchart TB
         subgraph TOOLS ["Registered Tools"]
             T1["check_spa_availability"]:::webhookLayer
             T2["book_spa_appointment"]:::webhookLayer
+            T2B["cancel_spa_appointment"]:::webhookLayer
+            T2C["reschedule_spa_appointment"]:::webhookLayer
             T3["check_room_availability"]:::webhookLayer
             T4["send_sms_summary"]:::webhookLayer
-            T5["transfer_to_number"]:::webhookLayer
+            T5["transfer_to_simulated_handoff"]:::webhookLayer
         end
-        TOOL_ROUTER --> T1 & T2 & T3 & T4 & T5
+
+        TOOL_ROUTER --> T1 & T2 & T2B & T2C & T3 & T4 & T5
     end
 
     ORCHESTRATOR -->|"Tool invocation trigger (JSON Schema)"| TOOL_ROUTER
@@ -215,11 +218,11 @@ flowchart TB
         FASTAPI_GW["PMS Gateway: FastAPI Server\n• Uvicorn ASGI Server\n• Pydantic v2 Validation\n• ngrok / Cloudflare Tunnel"]:::backendLayer
         PMS_CORE["Hotel PMS / ERP Database\n(Opera Cloud / Mews / Protel)\n• Spa treatment schedules\n• Room inventory & folio management"]:::pmsLayer
         SMS_GW["Messaging & Notification Gateways\n• Twilio / SMSAPI REST API\n• Telegram Bot API"]:::backendLayer
-        HUMAN_ESC["Human Staff Escalation\n• Front Desk: +48 18 123 45 67\n• Nurse Station: +48 18 123 45 99\n(SIP REFER Transfer)"]:::pmsLayer
+        HUMAN_ESC["Human Staff Escalation\n• Front Desk: +48 18 123 45 67\n• Nurse Station: +48 18 123 45 99\n(simulated handoff in PoC)"]:::pmsLayer
     end
 
-    T1 & T2 & T3 & T4 -->|"HTTPS POST Webhooks"| FASTAPI_GW
+    T1 & T2 & T2B & T2C & T3 & T4 -->|"HTTPS POST Webhooks"| FASTAPI_GW
     FASTAPI_GW <-->|"SQL / REST API"| PMS_CORE
     FASTAPI_GW -->|"HTTP POST"| SMS_GW
-    T5 -->|"SIP REFER Handoff"| HUMAN_ESC
+    T5 -->|"HTTPS POST (simulated handoff)"| HUMAN_ESC
 ```

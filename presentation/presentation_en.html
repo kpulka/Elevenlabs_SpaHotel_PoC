@@ -458,6 +458,18 @@
               <td><code>service, date, time, guest</code></td>
             </tr>
             <tr>
+              <td><strong>cancel_spa_appointment</strong></td>
+              <td>Cancels a treatment (free &gt;2h, 50% fee &lt;2h, waived on medical release)</td>
+              <td>HTTPS POST Webhook</td>
+              <td><code>appointment_id, appointment_datetime, reason</code></td>
+            </tr>
+            <tr>
+              <td><strong>reschedule_spa_appointment</strong></td>
+              <td>Moves a treatment to a new slot (free, returns new booking code)</td>
+              <td>HTTPS POST Webhook</td>
+              <td><code>appointment_id, new_date, new_time</code></td>
+            </tr>
+            <tr>
               <td><strong>check_room_availability</strong></td>
               <td>Validates room inventory & calculates total stay price</td>
               <td>HTTPS POST Webhook</td>
@@ -467,13 +479,13 @@
               <td><strong>send_sms_summary</strong></td>
               <td>Dispatches SMS/Telegram summary with booking ID</td>
               <td>HTTPS POST Webhook</td>
-              <td><code>phone_number, summary, id</code></td>
+              <td><code>phone_number, summary, id, language</code></td>
             </tr>
             <tr>
-              <td><strong>transfer_to_number</strong></td>
-              <td>Initiates warm transfer to front desk or nurse</td>
-              <td>Native SIP REFER</td>
-              <td><code>destination_phone</code></td>
+              <td><strong>transfer_to_simulated_handoff</strong></td>
+              <td>Simulated handoff to front desk or nurse station (log + Telegram alert)</td>
+              <td>HTTPS POST Webhook (no SIP in PoC)</td>
+              <td><code>department, reason, language</code></td>
             </tr>
           </tbody>
         </table>
@@ -511,8 +523,9 @@
         <h2 class="slide-title">Two Channels, One Cohesive Voice</h2>
         <div class="grid-2">
           <div class="card">
-            <h3>Telephone (SIP PBX Channel)</h3>
+            <h3>Telephone (SIP PBX Channel) — target state</h3>
             <ul class="clean-list">
+              <li>Same agent & prompt once SIP Trunking is connected (Phase II — no telephony in the PoC).</li>
               <li>Direct SIP Trunking into hotel PBX system.</li>
               <li>24/7 pickup on +48 18 123 45 67.</li>
               <li>Turn timeout 3.0s & patient listening.</li>
@@ -530,7 +543,7 @@
           </div>
         </div>
         <div class="notes-content" style="display:none;">
-          Same AI agent brain serves both phone and web without duplicated configuration.
+          The plan is one agent configuration serving both phone and web; the PoC runs on the web widget only (no telephony connected yet).
         </div>
       </div>
 
@@ -639,7 +652,7 @@
             <p style="font-size:0.85rem; color:var(--muted); margin-bottom:0.5rem;">Live Now</p>
             <ul class="clean-list" style="font-size:0.85rem;">
               <li>RAG Knowledge Base (5 files)</li>
-              <li>Mock backend (FastAPI, 4 webhooks)</li>
+              <li>Mock backend (FastAPI, 7 tools (webhook))</li>
               <li>Web widget with Quick Reply Chips</li>
               <li>Acoustic & latency calibration</li>
             </ul>

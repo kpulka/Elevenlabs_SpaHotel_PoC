@@ -1,4 +1,4 @@
-> **Status:** aktualny (2026-11) — źródło prawdy dla audytu konfiguracji live (guardrails, flow, zalecenia).
+> **Status:** historyczny (2026-08) — zapis audytu konfiguracji live z sierpnia 2026. **Opisane niżej liczby i nazwy narzędzi (4 webhooki, stara nazwa narzędzia eskalacji, `max_duration 300 s`, model Gemini 2.0 Flash, `list_procedures=[]`) są nieaktualne** — bieżący stan podsumowuje addendum na końcu dokumentu oraz `.planning/AGENT_ID.txt`. Nie zmieniamy zapisu historycznego.
 
 # Audyt Agenta „Anna" — Guardrails, Flow i Usprawnienia (2026-08)
 
@@ -97,3 +97,17 @@ Funkcja procedures jest w **stanie early/beta**:
 - Gdy ElevenLabs doda "publish version" / procedures dojrzałe — wtedy warto ponownie zbadać i (jeśli możliwe) podpiąć modularne procedury (dają jasny, testowalny flow rezerwacji SPA, pokoju, anty-medyczny, decyzji o transferze). Treści są zachowane w historii tego audytu.
 - Nie używać `override_agent`/`phone_number` w workflow (brak telefonii dla tego PoC).
 - Dokument odniesienia (decyzja + badania): usunięto po cleanup, wnioski w sekcji 6 niniejszego audytu.
+
+---
+
+## 7. ADDENDUM — stan po 2026-11 (co się zmieniło od tego audytu)
+
+Powyższe sekcje 1–6 są zapisem historycznym (sierpień 2026). Stan bieżący, zweryfikowany na żywym agencie:
+
+- **Backend:** FastAPI ma **7 tras POST + 2 GET** (`/`, `/health`) na porcie **8011** (nie 8000); Swagger: `http://localhost:8011/docs`.
+- **Narzędzia:** **7 webhooków** (+ wbudowane `end_call`): `check_spa_availability`, `book_spa_appointment`, `cancel_spa_appointment`, `reschedule_spa_appointment`, `check_room_availability`, `send_sms_summary`, `transfer_to_simulated_handoff`. Narzędzie `transfer_to_human` nigdy nie istniało jako realne; `transfer_to_number` nie jest podpięte (brak telefonii/SIP) — handoff pozostaje symulowany.
+- **Procedury:** **7 procedur opublikowanych** (ID w `.planning/workflow/procedure_ids.json`), nie `list_procedures=[]` jak w sierpniu.
+- **`max_duration`:** **900 s** (podniesione z 300 s — postulat z sekcji 3 zrealizowany).
+- **LLM:** **`gemini-3.5-flash-lite`** (zastąpił wcześniejszy Gemini 2.0 Flash), temperatura 0.1.
+- **Workflow:** wdrożony graf **v3** — 3 węzły (`start` → `main_agent` → `end`), 2 krawędzie (`.planning/workflow/workflow_v3.json`).
+- **Prompt:** plik kanoniczny w repo to `docs/anna_system_prompt_v3.md`; **hosted prompt na żywo został wgrany osobnym krokiem i różni się długością** od pliku w repo — nie zakładać, że są identyczne.

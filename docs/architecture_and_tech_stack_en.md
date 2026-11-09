@@ -13,8 +13,8 @@ The system is built upon the **Cloud-Native Unified Conversational Loop** paradi
 The architecture spans 5 core layers:
 1. **Omnichannel Inbound Layer** — Telephony SIP Trunking (RFC 3261) and Web/Mobile WebRTC full-duplex audio.
 2. **Edge Security & Authorization Layer** — 15-min TTL Signed URLs, Zero Retention Mode (ZRM), and EU Data Residency.
-3. **ElevenLabs AI Core Engine** — Unified STT (Scribe v2), LLM Orchestrator (GPT-4o Mini / Gemini 2.5), Vector RAG, and Emotional TTS (Eleven v3 Conversational).
-4. **Tool Calling & Integration Layer** — Deterministic HTTPS POST Webhooks, JSON Schema parameter validation, and SIP REFER call handoff.
+3. **ElevenLabs AI Core Engine** — Unified STT (Scribe v2), LLM Orchestrator (**`gemini-3.5-flash-lite`**), Vector RAG, and Emotional TTS (Eleven v3 Conversational).
+4. **Tool Calling & Integration Layer** — 7 deterministic HTTPS POST Webhooks, JSON Schema parameter validation, and (target state) SIP REFER call handoff; in the PoC the handoff is a simulated webhook.
 5. **Hospitality Enterprise Systems** — Hotel PMS/ERP database (e.g., Opera Cloud, Mews, Protel, KWHotel), SMS dispatch gateways (Twilio / SMSAPI), and on-duty medical staff.
 
 ---
@@ -64,7 +64,7 @@ flowchart TB
         subgraph LOOP ["Unified Conversational Loop (~430ms)"]
             STT["🎙️ STT: Scribe v2 Realtime<br/>• Latency: ~150ms<br/>• Language: pl-PL with VAD<br/>• Noise Suppression & Voice Activity"]:::aiSub
             
-            ORCHESTRATOR["🧠 LLM Orchestrator & State Machine<br/>• Model: GPT-4o Mini / Gemini 2.5 Flash<br/>• Temp: 0.1 (Strict Grounding)<br/>• Workflows & SOP Procedures"]:::aiCore
+            ORCHESTRATOR["🧠 LLM Orchestrator & State Machine<br/>• Model: Gemini 3.5 Flash Lite<br/>• Temp: 0.1 (Strict Grounding)<br/>• Workflows & SOP Procedures"]:::aiCore
             
             TTS["🔊 TTS: Eleven v3 Conversational<br/>• Latency: ~280ms<br/>• Voice ID: Jessica (Warm/Calm)<br/>• Speed: 0.85x (Senior Acoustic Tuning)"]:::aiSub
             
@@ -94,16 +94,20 @@ flowchart TB
         direction TB
         TOOL_ROUTER["Tool Dispatcher - ElevenLabs Client Tools<br/>HTTPS POST with JSON Body + Bearer Token"]:::webhookLayer
         
-        subgraph TOOLS ["Registered Tools (Client Tools)"]
+        subgraph TOOLS ["Registered Tools (7 webhooks + end_call)"]
             T1["check_spa_availability"]:::webhookLayer
             T2["book_spa_appointment"]:::webhookLayer
+            T2B["cancel_spa_appointment"]:::webhookLayer
+            T2C["reschedule_spa_appointment"]:::webhookLayer
             T3["check_room_availability"]:::webhookLayer
             T4["send_sms_summary"]:::webhookLayer
-            T5["transfer_to_number"]:::webhookLayer
+            T5["transfer_to_simulated_handoff"]:::webhookLayer
         end
 
         TOOL_ROUTER --> T1
         TOOL_ROUTER --> T2
+        TOOL_ROUTER --> T2B
+        TOOL_ROUTER --> T2C
         TOOL_ROUTER --> T3
         TOOL_ROUTER --> T4
         TOOL_ROUTER --> T5
@@ -116,22 +120,24 @@ flowchart TB
     subgraph BACKEND ["🏨 5. HOSPITALITY BACKEND, PMS & COMMUNICATIONS"]
         direction TB
         
-        FASTAPI_GW["Gateway PoC: FastAPI mock_backend<br/>• Uvicorn ASGI Server<br/>• Pydantic v2 Validation<br/>• ngrok / Cloudflare Tunnel for HTTPS"]:::backendLayer
+        FASTAPI_GW["Gateway PoC: FastAPI mock_backend<br/>• Uvicorn ASGI Server, port 8011<br/>• 7 POST routes + 2 GET (/, /health)<br/>• Pydantic v2 Validation<br/>• ngrok / Cloudflare Tunnel for HTTPS"]:::backendLayer
         
         PMS_CORE["Hotel PMS / ERP Database<br/>(Opera Cloud / Mews / Protel / KWHotel)<br/>• Balneology treatment schedule<br/>• Room inventory & folio management"]:::pmsLayer
         
         SMS_GW["Messaging & Notification Gateway<br/>• Twilio / SMSAPI / Infobip REST API<br/>• Telegram Bot API"]:::backendLayer
         
-        HUMAN_ESC["Human Staff Escalation<br/>• Front Desk: +48 18 123 45 67<br/>• Nurse Station: +48 18 123 45 99<br/>(SIP REFER Native Transfer)"]:::pmsLayer
+        HUMAN_ESC["Human Staff Escalation<br/>• Front Desk: +48 18 123 45 67<br/>• Nurse Station: +48 18 123 45 99<br/>(SIP REFER target — PoC handoff is simulated)"]:::pmsLayer
     end
 
     T1 -->|"HTTPS POST Webhook"| FASTAPI_GW
     T2 -->|"HTTPS POST Webhook"| FASTAPI_GW
+    T2B -->|"HTTPS POST Webhook"| FASTAPI_GW
+    T2C -->|"HTTPS POST Webhook"| FASTAPI_GW
     T3 -->|"HTTPS POST Webhook"| FASTAPI_GW
     T4 -->|"HTTPS POST Webhook"| FASTAPI_GW
     FASTAPI_GW <-->|"SQL / REST API"| PMS_CORE
     FASTAPI_GW -->|"HTTP POST"| SMS_GW
-    T5 -->|"SIP REFER / Handoff"| HUMAN_ESC
+    T5 -->|"HTTPS POST (simulated handoff)"| HUMAN_ESC
 ```
 
 ---
@@ -151,22 +157,24 @@ flowchart TB
   ```http
   User-to-User: hotel_id=bukowy_dwor;ani=+48600111222;lang=pl-PL;encoding=hex
   ```
-- **Call Escalation:** Native `SIP REFER` executes warm transfers to physical receptionists or emergency medical staff without terminating the underlying trunk line.
+- **Call Escalation:** Target state is native `SIP REFER` warm transfers to receptionists or emergency medical staff without terminating the trunk line. **PoC state:** no telephony/SIP is connected (`transfer_to_number` not wired) — escalation is a simulated `transfer_to_simulated_handoff` webhook.
 
 ### C. ElevenLabs Conversational AI Engine
 - **Speech-to-Text (STT):** `Scribe v2 Realtime` (~150ms latency, Polish balneology vocabulary customization, robust noise suppression).
-- **LLM Reasoning:** `GPT-4o Mini` / `Gemini 2.5 Flash` (temperature 0.1, strict grounding system prompt, dynamic workflow state machines).
+- **LLM Reasoning:** **`gemini-3.5-flash-lite`** (temperature 0.1, strict grounding system prompt, published agent workflows + 7 procedures).
 - **Knowledge Base (RAG):** 5 Markdown files partitioned into `prompt` mode (critical safety rules & base pricing) and `auto` mode (semantic vector retrieval).
 - **Text-to-Speech (TTS):** `Eleven v3 Conversational` (~280ms latency, voice ID Jessica `cgSgspJ2msm6clMCkdW9`, pacing calibrated to 0.85x for senior cognitive comfort).
 
 ### D. Tool Calling & Webhook Connectors
 - **Communication:** Outbound HTTPS POST requests from ElevenLabs cloud with JSON payload and Bearer token / HMAC authentication.
-- **5 Client Tools:**
+- **7 Client Tools** (+ built-in `end_call`; there is no `transfer_to_human` tool, and `transfer_to_number` is not wired — no telephony in the PoC):
   1. `check_spa_availability(service_name, date)` → Queries real-time slot calendar in PMS.
   2. `book_spa_appointment(service_name, date, time, guest_name)` → Locks slot, creates folio, returns `SPA-XXXX`.
-  3. `check_room_availability(room_type, check_in, check_out)` → Checks room inventory and total pricing.
-  4. `send_sms_summary(phone_number, summary_text, id)` → Dispatches SMS/Telegram confirmation.
-  5. `transfer_to_number(phone_number)` → Initiates SIP transfer to human desk.
+  3. `cancel_spa_appointment(appointment_id, appointment_datetime, reason)` → Cancels a treatment; free >2h before, 50% fee <2h, waived with medical exemption.
+  4. `reschedule_spa_appointment(appointment_id, new_date, new_time)` → Moves a treatment free of charge and returns a new `SPA-XXXX`.
+  5. `check_room_availability(room_type, check_in, check_out)` → Checks room inventory and total pricing.
+  6. `send_sms_summary(phone_number, summary_text, id, language)` → Dispatches SMS/Telegram confirmation.
+  7. `transfer_to_simulated_handoff(department, reason, language)` → Simulated human handoff (log + optional Telegram alert).
 
 ### E. Enterprise Security & GDPR Compliance
 - **Zero Retention Mode (ZRM):** Audio streams are processed strictly in volatile RAM and destroyed upon session termination.

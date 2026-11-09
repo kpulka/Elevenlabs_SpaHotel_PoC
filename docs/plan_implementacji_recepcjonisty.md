@@ -17,7 +17,7 @@ Dla Fazy PoC oraz wdrożenia docelowego rezygnujemy z zewnętrznych potoków LLM
 
 ### 1.2. Dobór Modeli i Latencja
 *   **Speech-to-Text (STT):** **Scribe v2 Realtime** [cite: 81, 99]. Model o opóźnieniu transkrypcji mowy wynoszącym zaledwie ok. **150 ms** [cite: 81, 140], ze wsparciem dla języka polskiego i automatyczną detekcją aktywności głosowej (VAD) [cite: 283].
-*   **Language Model (LLM):** Zintegrowany model językowy w panelu ElevenLabs (np. GPT-4o Mini lub Gemini 2.5 Flash dla obniżenia kosztów operacyjnych) [cite: 166, 233, 234].
+*   **Language Model (LLM):** Zintegrowany model językowy w panelu ElevenLabs — wdrożony na agencie live: **`gemini-3.5-flash-lite`** (niska temperatura 0.1). Wcześniejsze warianty rozważane w planie (GPT-4o Mini / Gemini 2.5 Flash) nie są już aktualne [cite: 166, 233, 234].
 *   **Text-to-Speech (TTS):** **Eleven v3 Conversational** [cite: 47, 280]. Zastosowanie tego modelu zwiększa latencję syntezy mowy do ok. **280 ms** (w porównaniu do 75 ms modelu Flash) [cite: 140], jednak zapewnia **nieporównywalnie wyższą ekspresję emocjonalną, naturalną intonację i głębię tonu** [cite: 140, 280]. Jest to kluczowe dla budowania zaufania, ciepła i poczucia bezpieczeństwa u seniorów (60+) [cite: 12].
 
 ---
@@ -87,7 +87,7 @@ W celu całkowitej eliminacji halucynacji (np. wymyślania cen SPA czy wolnych t
 ```text
 ZASADY BEZWZGLĘDNE (STRICT GROUNDING):
 1. Twoje odpowiedzi muszą być w 100% oparte na dostarczonej Bazie Wiedzy oraz wynikach wywołań narzędzi.
-2. Jeśli gość pyta o ceny, pakiety, dostępność lub dojazd, a nie ma tych informacji w bazie wiedzy, odpowiedz dokładnie: „Przepraszam, ale nie mam w tej chwili dostępu do tych informacji. Połączę Państwa z Recepcją, gdzie otrzymają Państwo dokładną odpowiedź.” i natychmiast wywołaj narzędzie transfer_to_human.
+2. Jeśli gość pyta o ceny, pakiety, dostępność lub dojazd, a nie ma tych informacji w bazie wiedzy, odpowiedz dokładnie: „Przepraszam, ale nie mam w tej chwili dostępu do tych informacji. Połączę Państwa z Recepcją, gdzie otrzymają Państwo dokładną odpowiedź.” i natychmiast wywołaj narzędzie `transfer_to_simulated_handoff` (handoff symulowany — bez telefonii).
 3. Nigdy nie wymyślaj cen, terminów zabiegów, diet ani procedur. Uzdrowisko dba o zdrowie seniorów, więc informacje muszą być absolutnie precyzyjne.
 ```
 
@@ -144,7 +144,45 @@ Podczas prezentacji dane będą zamockowane, ale proces wywołań w tle będzie 
 }
 ```
 
-#### Narzędzie 3: `check_room_availability`
+#### Narzędzie 3: `cancel_spa_appointment`
+*   **Rola:** Anulowanie zabiegu z zastosowaniem polityki opłat (bezpłatnie >2 h, 50 % <2 h, 0 % przy zwolnieniu medycznym).
+*   **JSON Schema:**
+```json
+{
+  "name": "cancel_spa_appointment",
+  "description": "Anuluje rezerwację zabiegu SPA i zwraca naliczoną opłatę.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "appointment_id": { "type": "string", "description": "Kod rezerwacji SPA-XXXX." },
+      "appointment_datetime": { "type": "string", "description": "Termin zabiegu ISO 8601 z godziną, np. 2026-11-09T18:30." },
+      "reason": { "type": "string", "description": "Powód anulowania." }
+    },
+    "required": ["appointment_id", "reason"]
+  }
+}
+```
+
+#### Narzędzie 4: `reschedule_spa_appointment`
+*   **Rola:** Zmiana terminu zabiegu (bezpłatna, zwraca nowy kod SPA).
+*   **JSON Schema:**
+```json
+{
+  "name": "reschedule_spa_appointment",
+  "description": "Przenosi rezerwację zabiegu na nowy termin.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "appointment_id": { "type": "string", "description": "Kod rezerwacji SPA-XXXX." },
+      "new_date": { "type": "string", "description": "YYYY-MM-DD" },
+      "new_time": { "type": "string", "description": "HH:MM" }
+    },
+    "required": ["appointment_id", "new_date", "new_time"]
+  }
+}
+```
+
+#### Narzędzie 5: `check_room_availability`
 *   **Rola:** Odpytanie bazy PMS o wolne pokoje w wybranym okresie.
 *   **JSON Schema:**
 ```json
@@ -170,7 +208,7 @@ Aby wywrzeć spektakularne wrażenie podczas prezentacji („Wow effect”), nar
 
 Podczas rozmowy na żywo z agentem, w momencie gdy Anna powie „*Właśnie wysłałam Panu podsumowanie na telefon*” [cite: 13], na kanale Telegramu (np. wyświetlonym na drugim monitorze lub rzutniku) natychmiast pojawi się estetyczna wiadomość z rezerwacją!
 
-#### Narzędzie 4: `send_sms_summary` (implemented via Messenger Webhook)
+#### Narzędzie 6: `send_sms_summary` (implemented via Messenger Webhook)
 *   **JSON Schema:**
 ```json
 {
@@ -190,26 +228,28 @@ Podczas rozmowy na żywo z agentem, w momencie gdy Anna powie „*Właśnie wys�
 
 ---
 
-### 4.3. Human Handoff (Przekierowanie Połączenia Telefonicznego)
-Platforma ElevenLabs wspiera natywne przekazywanie aktywnego połączenia telefonicznego za pomocą systemowego narzędzia **`transfer_to_number`** [cite: 25, 28, 149].
+### 4.3. Human Handoff (Eskalacja do Człowieka)
+> **Stan faktyczny (2026-11):** platforma wspiera natywne `transfer_to_number` (SIP), ale **w tym wdrożeniu nie jest ono podpięte** — brak telefonii/SIP, agent działa jako widget webowy. Eskalacja realizowana jest webhookiem **`transfer_to_simulated_handoff`** (log zdarzenia + opcjonalny alert Telegram). Poniższy opis `transfer_to_number` pozostaje jako **plan docelowy (Faza II)**.
 
-*   **Implementacja PoC/Prezentacja:** Narzędzie zostanie skonfigurowane z Twoim prywatnym numerem komórkowym. W momencie eskalacji rozmowy (np. trudne pytania medyczne lub zgłoszenie złego samopoczucia) agent wypowie słowa: „*Łączę z dyżurnym fizjoterapeutą...*” i Twój telefon natychmiast zadzwoni, przejmując rozmowę na żywo!
-*   **JSON Schema narzędzia systemowego:**
+*   **Implementacja PoC/Zrealizowana:** narzędzie webhook `transfer_to_simulated_handoff`, wywoływane z `department` (`recepcja` | `dyzurka_medyczna`) i `reason`. Agent wypowiada formułę eskalacyjną, a zdarzenie trafia do backendu (i opcjonalnie na Telegram).
+*   **Plan docelowy (Faza II, nieaktywny):** natywne narzędzie systemowe `transfer_to_number`, skonfigurowane z numerem recepcji / dyżurki medycznej, przejmujące połączenie telefoniczne na żywo.
+*   **JSON Schema narzędzia webhook (stan bieżący):**
 ```json
 {
-  "name": "transfer_to_human",
-  "description": "Natywne przekierowanie połączenia na zdefiniowany numer recepcji lub dyżurki medycznej.",
+  "name": "transfer_to_simulated_handoff",
+  "description": "Symulowane przekazanie rozmowy do recepcji lub dyżurki medycznej (log + alert).",
   "parameters": {
     "type": "object",
     "properties": {
       "department": { "type": "string", "enum": ["recepcja", "dyzurka_medyczna"] },
-      "reason": { "type": "string", "description": "Powód przekazania rozmowy." }
+      "reason": { "type": "string", "description": "Powód przekazania rozmowy." },
+      "language": { "type": "string", "enum": ["pl", "en"], "description": "Język gościa." }
     },
     "required": ["department", "reason"]
   }
 }
 ```
-*   **Logika routingu (Faza II):** 
+*   **Logika routingu (Faza II, po podpięciu telefonii):**
     *   Jeśli `department == "recepcja"` -> przekierowanie na numer główny PBX hotelu [cite: 8].
     *   Jeśli `department == "dyzurka_medyczna"` -> przekierowanie na dedykowaną linię medyczną / dyżurkę pielęgniarską [cite: 7].
 
@@ -298,9 +338,9 @@ Podczas prezentacji dla Hiring Managera należy wytłumaczyć, w jaki sposób El
 * **Ograniczenie:** podział na tryby `prompt` vs `auto` (`usage_mode`) NIE jest dostępny w MCP — ustaw w panelu ElevenLabs (Knowledge Base → tryb per plik), jeśli jest wymagany.
 
 ### 8.3. Co wymaga panelu ElevenLabs / pełnego API (poza MCP)
-* **Tool calling (4 webhooki + `transfer_to_number`):** zarejestruj narzędzia z JSON Schema (§4) ręcznie w panelu agenta → sekcja Tools. Webhook URL: `http://localhost:8000/{endpoint}` (PoC lokalny) lub publiczny adres z ngrok — patrz `mock_backend/README.md`.
-* **`turn_eagerness: Patient`:** ustaw w panelu (Conversation → Turn-taking); brak tego parametru w MCP.
-* **`speed: 0.85`:** ustaw w sekcji głosu agenta w panelu (brak w MCP).
+* **Tool calling (7 narzędzi webhook + `end_call`):** zarejestruj narzędzia z JSON Schema (§4) w panelu agenta lub przez API → sekcja Tools. Webhook URL: `http://localhost:8011/{endpoint}` (PoC lokalny) lub publiczny adres tunelu — patrz `mock_backend/README.md`. Stan bieżący: wszystkie 7 narzędzi jest już zarejestrowanych i podpiętych do agenta.
+* **`turn_eagerness: Patient`:** ustawione w panelu (Conversation → Turn-taking) — stan bieżący `patient`.
+* **`speed: 0.85`:** ustawione w sekcji głosu agenta — stan bieżący `0.85`.
 * **Słownik wymowy (PLS, §2.3):** podłącz w panelu (nie w MCP).
 
 ### 8.4. Kolejność realizacji
@@ -308,4 +348,4 @@ Podczas prezentacji dla Hiring Managera należy wytłumaczyć, w jaki sposób El
 2. MCP `create_agent` (głos, system prompt, parametry akustyczne).
 3. MCP `add_knowledge_base_to_agent` (5 plików txt).
 4. Panel / API: tool calling + `turn_eagerness` + `speed` + PLS.
-5. Uruchom mock backend (`uvicorn main:app --port 8000`) + ngrok dla webhooków.
+5. Uruchom mock backend (`uvicorn main:app --port 8011`) + tunel (cloudflared/ngrok) dla webhooków.

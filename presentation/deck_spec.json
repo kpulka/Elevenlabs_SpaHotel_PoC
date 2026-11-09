@@ -85,7 +85,7 @@
            ["book_spa_appointment", "Rezerwuje zabieg", "Webhook → mock PMS"],
            ["check_room_availability", "Sprawdza dostępność pokoi", "Webhook → mock PMS"],
            ["send_sms_summary", "Wysyła potwierdzenie SMS/Telegram", "Webhook → bramka"],
-           ["transfer_to_number", "Przekazuje do recepcji", "Natywne ElevenLabs"]
+           ["transfer_to_simulated_handoff", "Przekazuje do recepcji (webhook + alert Telegram)", "PoC: brak telefonii/SIP"]
          ]}
       ],
       "notes": "Webhooki trafiają do backendu który symuluje PMS na PoC."
