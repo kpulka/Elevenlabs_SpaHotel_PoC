@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Anna — Wirtualny Recepcjonista AI | Bukowy Dwór case study</title>
+<meta name="description" content="Case study ElevenLabs Conversational AI: wirtualny recepcjonista dla uzdrowiska. Deck PL i EN.">
+<style>
+  :root { --navy:#1B2A4A; --gold:#C9A84C; --cream:#F5F0E8; --charcoal:#2C2C2C; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--cream); color: var(--charcoal);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    display: flex; align-items: center; justify-content: center; padding: 32px 20px;
+  }
+  main { max-width: 880px; width: 100%; }
+  .eyebrow { letter-spacing: .22em; text-transform: uppercase; font-size: 12px; font-weight: 700; color: var(--gold); margin: 0 0 14px; }
+  h1 { font-family: Georgia, "Times New Roman", serif; font-size: clamp(28px, 4vw, 44px); line-height: 1.15; color: var(--navy); margin: 0 0 14px; }
+  .lead { font-size: 17px; line-height: 1.6; margin: 0 0 10px; max-width: 62ch; }
+  .lead.en { color: #55606f; font-size: 15px; }
+  .cards { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); margin: 32px 0 28px; }
+  a.card {
+    display: block; text-decoration: none; background: #fff; border: 1px solid rgba(27,42,74,.12);
+    border-top: 4px solid var(--gold); border-radius: 10px; padding: 22px 22px 20px;
+    box-shadow: 0 8px 24px rgba(27,42,74,.07); transition: transform .15s ease, box-shadow .15s ease;
+  }
+  a.card:hover, a.card:focus-visible { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(27,42,74,.13); }
+  .card .lang { font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); }
+  .card h2 { font-family: Georgia, "Times New Roman", serif; font-size: 20px; color: var(--navy); margin: 8px 0 6px; }
+  .card p { margin: 0; font-size: 14px; line-height: 1.55; color: #4a5464; }
+  footer { font-size: 13px; line-height: 1.7; color: #5d6675; border-top: 1px solid rgba(27,42,74,.12); padding-top: 18px; }
+  footer a { color: var(--navy); }
+</style>
+</head>
+<body>
+<main>
+  <p class="eyebrow">ElevenLabs Deployment Strategist — case study</p>
+  <h1>Anna — wirtualny recepcjonista AI dla uzdrowiska Bukowy Dwór</h1>
+  <p class="lead">Kompletne wdrożenie: agent głosowy PL/EN, 7 procedur, kontrakt narzędzi, mock backend PMS, strona hotelu z widgetem i CI, które tego pilnuje.</p>
+  <p class="lead en">A full delivery: the agent, the operational procedures, the tool contract, a mock PMS backend, the marketing site the agent lives on, and the CI that guards all of it.</p>
+
+  <div class="cards">
+    <a class="card" href="prezentacja.html">
+      <span class="lang">Polski</span>
+      <h2>Prezentacja case study</h2>
+      <p>14 slajdów: problem, architektura, procedury, koszty, bezpieczeństwo. Otwiera się w przeglądarce, bez zależności.</p>
+    </a>
+    <a class="card" href="presentation_en.html">
+      <span class="lang">English</span>
+      <h2>Case study deck</h2>
+      <p>The same 14 slides in English, for an international reviewer.</p>
+    </a>
+  </div>
+
+  <footer>
+    Wersje <strong>PPTX</strong> do edycji: <a href="https://github.com/kpulka/Elevenlabs_SpaHotel_PoC/releases/tag/v1.0.0">GitHub Release v1.0.0</a>.
+    Kod, dokumentacja i stan wdrożenia: <a href="https://github.com/kpulka/Elevenlabs_SpaHotel_PoC">repozytorium</a>
+    (punkt wejścia: <code>docs/INDEX.md</code>).
+  </footer>
+</main>
+</body>
+</html>
