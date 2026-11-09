@@ -3,7 +3,7 @@
 Ten katalog **nie jest dokumentacją produktu** (ta żyje w `docs/`, punkt wejścia: `docs/INDEX.md`). To warsztat: plan, fazy, artefakty wdrożenia i dowody, że coś zostało zrobione.
 
 - `PROJECT.md` — kontekst i zasady projektu: co budujemy, jakie decyzje zapadły, czego nie robimy.
-- `ROADMAP.md` — fazy i epiki (A–H) z kryteriami DoD. Nadrzędny plan wykonania.
+- `ROADMAP.md` — fazy i epiki (A–K) z kryteriami DoD. Nadrzędny plan wykonania.
 - `phases/` — po jednym pliku na fazę: samowystarczalny brief z komendami, parametrami MCP i gotowymi JSON-ami. To zapis historyczny — nie aktualizujemy treści, tylko odwołania do plików.
 - `workflow/` — faktyczny stan wysłany do ElevenLabs: `workflow_v1/v2/v3.json` (kolejne iteracje grafu), `procedure_ids.json` (7 procedur z ID z API), `procedures_7.md` (treść procedur w formacie API), `new_tools.json`.
 - `AGENT_ID.txt` — realne parametry żywego agenta (`agent_8401m0n03cggfgebhfh0cj96t7aj`): głos, LLM, TTS.
@@ -38,3 +38,9 @@ Status faz oceniam po tym, czy **artefakt istnieje w repo** — nie po checkboxa
 | phase-G3 skrypt startowy | G Stabilizacja | done | `mock_backend/tunnel/start_anna.sh` |
 | phase-G4 autostart | G Stabilizacja | done | `mock_backend/tunnel/start_anna.sh` (log autostartu jest lokalny, poza repo) |
 | phase-H1/H2/H3 widget frontend | H Naprawa widgetu | done | `frontend/public/widget/convai-widget-embed.js` (self-host) |
+| phase-I/J workflow + procedures | I/J Wdrożenie | done | `workflow/workflow_v3.json` + `procedure_ids.json` |
+| phase-K1 historia gita | K Portfolio | todo | cel: `.git` < 6 MB (dziś 55 MB — blob `cloudflared.exe` w historii) |
+| phase-K2 prompt live | K Portfolio | todo | cel: hosted prompt = `docs/anna_system_prompt_v3.md` + procedury z `appointment_datetime` |
+| phase-K3 deck | K Portfolio | todo | cel: oba PPTX po korekcie faktów (7 narzędzi, 8011) |
+| phase-K4 higiena repo | K Portfolio | todo | cel: jedna gałąź, tag `v1.0.0`, homepage, martwe klucze i18n |
+| phase-K5 demo online | K Portfolio | todo | cel: publiczny link (Vercel + Fly/Render) albo jawny fallback |

@@ -321,3 +321,39 @@ Cel: wykorzystać dwa puste w żywym agencie pola — `workflow` (graf orchestra
 - Deck 14 slajdów + próba zaliczone.
 - **Frontend (Epik E):** strona z prawdziwym widgetem Anny działa (głos+tekst), renderuje RAG i wywołuje webhooki — gotowa jako żywe demo.
 - **Epik F (Procedury/Workflow):** wydzielone procedury działają w agencie (flow jawne, mniej promptu) LUB działający minimalny workflow; potwierdzone symulacją bez regresji; dokumentacja aktualna.
+
+---
+
+## EPIK K — Portfolio hardening (stan po refaktorze 2026-11)
+
+> Status: zaplanowany (2026-11-09). Kontekst: repo jest po dużym refaktorze (walidacja i testy backendu,
+> jedno źródło cen i copy w frontendzie, konsolidacja dokumentacji, LICENSE/NOTICE/CI, odświeżona baza
+> wiedzy i schematy narzędzi na żywo). Poniższe fazy domykają to, czego **nie da się zrobić commitem** —
+> historię gita, warstwę live agenta, binaria decku, metadane GitHuba i publiczne demo.
+> Pliki faz: `phases/phase-K1-historia-gita.md` … `phases/phase-K5-demo-online.md`.
+
+### Kolejność i zależności
+- **K1 (historia gita)** — pierwsza, bo force-push unieważnia wszystkie klony; reszta prac pisze już do
+  nowej historii.
+- **K2 (prompt live)** — niezależna od K1, ale wymaga zielonego CI (jest) i backupu promptu.
+- **K3 (deck)** — niezależna; może iść równolegle z K2 (inne pliki).
+- **K4 (higiena GitHuba)** — po K1 (tag na już odchudzonej historii) i po K3 (link do decka w release).
+- **K5 (demo online)** — ostatnia; korzysta z decyzji o warstwie live (K2) i z odchudzonego repo (K1).
+
+### Fazy
+- **Phase K1 — Historia gita i rozmiar repo** (`.git` 55 MB → < 6 MB; usunięcie blobu
+  `cloudflared.exe` z historii, backup bundle, force-push, re-klon na laptopie)
+- **Phase K2 — Wgranie promptu i procedur na żywo** (hosted prompt = repo v3; procedury przekazują
+  `appointment_datetime`; 3 transkrypty jako dowód)
+- **Phase K3 — Deck: regeneracja i zgodność z kodem** (oba PPTX po korekcie faktów: 7 narzędzi, 8011,
+  brak `transfer_to_number`; decyzja o generatorze EN)
+- **Phase K4 — Higiena publicznego repo** (decyzja o gałęzi `claude/*`, tag `v1.0.0`, release, homepage,
+  martwe klucze i18n, issues)
+- **Phase K5 — Żywe demo online** (Vercel + backend na Fly/Render albo nagranie jako fallback)
+
+### Metryki sukcesu (Epik K)
+- Klon repo < 10 s i < 10 MB; historia bez binariów > 10 MB.
+- Prompt i procedury na agencie = stan z repo; anulowanie > 2 h realnie mówi „0 %”.
+- Obie prezentacje (PL/EN) mówią 7 narzędzi i 8011; żadna nie wspomina `transfer_to_number`.
+- GitHub: jedna gałąź, tag `v1.0.0`, release, homepage; brak martwych gałęzi.
+- Link publiczny do demo (albo jawnie opisany fallback w README).

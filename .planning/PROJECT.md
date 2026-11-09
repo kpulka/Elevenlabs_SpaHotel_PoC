@@ -33,6 +33,7 @@ Dokonać wdrożenia żywego agenta „Anna" w ElevenLabs (PoC → wizja docelowa
 | **H. Frontend widget odporność** | self-host CDN skrypt, trigger przycisku, build | H1–H3 |
 | **I. Workflow diagram → ElevenLabs** | mapowanie mermaid, projekt grafu, PATCH workflow, test | I1–I4 |
 | **J. Procedures z _procedures.md** | research docs, 7 procedur, publikacja (pusty PATCH), test | J1–J4 |
+| **K. Portfolio hardening** | historia gita, prompt live, deck, metadane GitHuba, demo online | K1–K5 |
 
 ## Środowisko i narzędzia
 - **MCP ElevenLabs** (Hersys toolset): `create_agent`, `add_knowledge_base_to_agent`, `get_agent`, `list_agents`, `list_models`, `search_voices`, `get_voice`.
