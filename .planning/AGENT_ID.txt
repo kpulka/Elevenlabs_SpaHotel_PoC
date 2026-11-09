@@ -54,20 +54,35 @@ Pliki źródłowe: `docs/baza_wiedzy_rag_bukowy_dwor/` (wersje `.txt` w `docs/ba
 
 | # | Plik | usage_mode | ID dokumentu |
 |---|---|---|---|
-| 1 | 01_informacje_ogolne_i_dojazd | auto | lcDyS0TfQOrYUtDd6RE2 |
-| 2 | 02_katalog_zabiegow_spa_i_zdrowie | auto | TeG4NWe9mZPZp7Jj9tjN |
-| 3 | 03_pokoje_i_cennik | prompt | Gcd9Xrfo6o7B6CSA0BlP |
-| 4 | 04_restauracja_i_diety | auto | 1iVu7Dqtt0JTzVAJoA8Z |
-| 5 | 05_procedury_i_polityki | prompt | 08dEZvSrACI5wKEIzwhk |
+| 1 | 01_informacje_ogolne_i_dojazd | auto | ZF95NZSUcg6bGdOsjRCX |
+| 2 | 02_katalog_zabiegow_spa_i_zdrowie | auto | xOfgFYhD6Ntj4UZA8nw2 |
+| 3 | 03_pokoje_i_cennik | prompt | GbHlnv01HT4rkk07YkbH |
+| 4 | 04_restauracja_i_diety | auto | 3VDk2eJGn9UuH6EhFMn2 |
+| 5 | 05_procedury_i_polityki | prompt | TrZ6VLCEOYbY8RW7AwxQ |
 
 ## Procedury: 7 opublikowanych
 
 ID w `.planning/workflow/procedure_ids.json` (nazwy `procedura_*`).
 
+## Stan warstwy live na 2026-11-09 (wykonane przez API)
+
+- **Schematy narzędzi:** uzupełnione o brakujące opcjonalne pola —
+  `cancel_spa_appointment.appointment_datetime`, `send_sms_summary.language`,
+  `transfer_to_simulated_handoff.language`. Weryfikacja: `python mock_backend/tunnel/sync_agent_tools.py --list`
+  (kolumna `POLA BODY`).
+- **Baza wiedzy:** 5 dokumentów odtworzonych z `docs/baza_wiedzy_rag_bukowy_dwor_txt/*.txt`
+  i ponownie podpiętych do agenta z zachowaniem `usage_mode`. ID powyżej są aktualne.
+  Stare dokumenty usunięte; kopia poprzedniej treści: `kb_backup_before_refresh.json` (poza repo).
+- **Nie wgrane:** hosted prompt i hosted procedury. Plik `docs/anna_system_prompt_v3.md`
+  (2026-11) jest **do przodu** względem tego, co wisi na agencie — dopisuje m.in. anulowanie
+  i przełożenie zabiegu z `appointment_datetime`, obsługę `ambiguous` i `success:false`.
+  Wgranie to jeden PATCH `conversation_config.agent.prompt.prompt`; do zrobienia świadomie,
+  po odsłuchaniu próbnej rozmowy (dłuższy prompt = dłuższe odpowiedzi).
+
 ## Prompt
 
 - Plik kanoniczny w repo: `docs/anna_system_prompt_v3.md`.
-- Uwaga: **hosted prompt wgrany na żywo różni się długością od pliku w repo** — nie zakładać, że są identyczne.
+- Uwaga: **hosted prompt na agencie to wersja starsza niż plik w repo** (stan 2026-08/09) — nie zakładać, że są identyczne.
 - Historia: audyt z 2026-08 (`docs/audyt_agenta_2026-08.md`) opisuje stan sprzed dodania narzędzi `cancel_spa_appointment` / `reschedule_spa_appointment` i przed publikacją procedur; traktować jako zapis historyczny.
 
 ## Historia

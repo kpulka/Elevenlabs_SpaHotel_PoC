@@ -28,7 +28,7 @@ Zasady, które wynikają z tabeli:
 - **System prompt:** obowiązuje `anna_system_prompt_v3.md`. v1 i v2 są w `archive/` — v3 różni się sposobem eskalacji (`transfer_to_simulated_handoff` przez mock backend, bo PoC nie ma telefonii).
 - **Specyfikacja:** `specyfikacja_recepcjonista_ai.md` (kanoniczna) zastąpiła `specyfikacja_poc_recepcjonista_ai.md` (archiwum). Podział ról: specyfikacja mówi CO, plan implementacji mówi JAK.
 - **Architektura:** źródłem jest wersja polska (`architektura_stack_technologiczny.md`); plik `_en` to tłumaczenie. Zmiana merytoryczna idzie najpierw do PL.
-- **Baza wiedzy:** edytujesz `.md` w `baza_wiedzy_rag_bukowy_dwor/`, potem generujesz `.txt` i wdrażasz `deploy_kb_and_tools.py`. Nie ruszaj plików `.txt` bezpośrednio — są wgrywane na żywo.
+- **Baza wiedzy:** edytujesz `.md` w `baza_wiedzy_rag_bukowy_dwor/`, kopiujesz 1:1 do `.txt` i wdrażasz `deploy_kb_and_tools.py`. Nie ruszaj plików `.txt` bezpośrednio — są wgrywane na żywo. Uwaga: API **nie aktualizuje treści** dokumentu przez `PATCH` (przyjmie 200 i zignoruje plik) — zmianę treści robi się przez utworzenie nowego dokumentu, ponowne podpięcie listy do agenta i usunięcie starego.
 - **Wdrożony stan agenta** (procedure ID, grafy workflow, narzędzia) leży w `.planning/workflow/` — to nie dokumentacja, tylko artefakty wdrożenia.
 
 ## Jak czytać to repo w 10 minut
