@@ -89,6 +89,11 @@ def _wolne_sloty(usluga, data_iso: str) -> list[str]:
     return SPA_STORE.sloty_dnia(usluga, data_iso)
 
 
+def _cennik(usluga) -> dict:
+    """Cena i czas zabiegu wprost z katalogu — te same liczby mówi Anna na głos."""
+    return {"price_pln": usluga.cena_pln, "duration_min": usluga.czas_min}
+
+
 def _poza_oknem(data_iso: str) -> str:
     return (
         f"Termin {data_iso} jest poza oknem rezerwacji "
@@ -177,6 +182,7 @@ async def check_spa_availability(request: ZapytanieSPA):
         return _zagubiony_zabieg(request.service_name, request.date, wynik)
 
     usluga = wynik.usluga
+    cennik = _cennik(usluga)
     if date.fromisoformat(request.date) < SPA_STORE.dzisiaj:
         return {
             "available": False,
@@ -185,6 +191,7 @@ async def check_spa_availability(request: ZapytanieSPA):
             "date": request.date,
             "available_services": NAZWY_USLUG,
             "message": f"Data {request.date} jest w przeszłości — nie można sprawdzić terminu.",
+            **cennik,
         }
 
     if not SPA_STORE.w_oknie(request.date):
@@ -195,6 +202,7 @@ async def check_spa_availability(request: ZapytanieSPA):
             "date": request.date,
             "available_services": NAZWY_USLUG,
             "message": _poza_oknem(request.date),
+            **cennik,
         }
 
     sloty = _wolne_sloty(usluga, request.date)
@@ -208,8 +216,10 @@ async def check_spa_availability(request: ZapytanieSPA):
             "available_services": NAZWY_USLUG,
             "message": (
                 f"Zabieg '{usluga.nazwa}' dostępny w dniu {request.date}. "
-                f"Wolne godziny: {', '.join(sloty)}."
+                f"Wolne godziny: {', '.join(sloty)}. "
+                f"Cena {usluga.cena_pln} PLN, czas trwania {usluga.czas_min} min."
             ),
+            **cennik,
         }
 
     print(f"   ❌ Brak wolnych terminów dla '{usluga.nazwa}' w dniu {request.date}.")
@@ -220,6 +230,7 @@ async def check_spa_availability(request: ZapytanieSPA):
         "date": request.date,
         "available_services": NAZWY_USLUG,
         "message": f"Brak wolnych terminów dla '{usluga.nazwa}' w dniu {request.date}.",
+        **cennik,
     }
 
 
@@ -334,6 +345,34 @@ async def cancel_spa_appointment(request: AnulowanieSPA):
     # backend nie zna terminu (agent musi przekazać appointment_datetime).
     appointment_datetime = request.appointment_datetime
 
+    if rezerwacja is None:
+        # Nieznany numer to NIE udane anulowanie. Wcześniej backend zwracał
+        # success/cancelled=True i Anna potwierdzała gościowi zdjęcie
+        # rezerwacji-widma. Teraz agent dostaje wyraźny sygnał, żeby dopytać.
+        print(f"   ❌ Nie znaleziono rezerwacji '{request.confirmation_id}' — nie anulowano.")
+        return {
+            "success": False,
+            "confirmation_id": request.confirmation_id,
+            "cancelled": False,
+            "fee": 0.0,
+            "medical_release": bool(request.medical_release),
+            "free_of_charge": True,
+            "fee_rule": (
+                "Reservation not found — no fee charged (0%)."
+                if is_en
+                else "Nie znaleziono rezerwacji — nie naliczono opłaty (0%)."
+            ),
+            "found": False,
+            "message": (
+                f"No reservation found with number {request.confirmation_id}. "
+                "Ask the guest to re-check the confirmation number."
+                if is_en
+                else f"Nie znaleziono rezerwacji o numerze {request.confirmation_id}. "
+                "Poproś gościa o ponowne sprawdzenie numeru potwierdzenia."
+            ),
+            "note": "Reservation was not cancelled." if is_en else "Rezerwacja nie została anulowana.",
+        }
+
     oplata, regula = _oplata_anulowania(
         bool(request.medical_release), appointment_datetime, is_en
     )
@@ -397,10 +436,24 @@ async def reschedule_spa_appointment(request: PrzelozenieSPA):
             "new_date": request.new_date,
             "new_time": request.new_time,
             "guest_name": request.guest_name or (stara.gosc if stara else ""),
+            "found": stara is not None,
             "message": message,
             "note": "Appointment was not changed." if is_en else "Termin nie został zmieniony.",
             **extra,
         }
+
+    if stara is None:
+        # Bez tego sprawdzenia reschedule NIEISTNIEJĄCEJ rezerwacji tworzył nową
+        # (nowy numer potwierdzenia) — czyli przełożenie działało jak rezerwacja.
+        return _odmowa(
+            f"No reservation found with number {request.confirmation_id}. "
+            "Ask the guest to re-check the number, or book a new appointment."
+            if is_en
+            else f"Nie znaleziono rezerwacji o numerze {request.confirmation_id}. "
+            "Poproś gościa o sprawdzenie numeru albo zarezerwuj nowy termin.",
+            found=False,
+            available_services=NAZWY_USLUG,
+        )
 
     if not wynik.dopasowano:
         if wynik.status == "niejednoznaczne":
@@ -455,10 +508,12 @@ async def reschedule_spa_appointment(request: PrzelozenieSPA):
     return {
         "success": True,
         "confirmation_id": nowa.confirmation_id,
+        "previous_confirmation_id": request.confirmation_id,
         "service_name": usluga.nazwa,
         "new_date": request.new_date,
         "new_time": request.new_time,
         "guest_name": nowa.gosc,
+        "found": True,
         "message": "Appointment rescheduled." if is_en else "Termin zabiegu zmieniony.",
         "note": "Rescheduling is free of charge." if is_en else "Zmiana terminu jest bezpłatna.",
     }
@@ -480,13 +535,18 @@ async def check_room_availability(request: SprawdzeniePokoj):
 
     typ = POKOJE.znajdz(request.room_type)
     if typ is None:
-        print(f"   ⚠️  Nieznany typ pokoju: '{request.room_type}'")
+        # Agent musi móc zaproponować realne opcje — sama informacja "nie istnieje"
+        # zostawiała go z niczym (dotyczy też niejednoznacznych wartości, np. "pokój").
+        print(f"   ⚠️  Nieznany/niejednoznaczny typ pokoju: '{request.room_type}'")
         return {
             "available": False,
             "room_type": request.room_type,
+            "available_room_types": POKOJE.kody,
+            "available_room_type_names": POKOJE.nazwy,
             "message": (
-                f"Typ pokoju '{request.room_type}' nie istnieje. "
-                f"Dostępne typy: {', '.join(POKOJE.kody)}."
+                f"Typ pokoju '{request.room_type}' nie istnieje lub jest niejednoznaczny. "
+                f"Dostępne typy: {', '.join(POKOJE.kody)} "
+                f"({'; '.join(POKOJE.nazwy)}). Zapytaj gościa, który typ wybiera."
             ),
         }
 
@@ -534,7 +594,8 @@ async def check_room_availability(request: SprawdzeniePokoj):
             "total_price": cena_calkowita,
             "message": (
                 "Brak dostępności w wybranym terminie "
-                f"(blokada {POKOJE.opis_blokady()}). Szczyt sezonu — wszystkie pokoje zajęte."
+                f"(blokada {POKOJE.opis_blokady()} — {POKOJE.etykieta_blokady()}). "
+                "Wszystkie pokoje w tym terminie są zajęte."
             ),
         }
 
@@ -688,7 +749,16 @@ async def root():
             "POST /transfer_to_simulated_handoff",
         ],
         "catalog": {
-            "uslugi": [{"kod": u.kod, "nazwa": u.nazwa, "sloty": list(u.sloty)} for u in USLUGI],
+            "uslugi": [
+                {
+                    "kod": u.kod,
+                    "nazwa": u.nazwa,
+                    "sloty": list(u.sloty),
+                    "price_pln": u.cena_pln,
+                    "duration_min": u.czas_min,
+                }
+                for u in USLUGI
+            ],
             "pokoje": [
                 {"kod": t.kod, "nazwa": t.nazwa, "cena_za_noc": t.cena_za_noc}
                 for t in POKOJE.typy.values()

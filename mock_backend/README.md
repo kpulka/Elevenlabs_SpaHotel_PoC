@@ -30,18 +30,25 @@ Mock backendu PoC: symuluje PMS uzdrowiska i obsługuje **webhooki narzędzi age
 
 | Endpoint | Pola żądania | Pola odpowiedzi (zawsze obecne) |
 |----------|--------------|---------------------------------|
-| `check_spa_availability` | `service_name`, `date` | `available`, `service_name`, `date`, `message`, `available_services` (+ `slots` gdy w oknie rezerwacji, `ambiguous` przy niejednoznacznej nazwie) |
+| `check_spa_availability` | `service_name`, `date` | `available`, `service_name`, `date`, `message`, `available_services`, `price_pln`, `duration_min` (+ `slots` gdy w oknie rezerwacji, `ambiguous` przy niejednoznacznej nazwie) |
 | `book_spa_appointment` | `service_name`, `date`, `time`, `guest_name` | `success`, `confirmation_id`, `service_name`, `date`, `time`, `guest_name`, `message` (+ `slots` / `ambiguous` przy odmowie) |
 | `cancel_spa_appointment` | `confirmation_id`, `reason`, `medical_release`, `language`, **`appointment_datetime`** | `success`, `confirmation_id`, `cancelled`, `fee`, `medical_release`, `message`, `note`, `free_of_charge`, `fee_rule`, `found` |
-| `reschedule_spa_appointment` | `confirmation_id`, `service_name`, `new_date`, `new_time`, `guest_name`, `language` | `success`, `confirmation_id`, `service_name`, `new_date`, `new_time`, `guest_name`, `message`, `note` |
-| `check_room_availability` | `room_type`, `check_in`, `check_out` | `available`, `room_type`, `price_per_night`, `check_in`, `check_out`, `total_nights`, `total_price`, `message` |
+| `reschedule_spa_appointment` | `confirmation_id`, `service_name`, `new_date`, `new_time`, `guest_name`, `language` | `success`, `confirmation_id`, `service_name`, `new_date`, `new_time`, `guest_name`, `found`, `message`, `note` (+ `previous_confirmation_id` przy sukcesie) |
+| `check_room_availability` | `room_type`, `check_in`, `check_out` | `available`, `room_type`, `price_per_night`, `check_in`, `check_out`, `total_nights`, `total_price`, `message` (+ `available_room_types`, `available_room_type_names` przy nieznanym/niejednoznacznym typie) |
 | `send_sms_summary` | `phone_number`, `summary_text`, `confirmation_id`, `language` | `success`, `message`, `delivered_to`, `language` |
 | `transfer_to_simulated_handoff` | `department`, `reason`, `guest_name`, `language` | `success`, `simulated`, `message`, `department`, `reason`, `guest_name`, `language`, `note` |
 | `GET /health` | — | `status`, `version`, `uptime_seconds` |
 
-Jedynym polem **dodanym** do kontraktu jest opcjonalne `appointment_datetime`
-(ISO 8601, z godziną) w `cancel_spa_appointment` — bez niego reguła opłat nie
-ma jak rozstrzygnąć „>2h / <2h”; szczegóły niżej.
+Pola **dodane** do kontraktu to wyłącznie rozszerzenia addytywne:
+
+- `appointment_datetime` (opcjonalne, ISO 8601 z godziną) w `cancel_spa_appointment`
+  — bez niego reguła opłat nie ma jak rozstrzygnąć „>2h / <2h”;
+- `price_pln` i `duration_min` w `check_spa_availability` — cena i czas trwania
+  zabiegu z katalogu (patrz „Ceny zabiegów” niżej);
+- `found` w `cancel_spa_appointment` i `reschedule_spa_appointment` — czy numer
+  potwierdzenia w ogóle istnieje; `false` ZAWSZE idzie w parze z `success: false`;
+- `available_room_types` / `available_room_type_names` — kody i nazwy typów pokoi,
+  gdy `room_type` jest nieznany lub niejednoznaczny.
 
 ---
 
@@ -51,6 +58,7 @@ ma jak rozstrzygnąć „>2h / <2h”; szczegóły niżej.
 |----------|------|-----------|
 | Zły format danych (np. `date="31/08/2026"`, `time="99:99"`, puste `guest_name`) | **422** | błąd walidacji Pydantic z czytelnym `msg` |
 | Termin w przeszłości, poza 14-dniowym oknem, zajęty slot, nieznany/niejednoznaczny zabieg, nieznany typ pokoju | **200** | `available: false` / `success: false` + `message` (agent czyta to na głos) |
+| Anulowanie lub przełożenie **nieistniejącego** numeru potwierdzenia | **200** | `success: false`, `cancelled: false`, `found: false` + prośba o sprawdzenie numeru (backend NIE tworzy przy tym nowej rezerwacji) |
 
 Rozdzielenie jest celowe: agent głosowy dużo lepiej radzi sobie z 200 + wyjaśnieniem
 niż z awarią narzędzia 4xx.
@@ -82,8 +90,10 @@ python -m pytest -q
 ```
 
 Testy używają `fastapi.testclient`, nie wymagają sieci ani danych Telegrama
-(49 przypadków: walidacja 422, daty przeszłe, zajmowanie/zwalnianie slotów,
-reguły opłat, reschedule, ceny pokoi, katalog/aliasy, `/health`, kontrakt pól).
+(68 przypadków: walidacja 422, daty przeszłe, zajmowanie/zwalnianie slotów
+z wspólnym kalendarzem, reguły opłat, reschedule, nieistniejące numery
+potwierdzenia, ceny pokoi, blokada terminów, katalog/aliasy, cennik zabiegów,
+`/health`, kontrakt pól).
 
 ---
 
@@ -156,19 +166,31 @@ stan w `tunnel/state.json`. Port 8000 bywa zajęty przez `svchost` — dlatego 8
 Ceny są zgodne z `frontend/lib/hotel-data.ts` (350 / 500 / 750) — zmiana musi
 nastąpić w obu miejscach, bo frontend ma własną kopię danych marketingowych.
 
-Zablokowane terminy (`zajete_terminy` w `rooms.json`): weekend **30–31.08.2026**.
-To dane statyczne — gdy wypadną w przeszłości, blokada jest nieaktywna
-(przeszłe terminy odrzuca osobna reguła).
+Zablokowane terminy (`zajete_terminy` w `rooms.json`): **28–29.12.2026**,
+przerwa świąteczno-noworoczna (blokada dotyczy wszystkich typów pokoi).
+
+Zasada (żeby demo „wszystko zajęte” działało):
+
+- okno blokady MUSI leżeć w przyszłości — inaczej kolizja nigdy nie wystąpi,
+  a jedyną odmową zostanie „data w przeszłości”; test
+  `test_blocked_window_dates_are_in_the_future` pilnuje tego i podpowiada,
+  że trzeba przesunąć okno w `rooms.json`;
+- wpis blokady ma tylko `opis` (etykieta) i `daty` (ISO 8601) — **zakres dat
+  w odpowiedzi jest generowany** z `daty` przez `KatalogPokoi.opis_blokady()`
+  (`28-29.12.2026`). Nie wpisuj gotowego zakresu obok dat; test
+  `test_blocked_description_is_generated_from_json` dowodzi, że opis idzie
+  za danymi.
 
 ### SPA — katalog z `data/spa_schedule.json` (seed przy starcie)
 
-| Kod | Nazwa (wyświetlana) | Aliasy |
-|-----|---------------------|--------|
-| `kapiel_siarczkowa` | kąpiel siarczkowa Ukojenie Stawów | kąpiel siarczkowa, ukojenie stawów, siarczkowa, sulphur bath, sulfur bath |
-| `masaz_leczniczy` | masaż leczniczy pleców | masaż leczniczy, masaz leczniczy plecow, leczniczy pleców, masaż pleców, back massage, therapeutic massage |
-| `kapiel_borowinowa` | kąpiel borowinowa | borowinowa, borowina, peat bath, mud bath |
-| `jonoforeza` | jonoforeza | ionoforeza, jonoforeza zabieg, iontophoresis |
-| `masaz_klasyczny` | masaż klasyczny | masaz klasyczny, klasyczny, masaż relaksacyjny, classic massage, swedish massage |
+| Kod | Nazwa (wyświetlana) | Cena | Czas | Źródło ceny | Aliasy |
+|-----|---------------------|------|------|-------------|--------|
+| `kapiel_siarczkowa` | kąpiel siarczkowa Ukojenie Stawów | 80 PLN | 20 min | baza wiedzy | kąpiel siarczkowa, ukojenie stawów, siarczkowa, sulphur bath, sulfur bath |
+| `masaz_leczniczy` | masaż leczniczy pleców | 120 PLN | 30 min | baza wiedzy | masaż leczniczy, masaz leczniczy plecow, leczniczy pleców, masaż pleców, back massage, therapeutic massage |
+| `kapiel_borowinowa` | kąpiel borowinowa | 100 PLN | 25 min | baza wiedzy | borowinowa, borowina, peat bath, mud bath |
+| `jonoforeza` | jonoforeza | 70 PLN | 20 min | baza wiedzy | ionoforeza, jonoforeza zabieg, iontophoresis |
+| `masaz_klasyczny` | masaż klasyczny | 160 PLN | 50 min | baza wiedzy | masaz klasyczny, klasyczny, masaż relaksacyjny, classic massage, swedish massage |
+| `gimnastyka_lecznicza` | gimnastyka lecznicza (grupowa) | 30 PLN | 45 min | strona www | gimnastyka lecznicza, gimnastyka, gimnastyka grupowa, gimnastyka dla seniorów, ćwiczenia grupowe, therapeutic gymnastics, group gymnastics |
 
 Godziny zabiegów (dla każdego zabiegu): `10:00, 11:00, 14:00, 14:30, 15:00, 16:00`.
 Okno rezerwacji: **najbliższe 14 dni** liczone od dnia bieżącego (przewijane).
@@ -176,6 +198,53 @@ Okno rezerwacji: **najbliższe 14 dni** liczone od dnia bieżącego (przewijane)
 Dopasowanie nazwy: **dokładne (bez diakrytyków) → alias → podciąg**.
 Podciąg pasujący do kilku zabiegów (np. „masaż”) zwraca `available: false`
 z listą `ambiguous` i `available_services` — agent ma dopytać gościa.
+
+Katalog jest **zamknięty**: każde `service_name`, które nie trafia w żaden wpis,
+dostaje `available: false` + `available_services`. Nowy zabieg dodaje się
+wyłącznie w `data/spa_schedule.json` (kod, nazwa, aliasy, `price_pln`,
+`duration_min`, `zrodlo_ceny`) — brak ceny/czasu w seedzie to `ValueError`
+przy starcie, a nie cichy katalog bez cennika.
+
+**Baseny termalne (32°C i 34°C) nie są w katalogu zabiegów.** Strona pokazuje je
+jako część oferty, ale to udogodnienia strefy basenowej w cenie pobytu, a nie
+usługa do rezerwacji — nie mają ceny jednostkowej ani slotów, więc agent nie
+powinien ich „rezerwować”. Decyzja jest zapisana w `_baseny` w seedzie.
+
+### Ceny zabiegów — jedno źródło prawdy
+
+Ceny i czasy trzyma **wyłącznie** `data/spa_schedule.json`, w polach
+`price_pln` i `duration_min`; `check_spa_availability` zwraca je jako
+`price_pln` / `duration_min`, więc frontend da się wygenerować z tych samych liczb.
+
+Wartości kanoniczne = **baza wiedzy agenta**
+(`docs/baza_wiedzy_rag_bukowy_dwor/02_katalog_zabiegow_spa_i_zdrowie.md`):
+80 / 120 / 100 / 70 / 160 PLN. To te liczby Anna wypowiada gościowi na głos —
+nie wolno ich zmieniać po cichu tylko dlatego, że inny plik podaje inne.
+Jedyny wyjątek: `gimnastyka_lecznicza` nie występuje w bazie wiedzy, więc jej
+30 PLN / 45 min pochodzi ze strony (`frontend/lib/hotel-data.ts`) i jest
+oznaczone jako `zrodlo_ceny: "strona_www"`.
+
+Pliki, które nadal wiozą **nieaktualne ceny** i muszą zostać przegenerowane
+z backendu (poza zakresem tego repo-backendu — nie ruszamy `frontend/`):
+`frontend/lib/hotel-data.ts` (`treatmentCopy`: 65 / 70 / 45 / 90 / 30 PLN,
+brak wpisu dla masażu klasycznego; czasy też się różnią: borowinowa 20 vs 25 min,
+jonoforeza 15 vs 20 min). Po zmianie ceny w seedzie trzeba je odtworzyć
+z `/` (sekcja `catalog.uslugi`) albo z `check_spa_availability`.
+
+### Model zasobu dla slotów (świadome ograniczenie)
+
+Zajętość trzymana jest jako `{data: {godzina, ...}}` — **bez kodu zabiegu**.
+Założenie: na daną godzinę dostępny jest **jeden gabinet / jeden fizjoterapeuta
+wspólny dla wszystkich zabiegów**. Konsekwencje:
+
+- nie da się sprzedać 14:00 dwóm gościom na dwa różne zabiegi (to był realny
+  defekt: klucz `(zabieg, data)` pozwalał na podwójną sprzedaż tego samego
+  człowieka);
+- kalendarz jest bardziej restrykcyjny niż realne SPA z kilkoma gabinetami —
+  jeśli kiedyś będzie ich więcej, klucz trzeba rozszerzyć do
+  `(gabinet, data)` i przypisać zabiegi do gabinetów;
+- testy: `test_same_hour_cannot_be_sold_twice_for_different_treatments`
+  oraz `test_double_booking_same_slot_fails_with_remaining_slots`.
 
 ### Reguła opłat przy anulacji SPA
 
@@ -205,10 +274,10 @@ mock_backend/
 ├── pytest.ini           # pythonpath + testpaths
 ├── tests/
 │   ├── conftest.py      # fixture: czysty stan, cisza w konsoli
-│   └── test_api.py      # 49 testów API
+│   └── test_api.py      # 68 testów API
 ├── data/
 │   ├── rooms.json       # typy pokoi, ceny, terminy zablokowane (jedyne źródło)
-│   └── spa_schedule.json# seed zabiegów/aliasów/godzin (nie jest nadpisywany)
+│   └── spa_schedule.json# seed zabiegów/aliasów/godzin/cen (nie jest nadpisywany)
 └── tunnel/
     ├── Dockerfile       # obraz kontenera (kontekst builda = mock_backend/)
     ├── podman_start.sh  # start kontenera + tunel + update webhooków
@@ -224,7 +293,9 @@ mock_backend/
 - **Ulotny URL trycloudflare** — adres zmienia się przy każdym restarcie tunelu (skrypty aktualizują webhooki, ale nie ma trwałej domeny).
 - **Brak rzeczywistego PMS/SMS** — „SMS” to wydruk w konsoli + opcjonalny Telegram; brak integracji z systemem hotelowym.
 - **Telefon/handoff tylko symulowany** — bez telefonii (SIP) nie ma prawdziwego przekierowania do człowieka.
-- **Dane demo są statyczne** — cennik, godziny i blokada weekendu to wartości z plików JSON, nie żywy kalendarz.
+- **Dane demo są statyczne** — cennik, godziny i blokada świąteczna to wartości z plików JSON, nie żywy kalendarz.
+- **Jeden gabinet na godzinę** — wszystkie zabiegi dzielą jeden kalendarz (patrz „Model zasobu dla slotów”); realne SPA z kilkoma gabinetami wymaga klucza `(gabinet, data)`.
+- **Ceny poza backendem są nieaktualne** — `frontend/lib/hotel-data.ts` nadal ma 65/70/45/90/30 PLN; kanoniczne są wartości z `data/spa_schedule.json`.
 - **Brak uwierzytelniania i limitów** — nie wystawiaj tego backendu publicznie poza czasem demo.
 
 > **Wskazówka na prezentację:** zostaw terminal z serwerem na bocznym ekranie —

@@ -34,12 +34,20 @@ def normalizuj(tekst: str) -> str:
 
 @dataclass(frozen=True)
 class Usluga:
-    """Pojedynczy zabieg z katalogu."""
+    """Pojedynczy zabieg z katalogu.
+
+    ``cena_pln`` i ``czas_min`` to jedyne źródło ceny/czasu w backendzie —
+    odpowiedź ``check_spa_availability`` zwraca je jako ``price_pln`` /
+    ``duration_min``, więc frontend da się wygenerować z tych samych liczb.
+    """
 
     kod: str
     nazwa: str
     aliasy: tuple[str, ...]
     sloty: tuple[str, ...]
+    cena_pln: int
+    czas_min: int
+    zrodlo_ceny: str = "baza_wiedzy"
 
     @property
     def nazwy_do_dopasowania(self) -> tuple[str, ...]:
@@ -72,12 +80,22 @@ def wczytaj_uslugi(sciezka: Path | None = None) -> tuple[list[Usluga], list[str]
 
     uslugi: list[Usluga] = []
     for wpis in dane["zabiegi"]:
+        # Cena i czas muszą istnieć w seedzie — brak = cichy katalog bez cennika,
+        # a Anna mówi je gościowi na głos i nie może ich zgadywać.
+        brakujace = [pole for pole in ("price_pln", "duration_min") if pole not in wpis]
+        if brakujace:
+            raise ValueError(
+                f"Zabieg '{wpis.get('kod', '?')}' w seedzie nie ma pól: {', '.join(brakujace)}."
+            )
         uslugi.append(
             Usluga(
                 kod=wpis["kod"],
                 nazwa=wpis["nazwa"],
                 aliasy=tuple(wpis.get("aliasy", ())),
                 sloty=tuple(wpis.get("sloty") or domyslne_sloty),
+                cena_pln=int(wpis["price_pln"]),
+                czas_min=int(wpis["duration_min"]),
+                zrodlo_ceny=wpis.get("zrodlo_ceny", "baza_wiedzy"),
             )
         )
     return uslugi, domyslne_sloty, horyzont

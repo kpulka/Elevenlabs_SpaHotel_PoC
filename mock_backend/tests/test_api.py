@@ -6,11 +6,13 @@ Uruchomienie (z katalogu mock_backend):
 
 from __future__ import annotations
 
+import json
 from datetime import date, datetime, timedelta
 
 import pytest
 
 import main
+import store
 
 SPA = "/check_spa_availability"
 BOOK = "/book_spa_appointment"
@@ -280,17 +282,18 @@ def test_cancel_without_appointment_datetime_reports_unknown_timing(client):
 
 
 def test_cancel_english_language_uses_english_rule(client):
+    identyfikator = rezerwuj(client).json()["confirmation_id"]
     body = client.post(
         CANCEL,
         json={
-            "confirmation_id": "SPA-9999",
+            "confirmation_id": identyfikator,
             "appointment_datetime": godzina_od_teraz(300),
             "language": "en",
         },
     ).json()
     assert body["message"] == "Reservation cancelled."
     assert body["fee_rule"].startswith("Cancelled more than 2h")
-    assert body["found"] is False
+    assert body["found"] is True
 
 
 # ── katalog i dopasowanie usług ─────────────────────────────────────────────
@@ -301,7 +304,8 @@ def test_ambiguous_service_name_returns_candidates(client):
     assert len(body["ambiguous"]) == 2
     assert "masaż klasyczny" in body["ambiguous"]
     assert "masaż leczniczy pleców" in body["ambiguous"]
-    assert len(body["available_services"]) == 5
+    # 6 zabiegów: 5 z bazy wiedzy + gimnastyka lecznicza ze strony
+    assert len(body["available_services"]) == 6
     assert "Dopytaj" in body["message"]
 
 
@@ -340,7 +344,7 @@ def test_alias_and_accent_insensitive_resolution(client, zapytanie, oczekiwana):
 def test_unknown_service_returns_available_services(client):
     body = client.post(SPA, json={"service_name": "krioterapia", "date": dzien(2)}).json()
     assert body["available"] is False
-    assert len(body["available_services"]) == 5
+    assert len(body["available_services"]) == 6
     assert "nie jest oferowany" in body["message"]
     # kształt odpowiedzi pozostaje stały także na ścieżce odmowy
     assert {"available", "slots", "service_name", "date", "message"} <= set(body)
@@ -380,19 +384,68 @@ def test_unknown_room_type(client):
     assert body["available"] is False
     assert "nie istnieje" in body["message"]
     assert "apartament" in body["message"]
+    # agent musi dostać realne opcje do zaproponowania, nie samą odmowę
+    assert body["available_room_types"] == ["jednoosobowy", "dwuosobowy", "apartament"]
+    assert len(body["available_room_type_names"]) == 3
 
 
-def test_blocked_dates_reject_room(client, monkeypatch):
-    """Blokada weekendu z data/rooms.json (na wstrzykniętej dacie, by test był stabilny)."""
-    monkeypatch.setattr(
-        main.POKOJE, "zablokowane", {"jednoosobowy": {dzien(6)}, "dwuosobowy": set(), "apartament": set()}
-    )
+@pytest.mark.parametrize("niejasny", ["pokój", "pokoj", "jakiś pokój"])
+def test_vague_room_type_returns_available_types(client, niejasny):
     body = client.post(
-        ROOM, json={"room_type": "jednoosobowy", "check_in": dzien(5), "check_out": dzien(7)}
+        ROOM, json={"room_type": niejasny, "check_in": dzien(2), "check_out": dzien(3)}
+    ).json()
+    assert body["available"] is False
+    assert body["available_room_types"] == ["jednoosobowy", "dwuosobowy", "apartament"]
+    assert "niejednoznaczny" in body["message"]
+
+
+# Blokada z data/rooms.json (przerwa świąteczno-noworoczna). Pobyt 28→30.12.2026
+# obejmuje obie zablokowane noce.
+BLOKADA_OD, BLOKADA_DO = "2026-12-28", "2026-12-30"
+
+
+def test_blocked_window_is_future_and_rejects_room(client):
+    """Ścieżka demo 'wszystko zajęte' musi działać na realnych danych z JSON-a."""
+    body = client.post(
+        ROOM, json={"room_type": "dwuosobowy", "check_in": BLOKADA_OD, "check_out": BLOKADA_DO}
     ).json()
     assert body["available"] is False
     assert "Brak dostępności" in body["message"]
-    assert body["total_price"] == 350 * 2
+    assert "28-29.12.2026" in body["message"], "opis blokady musi pochodzić z dat w JSON-ie"
+    assert "przerwa świąteczno-noworoczna" in body["message"]
+    assert body["total_price"] == 500 * 2, "cena policzona także dla odrzuconego terminu"
+
+
+def test_blocked_window_dates_are_in_the_future():
+    """Blokada w przeszłości = demo nigdy nie zadziała; wtedy przesuń okno w rooms.json."""
+    blokady = {data for daty in main.POKOJE.zablokowane.values() for data in daty}
+    assert blokady, "rooms.json nie ma żadnej blokady"
+    najwczesniejsza = min(date.fromisoformat(wpis) for wpis in blokady)
+    assert najwczesniejsza > date.today(), (
+        f"blokada {najwczesniejsza} jest w przeszłości — przesuń okno w data/rooms.json"
+    )
+
+
+def test_blocked_description_is_generated_from_json(tmp_path):
+    """Opis zakresu dat jest generowany z JSON-a, więc nie może się rozjechać z danymi."""
+    dane = {
+        "typy_pokoi": {"apartament": {"nazwa": "Apartament", "cena_za_noc": 750}},
+        "zajete_terminy": [
+            {"opis": "testowa przerwa", "daty": ["2027-01-05", "2027-01-06", "2027-01-08"]}
+        ],
+    }
+    plik = tmp_path / "rooms.json"
+    plik.write_text(json.dumps(dane), encoding="utf-8")
+
+    katalog = store.KatalogPokoi(plik)
+
+    assert katalog.opis_blokady() == "05-06.01.2027, 08.01.2027"
+    assert katalog.etykieta_blokady() == "testowa przerwa"
+
+
+def test_blocked_description_has_no_hardcoded_dates():
+    assert main.POKOJE.opis_blokady() == "28-29.12.2026"
+    assert "30-31.08.2026" not in main.POKOJE.opis_blokady()
 
 
 # ── SMS, handoff, health, kontrakt ──────────────────────────────────────────
@@ -451,10 +504,10 @@ def test_cors_wildcard_disables_credentials():
 @pytest.mark.parametrize(
     "sciezka,payload,wymagane_pola",
     [
-        (SPA, {"service_name": "jonoforeza", "date": dzien(3)}, {"available", "slots", "service_name", "date", "message", "available_services"}),
+        (SPA, {"service_name": "jonoforeza", "date": dzien(3)}, {"available", "slots", "service_name", "date", "message", "available_services", "price_pln", "duration_min"}),
         (BOOK, {"service_name": "jonoforeza", "date": dzien(3), "time": "10:00", "guest_name": "Anna"}, {"success", "confirmation_id", "service_name", "date", "time", "guest_name", "message"}),
         (CANCEL, {"confirmation_id": "SPA-1111"}, {"success", "confirmation_id", "cancelled", "fee", "medical_release", "message", "note", "free_of_charge", "fee_rule"}),
-        (RESCHEDULE, {"confirmation_id": "SPA-2222", "service_name": "jonoforeza", "new_date": dzien(4), "new_time": "11:00", "guest_name": "Anna"}, {"success", "confirmation_id", "service_name", "new_date", "new_time", "guest_name", "message", "note"}),
+        (RESCHEDULE, {"confirmation_id": "SPA-2222", "service_name": "jonoforeza", "new_date": dzien(4), "new_time": "11:00", "guest_name": "Anna"}, {"success", "confirmation_id", "service_name", "new_date", "new_time", "guest_name", "message", "note", "found"}),
         (ROOM, {"room_type": "dwuosobowy", "check_in": dzien(8), "check_out": dzien(10)}, {"available", "room_type", "price_per_night", "check_in", "check_out", "total_nights", "total_price", "message"}),
         (SMS, {"phone_number": "+48600100200", "summary_text": "ok", "confirmation_id": "SPA-1111", "language": "pl"}, {"success", "message", "delivered_to", "language"}),
         (HANDOFF, {"department": "recepcja", "reason": "pomoc", "guest_name": "Anna", "language": "pl"}, {"success", "simulated", "message", "department", "reason", "guest_name", "language", "note"}),
@@ -466,3 +519,123 @@ def test_contract_fields_are_preserved(client, sciezka, payload, wymagane_pola):
     assert odpowiedz.status_code == 200
     brakujace = wymagane_pola - set(odpowiedz.json())
     assert not brakujace, f"{sciezka} nie zwraca pól: {brakujace}"
+
+
+# ── druga tura hardeningu: nieistniejące rezerwacje, wspólny kalendarz, cennik ──
+
+
+def test_cancel_unknown_reservation_is_refused(client):
+    """Anulowanie numeru, którego nie ma, nie może raportować sukcesu (defekt #1)."""
+    body = client.post(CANCEL, json={"confirmation_id": "SPA-0000"}).json()
+    assert body["success"] is False
+    assert body["cancelled"] is False
+    assert body["found"] is False
+    assert body["fee"] == 0.0, "za nieistniejącą rezerwację nie naliczamy opłaty"
+    assert "SPA-0000" in body["message"]
+    assert "sprawdzenie numeru potwierdzenia" in body["message"]
+
+
+def test_cancel_unknown_reservation_message_in_english(client):
+    body = client.post(
+        CANCEL, json={"confirmation_id": "SPA-0000", "language": "en"}
+    ).json()
+    assert body["success"] is False
+    assert body["cancelled"] is False
+    assert body["found"] is False
+    assert "No reservation found" in body["message"]
+
+
+def test_cancel_unknown_reservation_does_not_touch_existing_booking(client):
+    """Odmowa dla obcego numeru nie może zwolnić slotu prawdziwej rezerwacji."""
+    identyfikator = rezerwuj(client).json()["confirmation_id"]
+    client.post(CANCEL, json={"confirmation_id": "SPA-0000"})
+
+    wolne = client.post(SPA, json={"service_name": "masaż klasyczny", "date": dzien(3)}).json()
+    assert "14:00" not in wolne["slots"], "slot prawdziwej rezerwacji musi zostać zajęty"
+    assert main.SPA_STORE.rezerwacja(identyfikator) is not None
+
+
+def test_reschedule_unknown_reservation_is_refused_without_creating_booking(client):
+    """Przełożenie numeru, którego nie ma, nie może utworzyć nowej rezerwacji (defekt #2)."""
+    body = client.post(
+        RESCHEDULE,
+        json={
+            "confirmation_id": "SPA-0000",
+            "service_name": "masaż klasyczny",
+            "new_date": dzien(4),
+            "new_time": "11:00",
+            "guest_name": "Anna Nowak",
+        },
+    ).json()
+
+    assert body["success"] is False
+    assert body["found"] is False
+    assert body["confirmation_id"] == "SPA-0000", "nie generujemy nowego numeru"
+    assert "Nie znaleziono rezerwacji" in body["message"]
+    assert main.SPA_STORE.rezerwacja(body["confirmation_id"]) is None
+
+    wolne = client.post(SPA, json={"service_name": "masaż klasyczny", "date": dzien(4)}).json()
+    assert "11:00" in wolne["slots"], "żaden slot nie może zostać zajęty przez odmowę"
+
+
+def test_same_hour_cannot_be_sold_twice_for_different_treatments(client):
+    """Jeden gabinet/fizjoterapeuta na godzinę — drugi zabieg o 14:00 musi dostać odmowę (defekt #3)."""
+    pierwsza = rezerwuj(client, godzina="14:00", usluga="masaż klasyczny")
+    assert pierwsza.json()["success"] is True
+
+    druga = rezerwuj(client, godzina="14:00", usluga="jonoforeza")
+    body = druga.json()
+    assert druga.status_code == 200
+    assert body["success"] is False
+    assert "zajęty" in body["message"]
+    assert "14:00" not in body["slots"]
+
+    # wspólny kalendarz: jonoforeza również nie widzi 14:00 jako wolnej godziny
+    wolne = client.post(SPA, json={"service_name": "jonoforeza", "date": dzien(3)}).json()
+    assert "14:00" not in wolne["slots"]
+
+
+def test_availability_reports_price_and_duration(client):
+    body = client.post(SPA, json={"service_name": "masaż klasyczny", "date": dzien(3)}).json()
+    assert body["available"] is True
+    assert body["price_pln"] == 160
+    assert body["duration_min"] == 50
+    assert "160 PLN" in body["message"]
+    assert "50 min" in body["message"]
+
+
+def test_every_catalogue_entry_has_price_and_duration():
+    for usluga in main.USLUGI:
+        assert usluga.cena_pln > 0, f"{usluga.kod} bez ceny"
+        assert usluga.czas_min > 0, f"{usluga.kod} bez czasu trwania"
+        assert usluga.zrodlo_ceny in {"baza_wiedzy", "strona_www"}, usluga.kod
+
+
+def test_catalogue_prices_are_the_knowledge_base_values():
+    """Ceny kanoniczne = baza wiedzy agenta (80/120/100/70/160), nie strona (65/70/45/90/30)."""
+    cennik = {usluga.kod: (usluga.cena_pln, usluga.czas_min) for usluga in main.USLUGI}
+    assert cennik["kapiel_siarczkowa"] == (80, 20)
+    assert cennik["masaz_leczniczy"] == (120, 30)
+    assert cennik["kapiel_borowinowa"] == (100, 25)
+    assert cennik["jonoforeza"] == (70, 20)
+    assert cennik["masaz_klasyczny"] == (160, 50)
+    # gimnastyki nie ma w bazie wiedzy — cena i czas ze strony marketingowej
+    assert cennik["gimnastyka_lecznicza"] == (30, 45)
+
+
+@pytest.mark.parametrize(
+    "zapytanie",
+    ["gimnastyka", "Gimnastyka lecznicza (grupowa)", "gimnastyka dla seniorów", "group gymnastics"],
+)
+def test_gimnastyka_resolves_by_name_and_alias(client, zapytanie):
+    body = client.post(SPA, json={"service_name": zapytanie, "date": dzien(2)}).json()
+    assert body["available"] is True
+    assert body["service_name"] == "gimnastyka lecznicza (grupowa)"
+    assert (body["price_pln"], body["duration_min"]) == (30, 45)
+
+
+def test_gimnastyka_can_be_booked(client):
+    odpowiedz = rezerwuj(client, godzina="15:00", usluga="gimnastyka")
+    body = odpowiedz.json()
+    assert body["success"] is True
+    assert body["service_name"] == "gimnastyka lecznicza (grupowa)"
