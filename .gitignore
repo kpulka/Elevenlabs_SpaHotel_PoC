@@ -53,3 +53,11 @@ mock_backend/tunnel/*.exe
 
 # dopisane przez agenta przy porzadkach 2026-09-18
 mock_backend/tunnel/*.log
+
+# ── Higiena publicznego repo (2026-11) ───────────────────────
+# surowe dumpy API (OpenAPI, signed URL, config agenta) — nie publikujemy
+.planning/_*.json
+# artefakty kompilacji TypeScript
+*.tsbuildinfo
+# zabłąkany, zduplikowany katalog (commitowany backend.log pod złą ścieżką)
+mock_backend/mock_backend/

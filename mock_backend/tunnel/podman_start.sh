@@ -41,6 +41,15 @@ else
   if podman ps -a --format '{{.Names}}' | grep -q '^bukowy-dwor-backend$'; then
     podman start bukowy-dwor-backend
   else
+    # obraz musi istnieć — na świeżym klonie nikt go wcześniej nie zbudował
+    if ! podman image exists localhost/bukowy-dwor-backend; then
+      echo "🔨 brak obrazu — buduję localhost/bukowy-dwor-backend (Dockerfile: tunnel/Dockerfile, kontekst: mock_backend/)"
+      if ! podman build -t bukowy-dwor-backend -f "$TUNNEL_DIR/Dockerfile" "$BACKEND_DIR"; then
+        echo "❌ build obrazu localhost/bukowy-dwor-backend nie powiódł się — sprawdź Dockerfile/podman i spróbuj: podman build -t bukowy-dwor-backend -f \"$TUNNEL_DIR/Dockerfile\" \"$BACKEND_DIR\""
+        exit 1
+      fi
+      echo "✅ obraz zbudowany"
+    fi
     podman run -d --name bukowy-dwor-backend -p $PORT:$PORT "${ENV_ARGS[@]}" localhost/bukowy-dwor-backend
   fi
   echo "✅ kontener wystartowany (port $PORT)"

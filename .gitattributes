@@ -1,0 +1,19 @@
+# Normalizacja końców linii — repo jest rozwijane na Windows, CI działa na Linuksie
+* text=auto eol=lf
+
+# Skrypty muszą mieć LF, inaczej padają na Linuksie/kontenerze
+*.sh text eol=lf
+
+# Pliki binarne — bez konwersji i bez diffów tekstowych
+*.png binary
+*.jpg binary
+*.pptx binary
+*.exe binary
+*.ico binary
+
+# JSON-y (workflow, config) trzymamy jako tekst z LF
+*.json text eol=lf
+
+# Osadzony skrypt widgetu ElevenLabs to kod obcy (1.5 MB) —
+# nie liczymy go do statystyk języków projektu na GitHubie
+frontend/public/widget/*.js linguist-vendored
