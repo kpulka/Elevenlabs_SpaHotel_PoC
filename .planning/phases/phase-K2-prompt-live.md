@@ -77,7 +77,13 @@ rezerwację. Zapisuje `.planning/transcripts/k2-0X-*.json` + `SUMMARY.md` i spra
 obecność `SPA-`, `120`, `0%`/`50%` oraz brak zakazanych fraz. Scenariusz <2 h wymaga wolnego slotu
 w najbliższych 2 h — skrypt powie wprost, jeśli trzeba uruchomić go między 08:00 a 16:00.
 
-Walidacja dziś (bez kredytów): `--check` → exit 3 z datą resetu; `--dry-run` → payloady z datami
-2026-11-10/11; cykl życia testów sprawdzony realnie — `DELETE` starych testów 204, `create` 200,
-`DELETE` nowego 204 (workspace: 0 testów). Stare testy z zamrożonymi datami (9/18/20/21.11) usunięte,
+Preflight (**przed** wydaniem choćby jednego kredytu) sprawdza, czy hosty webhooków siedmiu narzędzi
+Anny odpowiadają na `/health`. Filtruje narzędzia po `TOOL_PATHS`, bo workspace ma też 6 obcych
+`alex_*` wskazujących na martwy host — bez filtra preflight padał na DNS. Martwy tunel = exit 2
+z instrukcją `sync_agent_tools.py`, a nie trzy nieudane symulacje.
+
+Walidacja dziś (bez kredytów): `--check` → `webhooki … 200 (7 narzędzi)` + `Branch … HTTP 200`,
+exit 3 (kredyty); `--dry-run` → payloady z datami 2026-11-10/11, exit 0; cykl życia testów
+sprawdzony realnie — `DELETE` starych testów 204, `create` 200, `DELETE` nowego 204
+(workspace: 0 testów). Stare testy z zamrożonymi datami (9/18/20/21.11) usunięte,
 bo po 22.11 byłyby w przeszłości.
