@@ -2,6 +2,7 @@
 
 Ten katalog **nie jest dokumentacją produktu** (ta żyje w `docs/`, punkt wejścia: `docs/INDEX.md`). To warsztat: plan, fazy, artefakty wdrożenia i dowody, że coś zostało zrobione.
 
+- **`HANDOFF.md`** — punkt startowy dla nowego agenta/osoby: stan faktyczny z liczbami, otwarte decyzje, zasady pracy, pułapki i gotowy prompt do realizacji EPIK-u K.
 - `PROJECT.md` — kontekst i zasady projektu: co budujemy, jakie decyzje zapadły, czego nie robimy.
 - `ROADMAP.md` — fazy i epiki (A–K) z kryteriami DoD. Nadrzędny plan wykonania.
 - `phases/` — po jednym pliku na fazę: samowystarczalny brief z komendami, parametrami MCP i gotowymi JSON-ami. To zapis historyczny — nie aktualizujemy treści, tylko odwołania do plików.
