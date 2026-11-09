@@ -7,7 +7,7 @@ import { useLanguage } from '@/context/language-context'
 import { contactInfo } from '@/lib/hotel-data'
 
 export function SiteFooter() {
-  const { t, language } = useLanguage()
+  const { t } = useLanguage()
 
   const quickLinks = [
     { label: t.nav.rooms, href: '/pokoje' },
@@ -106,7 +106,7 @@ export function SiteFooter() {
           <p>&copy; 2026 Bukowy Dwór. {t.footer.rights}</p>
           <div className="flex gap-4">
             <Link href="#" className="outline-none hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
-              {language === 'pl' ? 'Polityka prywatności' : 'Privacy Policy'}
+              {t.footer.privacyPolicy}
             </Link>
             <Link href="#" className="outline-none hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
               GDPR / RODO

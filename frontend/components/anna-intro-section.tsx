@@ -7,29 +7,20 @@ import { useLanguage } from '@/context/language-context'
 import { contactInfo } from '@/lib/hotel-data'
 
 export function AnnaIntroSection() {
-  const { t, language } = useLanguage()
+  const { t } = useLanguage()
 
   const helpTopics = [
     {
       icon: BedDouble,
-      text:
-        language === 'pl'
-          ? 'Zarezerwuje pokój i odpowie na pytania o pobyt'
-          : 'Reserves your room and answers any questions regarding your stay',
+      text: t.anna.helpTopic1,
     },
     {
       icon: Waves,
-      text:
-        language === 'pl'
-          ? 'Podpowie, jakie zabiegi SPA będą dla Pani/Pana odpowiednie'
-          : 'Recommends suitable balneotherapy and spa treatments based on your health',
+      text: t.anna.helpTopic2,
     },
     {
       icon: MapPinned,
-      text:
-        language === 'pl'
-          ? 'Wyjaśni, jak dojechać i gdzie zaparkować'
-          : 'Explains directions, parking, and complimentary electric shuttle pickup',
+      text: t.anna.helpTopic3,
     },
   ]
 
@@ -92,7 +83,7 @@ export function AnnaIntroSection() {
                 {t.anna.introCta}
               </button>
               <p className="text-base text-white/70">
-                {language === 'pl' ? 'Wolisz zadzwonić?' : 'Prefer to call?'}{' '}
+                {t.anna.preferCall}{' '}
                 <a
                   href={contactInfo.phoneHref}
                   className="font-semibold text-white underline-offset-4 outline-none hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"

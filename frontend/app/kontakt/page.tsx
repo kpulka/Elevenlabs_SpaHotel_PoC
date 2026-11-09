@@ -10,7 +10,7 @@ import { useLanguage } from '@/context/language-context'
 import { contactInfo } from '@/lib/hotel-data'
 
 export default function ContactPage() {
-  const { language, t } = useLanguage()
+  const { t } = useLanguage()
 
   return (
     <>
@@ -19,7 +19,7 @@ export default function ContactPage() {
         <section className="relative flex min-h-[420px] items-center overflow-hidden">
           <Image
             src="/images/hero-contact.png"
-            alt="Recepcja Bukowego Dworu"
+            alt={t.images.contactHeroAlt}
             fill
             priority
             className="object-cover"
@@ -45,7 +45,7 @@ export default function ContactPage() {
                 <div className="flex items-center gap-3">
                   <Phone className="size-6 text-sage" aria-hidden="true" />
                   <h2 className="font-serif text-lg font-semibold text-navy">
-                    {language === 'pl' ? 'Telefon recepcji' : 'Front Desk Phone'}
+                    {t.contactPage.phoneCardTitle}
                   </h2>
                 </div>
                 <a
@@ -74,7 +74,7 @@ export default function ContactPage() {
                 <div className="flex items-center gap-3">
                   <MapPin className="size-6 text-sage" aria-hidden="true" />
                   <h2 className="font-serif text-lg font-semibold text-navy">
-                    {language === 'pl' ? 'Adres' : 'Address'}
+                    {t.contactPage.addressCardTitle}
                   </h2>
                 </div>
                 <p className="mt-3 text-lg leading-relaxed text-charcoal/85">
@@ -86,11 +86,11 @@ export default function ContactPage() {
                 <div className="flex items-center gap-3">
                   <Clock className="size-6 text-sage" aria-hidden="true" />
                   <h2 className="font-serif text-lg font-semibold text-navy">
-                    {language === 'pl' ? 'Dostępność' : 'Availability'}
+                    {t.contactPage.availabilityCardTitle}
                   </h2>
                 </div>
                 <p className="mt-3 text-lg leading-relaxed text-charcoal/85">
-                  {language === 'pl' ? 'Całodobowo (24/7) — telefon, recepcja i Anna AI' : '24/7 Available — Telephone, On-site Front Desk & Anna AI'}
+                  {t.contactPage.availabilityValue}
                 </p>
               </div>
             </div>
@@ -98,9 +98,7 @@ export default function ContactPage() {
             <div className="rounded-2xl border border-gold/20 bg-cream p-6 md:p-10">
               <h2 className="font-serif text-2xl font-bold text-navy">{t.contactPage.formTitle}</h2>
               <p className="mt-2 text-base leading-relaxed text-charcoal/80">
-                {language === 'pl'
-                  ? 'Wypełnij formularz — skontaktujemy się z Tobą telefonicznie w ciągu 2 godzin.'
-                  : 'Submit the inquiry form — our front desk will call you back within 2 business hours.'}
+                {t.contactPage.formHint}
               </p>
               <ContactForm />
             </div>

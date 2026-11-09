@@ -1,7 +1,137 @@
 import type { Language } from "./translations"
+import { ROOM_FACTS, SITE_TREATMENTS } from "./generated/hotel-facts"
+
+/** Dwujęzyczna wartość — jedno miejsce na parę PL/EN zamiast dwóch równoległych tablic. */
+export type L<T> = { pl: T; en: T }
+
+/** Wybór wariantu językowego z rekordu dwujęzycznego. */
+export function loc<T>(value: L<T>, lang: Language): T {
+  return lang === "en" ? value.en : value.pl
+}
+
+// ---------------------------------------------------------------------------
+// Pokoje
+// Cena i lista typów pochodzą z mock_backend/data/rooms.json przez
+// lib/generated/hotel-facts.ts. Tutaj jest wyłącznie copy PL/EN.
+// ---------------------------------------------------------------------------
+
+export type RoomId = (typeof ROOM_FACTS)[number]["id"]
+
+type RoomCopy = {
+  slug: L<string>
+  name: L<string>
+  capacity: L<string>
+  image: string
+  description: L<string>
+  longDescription: L<string>
+  features: L<string[]>
+}
+
+/**
+ * `Record<RoomId, RoomCopy>` sprawia, że nowy typ pokoju w rooms.json bez copy
+ * (albo copy bez pokoju w backendzie) jest błędem kompilacji.
+ */
+const roomCopy: Record<RoomId, RoomCopy> = {
+  jednoosobowy: {
+    slug: { pl: "pokoj-jednoosobowy", en: "single-room" },
+    name: { pl: "Pokój jednoosobowy", en: "Single Comfort Room" },
+    capacity: { pl: "1 osoba", en: "1 Guest" },
+    image: "/images/room-single.png",
+    description: {
+      pl: "Spokojny, słoneczny pokój dla jednej osoby z widokiem na las bukowy. Idealny na dłuższy pobyt sanatoryjny.",
+      en: "Quiet, sunlit room for one guest overlooking the beech forest. Ideal for health resort stays.",
+    },
+    longDescription: {
+      pl: "Pokój jednoosobowy o powierzchni 22 m² urządzony w ciepłych, naturalnych barwach. Łóżko z materacem ortopedycznym, wygodny fotel do czytania i biurko. Duże okno zapewnia dużo naturalnego światła i widok na okoliczny las.",
+      en: "Single room (22 m²) decorated in warm natural tones. Orthopedic mattress, ergonomic reading chair, and desk. Large window with picturesque forest scenery.",
+    },
+    features: {
+      pl: [
+        "Łóżko z materacem ortopedycznym",
+        "Łazienka z uchwytami i brodzikiem bez progu",
+        "Przycisk alarmowy przy łóżku",
+        "Balkon lub loggia",
+        "Telewizor i radio",
+        "Czajnik i zestaw do herbaty",
+      ],
+      en: [
+        "Orthopedic medical mattress",
+        "Walk-in step-free shower with safety grab bars",
+        "Bedside emergency call button",
+        "Private balcony or loggia",
+        "Smart TV & radio",
+        "Electric kettle & herbal tea set",
+      ],
+    },
+  },
+  dwuosobowy: {
+    slug: { pl: "pokoj-dwuosobowy", en: "double-room" },
+    name: { pl: "Pokój dwuosobowy", en: "Double Comfort Room" },
+    capacity: { pl: "2 osoby", en: "2 Guests" },
+    image: "/images/room-double.png",
+    description: {
+      pl: "Przestronny pokój dla dwóch osób z wygodną strefą wypoczynkową i widokiem na góry.",
+      en: "Spacious room for two guests with a comfortable relaxation area and mountain views.",
+    },
+    longDescription: {
+      pl: "Pokój dwuosobowy o powierzchni 30 m² z dwoma łóżkami lub łóżkiem małżeńskim do wyboru. Oddzielna strefa wypoczynkowa z fotelami, duża łazienka przystosowana dla osób z ograniczoną mobilnością.",
+      en: "Double room (30 m²) with twin beds or king-size bed. Separate lounge area with armchairs and fully barrier-free accessible bathroom.",
+    },
+    features: {
+      pl: [
+        "Dwa łóżka lub łóżko małżeńskie",
+        "Łazienka z uchwytami i brodzikiem bez progu",
+        "Przycisk alarmowy przy łóżku",
+        "Strefa wypoczynkowa z fotelami",
+        "Balkon z widokiem na las",
+        "Telewizor, radio, sejf",
+      ],
+      en: [
+        "Twin beds or king-size bed",
+        "Walk-in step-free shower with grab bars",
+        "Emergency call buttons in bedroom & bathroom",
+        "Lounge seating area with armchairs",
+        "Balcony with panoramic forest view",
+        "TV, digital radio, safe",
+      ],
+    },
+  },
+  apartament: {
+    slug: { pl: "apartament", en: "apartment-suite" },
+    name: { pl: "Apartament", en: "Executive Health Suite" },
+    capacity: { pl: "2–3 osoby", en: "2–3 Guests" },
+    image: "/images/room-apartment.png",
+    description: {
+      pl: "Apartament z osobnym salonem — najwięcej przestrzeni i komfortu, dla gości z opiekunem lub rodziną.",
+      en: "Suite with separate living room — maximum comfort and space for guests with family or caregiver.",
+    },
+    longDescription: {
+      pl: "Apartament o powierzchni 55 m² z sypialnią oraz osobnym salonem. Dodatkowe miejsce do spania dla osoby towarzyszącej. Duża, w pełni dostępna łazienka oraz prywatny balkon z widokiem na górski krajobraz.",
+      en: "Luxury apartment (55 m²) featuring a master bedroom and separate living room. Extra sofa bed, premium accessible bathroom, and wide private terrace.",
+    },
+    features: {
+      pl: [
+        "Sypialnia + osobny salon",
+        "Dodatkowe miejsce do spania",
+        "Łazienka w pełni dostępna, prysznic bez progu",
+        "Przycisk alarmowy w sypialni i łazience",
+        "Prywatny, przestronny balkon",
+        "Minibar, sejf, telewizor",
+      ],
+      en: [
+        "Master bedroom + separate living room",
+        "Extra sleeping accommodation for companion",
+        "100% barrier-free bathroom with level-entry shower",
+        "Emergency call buttons in bedroom & bathroom",
+        "Private spacious scenic balcony",
+        "Minibar, safe, 4K TV",
+      ],
+    },
+  },
+}
 
 export type Room = {
-  id: string
+  id: RoomId
   slug: string
   name: string
   price: number
@@ -12,433 +142,377 @@ export type Room = {
   features: string[]
 }
 
-export const rooms: Room[] = [
-  {
-    id: "jednoosobowy",
-    slug: "pokoj-jednoosobowy",
-    name: "Pokój jednoosobowy",
-    price: 350,
-    capacity: "1 osoba",
-    image: "/images/room-single.png",
-    description:
-      "Spokojny, słoneczny pokój dla jednej osoby z widokiem na las bukowy. Idealny na dłuższy pobyt sanatoryjny.",
-    longDescription:
-      "Pokój jednoosobowy o powierzchni 22 m² urządzony w ciepłych, naturalnych barwach. Łóżko z materacem ortopedycznym, wygodny fotel do czytania i biurko. Duże okno zapewnia dużo naturalnego światła i widok na okoliczny las.",
-    features: [
-      "Łóżko z materacem ortopedycznym",
-      "Łazienka z uchwytami i brodzikiem bez progu",
-      "Przycisk alarmowy przy łóżku",
-      "Balkon lub loggia",
-      "Telewizor i radio",
-      "Czajnik i zestaw do herbaty",
-    ],
-  },
-  {
-    id: "dwuosobowy",
-    slug: "pokoj-dwuosobowy",
-    name: "Pokój dwuosobowy",
-    price: 500,
-    capacity: "2 osoby",
-    image: "/images/room-double.png",
-    description:
-      "Przestronny pokój dla dwóch osób z wygodną strefą wypoczynkową i widokiem na góry.",
-    longDescription:
-      "Pokój dwuosobowy o powierzchni 30 m² z dwoma łóżkami lub łóżkiem małżeńskim do wyboru. Oddzielna strefa wypoczynkowa z fotelami, duża łazienka przystosowana dla osób z ograniczoną mobilnością.",
-    features: [
-      "Dwa łóżka lub łóżko małżeńskie",
-      "Łazienka z uchwytami i brodzikiem bez progu",
-      "Przycisk alarmowy przy łóżku",
-      "Strefa wypoczynkowa z fotelami",
-      "Balkon z widokiem na las",
-      "Telewizor, radio, sejf",
-    ],
-  },
-  {
-    id: "apartament",
-    slug: "apartament",
-    name: "Apartament",
-    price: 750,
-    capacity: "2–3 osoby",
-    image: "/images/room-apartment.png",
-    description:
-      "Apartament z osobnym salonem — najwięcej przestrzeni i komfortu, dla gości z opiekunem lub rodziną.",
-    longDescription:
-      "Apartament o powierzchni 45 m² z sypialnią oraz osobnym salonem. Dodatkowe miejsce do spania dla osoby towarzyszącej. Duża, w pełni dostępna łazienka oraz prywatny balkon z widokiem na górski krajobraz.",
-    features: [
-      "Sypialnia + osobny salon",
-      "Dodatkowe miejsce do spania",
-      "Łazienka w pełni dostępna, prysznic bez progu",
-      "Przycisk alarmowy w sypialni i łazience",
-      "Prywatny, przestronny balkon",
-      "Minibar, sejf, telewizor",
-    ],
-  },
-]
+export function getRooms(lang: Language): Room[] {
+  return ROOM_FACTS.map((fact) => {
+    const copy = roomCopy[fact.id]
+    return {
+      id: fact.id,
+      slug: loc(copy.slug, lang),
+      name: loc(copy.name, lang),
+      price: fact.pricePerNight,
+      capacity: loc(copy.capacity, lang),
+      image: copy.image,
+      description: loc(copy.description, lang),
+      longDescription: loc(copy.longDescription, lang),
+      features: loc(copy.features, lang),
+    }
+  })
+}
 
-export const roomsEn: Room[] = [
-  {
-    id: "jednoosobowy",
-    slug: "single-room",
-    name: "Single Comfort Room",
-    price: 350,
-    capacity: "1 Guest",
-    image: "/images/room-single.png",
-    description:
-      "Quiet, sunlit room for one guest overlooking the beech forest. Ideal for health resort stays.",
-    longDescription:
-      "Single room (22 m²) decorated in warm natural tones. Orthopedic mattress, ergonomic reading chair, and desk. Large window with picturesque forest scenery.",
-    features: [
-      "Orthopedic medical mattress",
-      "Walk-in step-free shower with safety grab bars",
-      "Bedside emergency call button",
-      "Private balcony or loggia",
-      "Smart TV & radio",
-      "Electric kettle & herbal tea set",
-    ],
+// ---------------------------------------------------------------------------
+// Zabiegi
+// Id, ceny i czasy trwania pochodzą z mock_backend/data/spa_schedule.json
+// (przez lib/generated/hotel-facts.ts). Tutaj jest wyłącznie copy PL/EN oraz
+// dwa wpisy lokalne: baseny to udogodnienia strefy basenowej (w cenie pobytu,
+// bez rezerwacji), a nie zabiegi z katalogu głosowego.
+// ---------------------------------------------------------------------------
+
+/** Klucz kategorii; etykiety PL/EN żyją w translations.spaPage.category*. */
+export type TreatmentCategory = "thermal" | "balneo" | "physio"
+
+type SiteTreatmentId = (typeof SITE_TREATMENTS)[number]["id"]
+
+/** Wpisy wyłącznie lokalne — nie ma ich w katalogu backendu, więc nie są rezerwowalne. */
+type LocalTreatmentId = "basen-32" | "basen-34"
+
+export type TreatmentId = SiteTreatmentId | LocalTreatmentId
+
+type TreatmentCopy = {
+  category: TreatmentCategory
+  name: L<string>
+  description: L<string>
+  image?: string
+  /** Baseny: wstęp w cenie pobytu, bez rezerwacji i bez limitu czasu. */
+  includedInStay?: boolean
+  /** Czas trwania wpisu lokalnego; zabiegi z backendu biorą go z durationMin. */
+  durationNote?: L<string>
+}
+
+/**
+ * `Record<TreatmentId, TreatmentCopy>` wymusza komplet copy dla każdego
+ * identyfikatora z katalogu backendu — brak wpisu to błąd kompilacji,
+ * a nie pusta etykieta na stronie. Kolejność kluczy = kolejność wyświetlania.
+ * Ceny i czasy trwania NIE są tu wpisywane — pochodzą z danych generowanych.
+ */
+const treatmentCopy: Record<TreatmentId, TreatmentCopy> = {
+  "basen-32": {
+    category: "thermal",
+    name: { pl: "Basen termalny 32°C", en: "Thermal Relaxation Pool 32°C" },
+    includedInStay: true,
+    durationNote: { pl: "bez limitu w godzinach otwarcia", en: "Unlimited during opening hours" },
+    image: "/images/spa-pool.png",
+    description: {
+      pl: "Basen relaksacyjny o łagodnej temperaturze, dostępny dla wszystkich gości hotelowych w ramach pobytu.",
+      en: "Gentle mineral relaxation pool, open to all resort guests as part of their stay.",
+    },
   },
-  {
-    id: "dwuosobowy",
-    slug: "double-room",
-    name: "Double Comfort Room",
-    price: 500,
-    capacity: "2 Guests",
-    image: "/images/room-double.png",
-    description:
-      "Spacious room for two guests with a comfortable relaxation area and mountain views.",
-    longDescription:
-      "Double room (30 m²) with twin beds or king-size bed. Separate lounge area with armchairs and fully barrier-free accessible bathroom.",
-    features: [
-      "Twin beds or king-size bed",
-      "Walk-in step-free shower with grab bars",
-      "Emergency call buttons in bedroom & bathroom",
-      "Lounge seating area with armchairs",
-      "Balcony with panoramic forest view",
-      "TV, digital radio, safe",
-    ],
+  "basen-34": {
+    category: "thermal",
+    name: { pl: "Basen termalny 34°C", en: "Thermal Hydrotherapy Pool 34°C" },
+    includedInStay: true,
+    durationNote: { pl: "bez limitu w godzinach otwarcia", en: "Unlimited during opening hours" },
+    image: "/images/hero-pool.png",
+    description: {
+      pl: "Cieplejszy basen solankowy o właściwościach rozluźniających mięśnie, polecany szczególnie przy dolegliwościach reumatycznych.",
+      en: "Warmer brine pool with muscle-relaxing properties, recommended especially for rheumatic complaints.",
+    },
   },
-  {
-    id: "apartament",
-    slug: "apartment-suite",
-    name: "Executive Health Suite",
-    price: 750,
-    capacity: "2–3 Guests",
-    image: "/images/room-apartment.png",
-    description:
-      "Suite with separate living room — maximum comfort and space for guests with family or caregiver.",
-    longDescription:
-      "Luxury apartment (45 m²) featuring a master bedroom and separate living room. Extra sofa bed, premium accessible bathroom, and wide private terrace.",
-    features: [
-      "Master bedroom + separate living room",
-      "Extra sleeping accommodation for companion",
-      "100% barrier-free bathroom with level-entry shower",
-      "Emergency call buttons in bedroom & bathroom",
-      "Private spacious scenic balcony",
-      "Minibar, safe, 4K TV",
-    ],
+  "kapiel-siarczkowa": {
+    category: "balneo",
+    name: { pl: "Kąpiel siarczkowa „Ukojenie Stawów”", en: "Sulphur Bath “Joint Relief”" },
+    image: "/images/treatment-sulphur-bath.png",
+    description: {
+      pl: "Kąpiel w naturalnej wodzie siarczkowej pod nadzorem personelu medycznego — działa przeciwzapalnie, ułatwia ruch w stawach i przynosi ulgę w dolegliwościach reumatycznych.",
+      en: "Bath in natural sulphur-rich thermal water supervised by medical staff — anti-inflammatory, eases joint movement, and relieves rheumatic complaints.",
+    },
   },
+  "masaz-leczniczy": {
+    category: "physio",
+    name: {
+      pl: "Delikatny masaż leczniczy pleców",
+      en: "Gentle Therapeutic Back Massage",
+    },
+    image: "/images/treatment-massage.png",
+    description: {
+      pl: "Delikatny masaż pleców wykonywany przez fizjoterapeutę i dopasowany do stanu zdrowia gościa — rozluźnia napięcie mięśniowe i uśmierza ból kręgosłupa.",
+      en: "Gentle back massage delivered by a physiotherapist and adapted to your health — releases muscle tension and eases spinal pain.",
+    },
+  },
+  "kapiel-borowinowa": {
+    category: "balneo",
+    name: {
+      pl: "Kąpiel borowinowa „Głęboka Regeneracja”",
+      en: "Peat Mud Bath “Deep Regeneration”",
+    },
+    image: "/images/treatment-mud-bath.png",
+    description: {
+      pl: "Kąpiel z naturalnym torfem leczniczym — głęboko rozgrzewa, łagodzi bóle stawów i wspomaga krążenie.",
+      en: "Bath in natural therapeutic peat — warms deeply, relieves joint pain, and supports circulation.",
+    },
+  },
+  jonoforeza: {
+    category: "balneo",
+    name: {
+      pl: "Jonoforeza (zabieg elektrolecznicowy)",
+      en: "Iontophoresis (Electrotherapy Treatment)",
+    },
+    image: "/images/treatment-electrotherapy.png",
+    description: {
+      pl: "Zabieg elektroleczniczy wprowadzający leki przeciwbólowe przez skórę prądem stałym — stosowany w bólach kręgosłupa i stawów.",
+      en: "Electrotherapy treatment introducing pain-relieving medication through the skin with direct current — used for spinal and joint pain.",
+    },
+  },
+  "masaz-klasyczny": {
+    category: "physio",
+    name: { pl: "Masaż klasyczny relaksacyjny", en: "Classic Relaxation Massage" },
+    image: "/images/treatment-massage.png",
+    description: {
+      pl: "Masaż całego ciała w spokojnym, relaksacyjnym tempie — poprawia krążenie, rozluźnia napięcie mięśniowe i dopełnia pobyt sanatoryjny.",
+      en: "Full-body massage at a calm, relaxing pace — improves circulation, releases muscle tension, and complements your health-resort stay.",
+    },
+  },
+  "gimnastyka-lecznicza": {
+    category: "physio",
+    name: { pl: "Gimnastyka lecznicza (grupowa)", en: "Therapeutic Group Gymnastics" },
+    image: "/images/treatment-gymnastics.png",
+    description: {
+      pl: "Zajęcia grupowe z fizjoterapeutą, dostosowane do możliwości seniorów — poprawiają ruchomość stawów i bezpieczeństwo codziennych czynności.",
+      en: "Group sessions led by a physiotherapist and adapted to seniors’ abilities — improve joint mobility and everyday safety.",
+    },
+  },
+}
+
+/** Fakty z backendu po id — cena i czas trwania nie są nigdzie wpisywane ręcznie. */
+const treatmentFacts = new Map<string, (typeof SITE_TREATMENTS)[number]>(
+  SITE_TREATMENTS.map((fact) => [fact.id, fact])
+)
+
+/** Kolejność wyświetlania: baseny (strefa) -> zabiegi w kolejności z katalogu backendu. */
+const treatmentOrder: TreatmentId[] = [
+  "basen-32",
+  "basen-34",
+  ...SITE_TREATMENTS.map((fact) => fact.id),
 ]
 
 export type Treatment = {
-  id: string
-  category: "Baseny termalne" | "Zabiegi balneologiczne" | "Masaże i fizykoterapia" | "Thermal Pools" | "Balneological Treatments" | "Massage & Physiotherapy"
+  id: TreatmentId
+  category: TreatmentCategory
   name: string
   duration: string
   price: number
+  includedInStay: boolean
   description: string
   image?: string
 }
 
-export const treatments: Treatment[] = [
-  {
-    id: "basen-32",
-    category: "Baseny termalne",
-    name: "Basen termalny 32°C",
-    duration: "bez limitu w godzinach otwarcia",
-    price: 0,
-    image: "/images/spa-pool.png",
-    description:
-      "Basen relaksacyjny o łagodnej temperaturze, dostępny dla wszystkich gości hotelowych bez dodatkowych opłat.",
-  },
-  {
-    id: "basen-34",
-    category: "Baseny termalne",
-    name: "Basen termalny 34°C",
-    duration: "bez limitu w godzinach otwarcia",
-    price: 0,
-    image: "/images/hero-pool.png",
-    description:
-      "Cieplejszy basen o właściwościach rozluźniających mięśnie, polecany szczególnie przy dolegliwościach reumatycznych.",
-  },
-  {
-    id: "kapiel-siarczkowa",
-    category: "Zabiegi balneologiczne",
-    name: "Kąpiel siarczkowa",
-    duration: "20 min",
-    price: 65,
-    image: "/images/treatment-sulphur-bath.png",
-    description:
-      "Kąpiel w wodzie siarczkowej wspomagająca leczenie chorób stawów i skóry, wykonywana pod nadzorem personelu medycznego.",
-  },
-  {
-    id: "kapiel-borowinowa",
-    category: "Zabiegi balneologiczne",
-    name: "Kąpiel borowinowa",
-    duration: "20 min",
-    price: 70,
-    image: "/images/treatment-mud-bath.png",
-    description:
-      "Zabieg z użyciem naturalnego torfu leczniczego, łagodzący bóle stawów i wspomagający krążenie.",
-  },
-  {
-    id: "jonoforeza",
-    category: "Zabiegi balneologiczne",
-    name: "Jonoforeza",
-    duration: "15 min",
-    price: 45,
-    image: "/images/treatment-electrotherapy.png",
-    description:
-      "Zabieg fizykoterapeutyczny wykorzystujący prąd stały do wprowadzania leków przeciwbólowych przez skórę.",
-  },
-  {
-    id: "masaz-leczniczy",
-    category: "Masaże i fizykoterapia",
-    name: "Masaż leczniczy",
-    duration: "30 min",
-    price: 90,
-    image: "/images/treatment-massage.png",
-    description:
-      "Masaż wykonywany przez wykwalifikowanego fizjoterapeutę, dopasowany indywidualnie do stanu zdrowia gościa.",
-  },
-  {
-    id: "gimnastyka-lecznicza",
-    category: "Masaże i fizykoterapia",
-    name: "Gimnastyka lecznicza (grupowa)",
-    duration: "45 min",
-    price: 30,
-    image: "/images/treatment-gymnastics.png",
-    description:
-      "Zajęcia ruchowe prowadzone przez fizjoterapeutę, dostosowane do możliwości seniorów.",
-  },
-]
+export function getTreatments(lang: Language): Treatment[] {
+  return treatmentOrder.map((id) => {
+    const copy = treatmentCopy[id]
+    const fact = treatmentFacts.get(id)
+    if (!fact && !copy.durationNote) {
+      throw new Error(`[hotel-data] zabieg "${id}" nie ma ani faktu z backendu, ani czasu lokalnego`)
+    }
+    return {
+      id,
+      category: copy.category,
+      name: loc(copy.name, lang),
+      duration: fact
+        ? `${fact.durationMin} min`
+        : loc(copy.durationNote as L<string>, lang),
+      price: fact ? fact.pricePln : 0,
+      includedInStay: Boolean(copy.includedInStay),
+      description: loc(copy.description, lang),
+      image: copy.image,
+    }
+  })
+}
 
-export const treatmentsEn: Treatment[] = [
-  {
-    id: "basen-32",
-    category: "Thermal Pools",
-    name: "Thermal Relaxation Pool 32°C",
-    duration: "Unlimited during opening hours",
-    price: 0,
-    image: "/images/spa-pool.png",
-    description:
-      "Gentle mineral relaxation pool, open to all resort guests at no extra charge.",
-  },
-  {
-    id: "basen-34",
-    category: "Thermal Pools",
-    name: "Thermal Hydrotherapy Pool 34°C",
-    duration: "Unlimited during opening hours",
-    price: 0,
-    image: "/images/hero-pool.png",
-    description:
-      "Warm mineral hydrotherapy pool with muscle-relaxing jets, recommended for rheumatic relief.",
-  },
-  {
-    id: "kapiel-siarczkowa",
-    category: "Balneological Treatments",
-    name: "Mineral Sulphur Bath",
-    duration: "20 min",
-    price: 65,
-    image: "/images/treatment-sulphur-bath.png",
-    description:
-      "Natural thermal sulphur bath aiding in joint, spine, and skin rehabilitation under medical oversight.",
-  },
-  {
-    id: "kapiel-borowinowa",
-    category: "Balneological Treatments",
-    name: "Therapeutic Peat Mud Bath",
-    duration: "20 min",
-    price: 70,
-    image: "/images/treatment-mud-bath.png",
-    description:
-      "Natural medical peat mud wrap, relieving deep joint pain and boosting circulation.",
-  },
-  {
-    id: "jonoforeza",
-    category: "Balneological Treatments",
-    name: "Iontophoresis Electrotherapy",
-    duration: "15 min",
-    price: 45,
-    image: "/images/treatment-electrotherapy.png",
-    description:
-      "Physiotherapy treatment using direct electrical current to deliver anti-inflammatory analgesics through skin.",
-  },
-  {
-    id: "masaz-leczniczy",
-    category: "Massage & Physiotherapy",
-    name: "Therapeutic Back Massage",
-    duration: "30 min",
-    price: 90,
-    image: "/images/treatment-massage.png",
-    description:
-      "Customized back and spine massage delivered by certified medical physiotherapists.",
-  },
-  {
-    id: "gimnastyka-lecznicza",
-    category: "Massage & Physiotherapy",
-    name: "Therapeutic Group Gymnastics",
-    duration: "45 min",
-    price: 30,
-    image: "/images/treatment-gymnastics.png",
-    description:
-      "Low-impact mobility gymnastics led by a senior physiotherapist.",
-  },
-]
+// ---------------------------------------------------------------------------
+// Diety
+// ---------------------------------------------------------------------------
 
 export type Diet = {
   id: string
   name: string
   description: string
+  /** Dodatkowa informacja praktyczna (np. termin zgłoszenia diety). */
+  note?: string
 }
 
-export const diets: Diet[] = [
+type DietCopy = {
+  id: string
+  name: L<string>
+  description: L<string>
+  note?: L<string>
+}
+
+/**
+ * Dokładnie TRZY diety — tyle, ile realnie oferuje restauracja. Nie dopisuj
+ * kolejnych pozycji bez potwierdzenia w bazie wiedzy hotelu.
+ */
+const dietCopy: DietCopy[] = [
   {
     id: "cukrzycowa",
-    name: "Dieta cukrzycowa",
-    description:
-      "Posiłki o kontrolowanej zawartości cukru i węglowodanów, przygotowywane pod nadzorem dietetyka.",
+    name: { pl: "Dieta cukrzycowa", en: "Diabetic Menu (Low-GI)" },
+    description: {
+      pl: "Posiłki o kontrolowanej zawartości cukru i węglowodanów, przygotowywane pod nadzorem dietetyka.",
+      en: "Controlled carbohydrates and low glycemic index meals supervised by a clinical dietitian.",
+    },
   },
   {
     id: "lekkostrawna",
-    name: "Dieta lekkostrawna",
-    description:
-      "Łagodne dla żołądka posiłki, polecane po zabiegach oraz w okresie rekonwalescencji.",
+    name: { pl: "Dieta lekkostrawna", en: "Light Digestive Menu" },
+    description: {
+      pl: "Łagodne dla żołądka posiłki, polecane po zabiegach oraz w okresie rekonwalescencji.",
+      en: "Gentle, easily digestible dishes recommended during recovery and post-treatment rest.",
+    },
   },
   {
-    id: "bezglutenowa",
-    name: "Dieta bezglutenowa",
-    description:
-      "Posiłki przygotowywane bez produktów zawierających gluten, z zachowaniem pełnej wartości odżywczej.",
+    id: "bezglutenowa-bezmleczna",
+    name: {
+      pl: "Dieta bezglutenowa i bezmleczna",
+      en: "Gluten-Free & Dairy-Free Menu",
+    },
+    description: {
+      pl: "Posiłki bez glutenu i bez mleka, przygotowywane w wydzielonej strefie kuchni z zachowaniem pełnej wartości odżywczej.",
+      en: "Gluten-free and dairy-free meals prepared in a dedicated kitchen zone while preserving complete nutritional balance.",
+    },
+    note: {
+      pl: "Zgłoś tę dietę najpóźniej 3 dni przed przyjazdem.",
+      en: "Please request this diet at least 3 days before arrival.",
+    },
   },
 ]
 
-export const dietsEn: Diet[] = [
-  {
-    id: "cukrzycowa",
-    name: "Diabetic Menu (Low-GI)",
-    description:
-      "Controlled carbohydrates and low glycemic index meals supervised by a clinical dietitian.",
-  },
-  {
-    id: "lekkostrawna",
-    name: "Light Digestive Menu",
-    description:
-      "Gentle, easily digestible dishes recommended during recovery and post-treatment rest.",
-  },
-  {
-    id: "bezglutenowa",
-    name: "Gluten-Free Menu",
-    description:
-      "Meals prepared in dedicated allergen-safe environment preserving complete nutritional balance.",
-  },
-]
-
-export const mealTimes = [
-  { name: "Śniadanie", hours: "7:30 – 9:30" },
-  { name: "Obiad", hours: "13:00 – 15:00" },
-  { name: "Kolacja", hours: "18:00 – 19:30" },
-]
-
-export const mealTimesEn = [
-  { name: "Breakfast", hours: "7:30 AM – 9:30 AM" },
-  { name: "Lunch", hours: "1:00 PM – 3:00 PM" },
-  { name: "Dinner", hours: "6:00 PM – 7:30 PM" },
-]
-
-export function getRooms(lang: Language) {
-  return lang === "en" ? roomsEn : rooms
+export function getDiets(lang: Language): Diet[] {
+  return dietCopy.map((diet) => ({
+    id: diet.id,
+    name: loc(diet.name, lang),
+    description: loc(diet.description, lang),
+    ...(diet.note ? { note: loc(diet.note, lang) } : {}),
+  }))
 }
 
-export function getTreatments(lang: Language) {
-  return lang === "en" ? treatmentsEn : treatments
+// ---------------------------------------------------------------------------
+// Godziny posiłków
+// ---------------------------------------------------------------------------
+
+export type MealTime = {
+  name: string
+  hours: string
 }
 
-export function getDiets(lang: Language) {
-  return lang === "en" ? dietsEn : diets
-}
-
-export function getMealTimes(lang: Language) {
-  return lang === "en" ? mealTimesEn : mealTimes
-}
-
-export const accessibilityFeatures = [
+const mealTimeCopy: Array<{ name: L<string>; hours: L<string> }> = [
   {
-    icon: "door-open" as const,
-    title: "Brak progów w całym obiekcie",
-    description: "Wszystkie pokoje, korytarze i strefy wspólne są wolne od progów i barier architektonicznych.",
+    name: { pl: "Śniadanie", en: "Breakfast" },
+    hours: { pl: "7:30 – 10:00", en: "7:30 AM – 10:00 AM" },
   },
   {
-    icon: "move-vertical" as const,
-    title: "4 windy z komunikatami głosowymi",
-    description: "Windy obsługują wszystkie piętra i informują głosowo o każdym przystanku.",
+    name: { pl: "Obiad", en: "Lunch" },
+    hours: { pl: "13:00 – 15:00", en: "1:00 PM – 3:00 PM" },
   },
   {
-    icon: "car" as const,
-    title: "10 miejsc parkingowych dla osób z niepełnosprawnościami",
-    description: "Szerokie miejsca parkingowe usytuowane najbliżej wejścia głównego.",
-  },
-  {
-    icon: "hand" as const,
-    title: "Poręcze na całej długości korytarzy",
-    description: "Poręcze zamontowane w korytarzach, łazienkach i na basenie termalnym.",
-  },
-  {
-    icon: "bath" as const,
-    title: "Brodziki bez progu i uchwyty w łazienkach",
-    description: "Każda łazienka jest przystosowana do potrzeb osób o ograniczonej mobilności.",
-  },
-  {
-    icon: "bus" as const,
-    title: "Transport meleksem po terenie ośrodka",
-    description: "Bezpłatny meleks dowozi gości między budynkiem głównym, SPA i parkingiem.",
+    name: { pl: "Kolacja", en: "Dinner" },
+    hours: { pl: "17:30 – 19:30", en: "5:30 PM – 7:30 PM" },
   },
 ]
 
-export const accessibilityFeaturesEn = [
+export function getMealTimes(lang: Language): MealTime[] {
+  return mealTimeCopy.map((meal) => ({
+    name: loc(meal.name, lang),
+    hours: loc(meal.hours, lang),
+  }))
+}
+
+// ---------------------------------------------------------------------------
+// Udogodnienia dla osób z niepełnosprawnościami
+// ---------------------------------------------------------------------------
+
+export type AccessibilityIcon =
+  | "door-open"
+  | "move-vertical"
+  | "car"
+  | "hand"
+  | "bath"
+  | "bus"
+
+type AccessibilityFeatureCopy = {
+  icon: AccessibilityIcon
+  title: L<string>
+  description: L<string>
+}
+
+export type AccessibilityFeature = {
+  icon: AccessibilityIcon
+  title: string
+  description: string
+}
+
+const accessibilityFeatureCopy: AccessibilityFeatureCopy[] = [
   {
-    icon: "door-open" as const,
-    title: "100% Step-Free Throughout Resort",
-    description: "All guestrooms, hallways, and wellness areas are completely free of architectural thresholds.",
+    icon: "door-open",
+    title: { pl: "Brak progów w całym obiekcie", en: "100% Step-Free Throughout Resort" },
+    description: {
+      pl: "Wszystkie pokoje, korytarze i strefy wspólne są wolne od progów i barier architektonicznych.",
+      en: "All guestrooms, hallways, and wellness areas are completely free of architectural thresholds.",
+    },
   },
   {
-    icon: "move-vertical" as const,
-    title: "4 Voice-Guided Elevators",
-    description: "Spacious elevators serve every floor with clear auditory floor announcements.",
+    icon: "move-vertical",
+    title: { pl: "4 windy z komunikatami głosowymi", en: "4 Voice-Guided Elevators" },
+    description: {
+      pl: "Windy obsługują wszystkie piętra i informują głosowo o każdym przystanku.",
+      en: "Spacious elevators serve every floor with clear auditory floor announcements.",
+    },
   },
   {
-    icon: "car" as const,
-    title: "10 Dedicated Accessible Parking Spots",
-    description: "Extra-wide parking spaces situated immediately adjacent to the main entrance ramp.",
+    icon: "car",
+    title: {
+      pl: "10 miejsc parkingowych dla osób z niepełnosprawnościami",
+      en: "10 Dedicated Accessible Parking Spots",
+    },
+    description: {
+      pl: "Szerokie miejsca parkingowe usytuowane najbliżej wejścia głównego.",
+      en: "Extra-wide parking spaces situated immediately adjacent to the main entrance ramp.",
+    },
   },
   {
-    icon: "hand" as const,
-    title: "Full-Length Hallway Handrails",
-    description: "Continuous sturdy grab rails in corridors, private bathrooms, and pool areas.",
+    icon: "hand",
+    title: { pl: "Poręcze na całej długości korytarzy", en: "Full-Length Hallway Handrails" },
+    description: {
+      pl: "Poręcze zamontowane w korytarzach, łazienkach i na basenie termalnym.",
+      en: "Continuous sturdy grab rails in corridors, private bathrooms, and pool areas.",
+    },
   },
   {
-    icon: "bath" as const,
-    title: "Walk-In Zero-Threshold Showers",
-    description: "Every bathroom is equipped with ergonomic safety grab bars and fold-down shower seating.",
+    icon: "bath",
+    title: { pl: "Brodziki bez progu i uchwyty w łazienkach", en: "Walk-In Zero-Threshold Showers" },
+    description: {
+      pl: "Każda łazienka jest przystosowana do potrzeb osób o ograniczonej mobilności.",
+      en: "Every bathroom is equipped with ergonomic safety grab bars and fold-down shower seating.",
+    },
   },
   {
-    icon: "bus" as const,
-    title: "Complimentary Electric Resort Shuttle",
-    description: "Dedicated electric cart transfers guests smoothly between main building, spa, and station.",
+    icon: "bus",
+    title: { pl: "Transport meleksem po terenie ośrodka", en: "Complimentary Electric Resort Shuttle" },
+    description: {
+      pl: "Bezpłatny meleks dowozi gości między budynkiem głównym, SPA i parkingiem.",
+      en: "Dedicated electric cart transfers guests smoothly between main building, spa, and station.",
+    },
   },
 ]
 
-export function getAccessibilityFeatures(lang: Language) {
-  return lang === "en" ? accessibilityFeaturesEn : accessibilityFeatures
+export function getAccessibilityFeatures(lang: Language): AccessibilityFeature[] {
+  return accessibilityFeatureCopy.map((feature) => ({
+    icon: feature.icon,
+    title: loc(feature.title, lang),
+    description: loc(feature.description, lang),
+  }))
 }
+
+// ---------------------------------------------------------------------------
+// Kontakt
+// ---------------------------------------------------------------------------
 
 const phoneNumber = "+48 18 123 45 67"
 

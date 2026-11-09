@@ -11,32 +11,23 @@ import { useLanguage } from '@/context/language-context'
 import { contactInfo } from '@/lib/hotel-data'
 
 export default function DirectionsPage() {
-  const { language, t } = useLanguage()
+  const { t } = useLanguage()
 
   const travelOptions = [
     {
       icon: Car,
       title: t.accessPage.carTitle,
-      description:
-        language === 'pl'
-          ? 'Z Krakowa ok. 2 godziny (A4, następnie DK75 i DK98). Bezpłatny, oświetlony parking bezpośrednio przy wejściu głównym z miejscami dla osób z niepełnosprawnościami.'
-          : 'Approx. 2 hours from Kraków (A4 highway, then DK75/DK98). Free, well-lit parking immediately next to main entrance with accessible spots.',
+      description: t.accessPage.carDesc,
     },
     {
       icon: TrainFront,
       title: t.accessPage.trainTitle,
-      description:
-        language === 'pl'
-          ? 'Stacja PKP Krynica-Zdrój znajduje się 5 minut jazdy od ośrodka. Zapewniamy bezpłatny odbiór naszym busem przystosowanym do przewozu wózków.'
-          : 'Krynica-Zdrój train station is 5 minutes from the resort. We provide free scheduled pickup in our wheelchair-accessible electric resort bus.',
+      description: t.accessPage.trainDesc,
     },
     {
       icon: Bus,
-      title: language === 'pl' ? 'Autobusem (PKS)' : 'By Regional Bus',
-      description:
-        language === 'pl'
-          ? 'Regularne połączenia z Nowego Sącza i Krakowa. Przystanek "Krynica-Zdrój Centrum" jest 10 minut pieszo od ośrodka.'
-          : 'Regular direct coaches from Kraków and Nowy Sącz. Central bus stop is 10 minutes away, or request our free shuttle.',
+      title: t.accessPage.busTitle,
+      description: t.accessPage.busDesc,
     },
   ]
 
@@ -47,7 +38,7 @@ export default function DirectionsPage() {
         <section className="relative flex min-h-[380px] items-center overflow-hidden">
           <Image
             src="/images/entrance.png"
-            alt="Wejście do Bukowego Dworu"
+            alt={t.images.accessHeroAlt}
             fill
             priority
             className="object-cover"
@@ -71,7 +62,7 @@ export default function DirectionsPage() {
             <div className="grid gap-10 lg:grid-cols-2 lg:items-start">
               <div>
                 <h2 className="font-serif text-3xl font-bold text-navy">
-                  {language === 'pl' ? 'Jak do nas dojechać' : 'Directions & Transport Options'}
+                  {t.accessPage.directionsHeading}
                 </h2>
                 <div className="mt-8 flex flex-col gap-6">
                   {travelOptions.map((option) => {
@@ -96,7 +87,7 @@ export default function DirectionsPage() {
               </div>
               <div className="overflow-hidden rounded-2xl border border-gold/20 shadow-md">
                 <iframe
-                  title="Mapa — lokalizacja Bukowego Dworu w Krynicy-Zdroju"
+                  title={t.images.mapTitle}
                   src="https://www.openstreetmap.org/export/embed.html?bbox=20.94%2C49.40%2C20.98%2C49.42&layer=mapnik"
                   className="h-[360px] w-full"
                   loading="lazy"
@@ -111,18 +102,14 @@ export default function DirectionsPage() {
         <section className="bg-navy py-16 text-center md:py-20">
           <div className="mx-auto max-w-2xl px-4 md:px-8">
             <h2 className="font-serif text-3xl font-bold text-white">
-              {language === 'pl'
-                ? 'Potrzebujesz dodatkowej pomocy w dostaniu się do ośrodka?'
-                : 'Need Assistance With Transportation & Arrival?'}
+              {t.accessPage.helpTitle}
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-white/85">
-              {language === 'pl'
-                ? 'Zadzwoń do recepcji lub poinformuj Annę — zorganizujemy bezpłatny transfer meleksem i wsparcie z bagażem.'
-                : 'Call front desk or ask Anna — we will organize your free electric shuttle pickup and luggage assistance.'}
+              {t.accessPage.helpText}
             </p>
             <div className="mt-8 flex justify-center">
               <HotelButton href={contactInfo.phoneHref} variant="primary" className="bg-gold text-navy hover:bg-gold/90">
-                {language === 'pl' ? `Zadzwoń: ${contactInfo.phone}` : `Call Front Desk: ${contactInfo.phone}`}
+                {t.accessPage.callPrefix} {contactInfo.phone}
               </HotelButton>
             </div>
           </div>

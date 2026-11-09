@@ -23,15 +23,13 @@ export function AccessibilitySection() {
       <div className="mx-auto max-w-[1280px] px-4 md:px-8">
         <div className="mx-auto max-w-2xl text-center">
           <p className="text-sm font-semibold tracking-[0.15em] text-sage uppercase">
-            {language === 'pl' ? 'Dostępność' : 'Accessibility'}
+            {t.accessibilitySection.eyebrow}
           </p>
           <h2 id="accessibility-heading" className="mt-3 font-serif text-3xl font-bold text-navy md:text-4xl">
-            {language === 'pl' ? 'Ośrodek przyjazny dla każdego gościa' : 'Resort Designed for Total Comfort & Dignity'}
+            {t.accessibilitySection.title}
           </h2>
           <p className="mt-4 text-lg leading-relaxed text-charcoal/80">
-            {language === 'pl'
-              ? 'Bukowy Dwór został zaprojektowany tak, aby osoby starsze i z ograniczoną mobilnością czuły się w nim swobodnie i bezpiecznie.'
-              : 'Bukowy Dwór was thoughtfully engineered so senior guests and individuals with reduced mobility feel safe, independent, and cared for.'}
+            {t.accessibilitySection.text}
           </p>
         </div>
 

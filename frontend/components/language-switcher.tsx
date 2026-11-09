@@ -2,6 +2,7 @@
 
 import { Globe } from 'lucide-react'
 import { useLanguage } from '@/context/language-context'
+import { isPl } from '@/lib/translations'
 
 export function LanguageSwitcher({ className = '' }: { className?: string }) {
   const { language, setLanguage } = useLanguage()
@@ -12,9 +13,9 @@ export function LanguageSwitcher({ className = '' }: { className?: string }) {
         type="button"
         onClick={() => setLanguage('pl')}
         aria-label="Przełącz na język polski"
-        aria-pressed={language === 'pl'}
+        aria-pressed={isPl(language)}
         className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold tracking-wider transition-all ${
-          language === 'pl'
+          isPl(language)
             ? 'bg-gold text-navy shadow-sm'
             : 'text-white/80 hover:text-gold hover:bg-white/5'
         }`}

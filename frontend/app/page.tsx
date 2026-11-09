@@ -20,27 +20,18 @@ export default function HomePage() {
   const highlights = [
     {
       icon: Waves,
-      title: language === 'pl' ? 'Baseny termalne 32–34°C' : 'Thermal Pools 32–34°C',
-      description:
-        language === 'pl'
-          ? 'Dwa baseny o kojących temperaturach, otoczone lasem bukowym.'
-          : 'Two therapeutic mineral pools with soothing temperatures surrounded by mountain beech woods.',
+      title: t.home.highlightPoolsTitle,
+      description: t.home.highlightPoolsDesc,
     },
     {
       icon: Flower2,
-      title: language === 'pl' ? 'Zabiegi balneologiczne' : 'Balneotherapy Treatments',
-      description:
-        language === 'pl'
-          ? 'Kąpiele siarczkowe, borowinowe i fizykoterapia pod opieką specjalistów.'
-          : 'Natural sulphur baths, peat mud therapy, and customized physiotherapy under clinical supervision.',
+      title: t.home.highlightBalneoTitle,
+      description: t.home.highlightBalneoDesc,
     },
     {
       icon: UtensilsCrossed,
-      title: language === 'pl' ? 'Restauracja z dietami leczniczymi' : 'Restaurant & Clinical Diets',
-      description:
-        language === 'pl'
-          ? 'Posiłki dostosowane do zaleceń dietetycznych i potrzeb zdrowotnych.'
-          : 'Delicious regional dining paired with 5 specialized therapeutic diet options included.',
+      title: t.home.highlightDiningTitle,
+      description: t.home.highlightDiningDesc,
     },
   ]
 
@@ -51,7 +42,7 @@ export default function HomePage() {
         <section className="relative flex min-h-[640px] items-center overflow-hidden">
           <Image
             src="/images/hero-pool.png"
-            alt="Basen termalny Bukowego Dworu"
+            alt={t.images.homeHeroAlt}
             fill
             priority
             className="object-cover"
@@ -148,24 +139,22 @@ export default function HomePage() {
           <div className="mx-auto grid max-w-[1280px] gap-10 px-4 md:grid-cols-2 md:items-center md:px-8">
             <div>
               <p className="text-sm font-semibold tracking-[0.15em] text-gold uppercase">
-                {language === 'pl' ? 'Otoczenie' : 'Natural Sanctuary'}
+                {t.home.natureEyebrow}
               </p>
               <h2 className="mt-3 font-serif text-3xl font-bold text-white md:text-4xl">
-                {language === 'pl' ? 'Las bukowy tuż za oknem' : 'Beech Forest Right Outside Your Window'}
+                {t.home.natureTitle}
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-white/85">
-                {language === 'pl'
-                  ? 'Spacerowe alejki, świeże górskie powietrze i cisza — naturalne otoczenie Bukowego Dworu wspiera regenerację ciała i umysłu równie skutecznie, jak zabiegi w naszym SPA.'
-                  : 'Serene walking trails, fresh alpine air, and tranquil silence — Bukowy Dwór’s mountain surroundings rejuvenate body and spirit alongside our thermal spa treatments.'}
+                {t.home.natureText}
               </p>
               <HotelButton href="/dojazd" variant="secondary" className="mt-8 border-gold text-white hover:bg-gold hover:text-navy">
-                {language === 'pl' ? 'Sprawdź dojazd i dostępność' : 'Check Directions & Shuttle'}
+                {t.home.natureCta}
               </HotelButton>
             </div>
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
               <Image
                 src="/images/nature-path.png"
-                alt="Ścieżka w lesie bukowym w okolicy Bukowego Dworu"
+                alt={t.images.natureAlt}
                 fill
                 className="object-cover"
               />

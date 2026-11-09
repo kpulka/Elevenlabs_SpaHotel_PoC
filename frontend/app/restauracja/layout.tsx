@@ -5,7 +5,7 @@ import { OG_IMAGE, SITE_NAME } from '@/lib/site'
 
 const title = 'Restauracja „Bukowy Smak” i Diety Lecznicze'
 const description =
-  'Restauracja „Bukowy Smak” w Uzdrowisku Bukowy Dwór: lokalne produkty z Beskidu Sądeckiego, bufet szwedzki oraz diety lecznicze (cukrzycowa, lekkostrawna, bezglutenowa) bez dodatkowych opłat.'
+  'Restauracja „Bukowy Smak” w Uzdrowisku Bukowy Dwór: lokalne produkty z Beskidu Sądeckiego, bufet szwedzki oraz trzy diety lecznicze (cukrzycowa, lekkostrawna, bezglutenowa i bezmleczna) bez dodatkowych opłat.'
 
 export const metadata: Metadata = {
   title,

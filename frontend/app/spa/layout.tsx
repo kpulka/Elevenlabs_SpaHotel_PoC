@@ -5,7 +5,7 @@ import { OG_IMAGE, SITE_NAME } from '@/lib/site'
 
 const title = 'Baseny Termalne i Zabiegi Lecznicze'
 const description =
-  'Baseny termalne z wodą siarczkową, okłady borowinowe, masaże i fizykoterapia w Krynicy-Zdroju. Zabiegi balneologiczne w cenie pobytu, realizowane pod nadzorem wykwalifikowanego personelu medycznego.'
+  'Baseny termalne z wodą siarczkową w cenie pobytu oraz płatne zabiegi balneologiczne: kąpiele siarczkowe i borowinowe, masaże i fizykoterapia w Krynicy-Zdroju, realizowane pod nadzorem wykwalifikowanego personelu medycznego.'
 
 export const metadata: Metadata = {
   title,
