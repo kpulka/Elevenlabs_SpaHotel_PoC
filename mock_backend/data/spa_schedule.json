@@ -1,13 +1,45 @@
 {
-  "_comment": "Mock danych kalendarza SPA — generowany dynamicznie przez main.py przy starcie serwera.",
-  "_note": "Ten plik jest nadpisywany przy każdym uruchomieniu main.py. Poniżej przykładowa struktura.",
-  "zabiegi": [
-    "kąpiel siarczkowa Ukojenie Stawów",
-    "masaż leczniczy pleców",
-    "kąpiel borowinowa",
-    "jonoforeza",
-    "masaż klasyczny"
-  ],
+  "_comment": "Seed kalendarza SPA dla Uzdrowiska Bukowy Dwór. Wczytywany przez aplikację przy starcie (catalog.py) jako JEDYNE źródło listy zabiegów, aliasów i godzin. Plik NIE jest nadpisywany przez backend — stan rezerwacji żyje tylko w pamięci procesu.",
+  "horyzont_dni": 14,
   "sloty_domyslne": ["10:00", "11:00", "14:00", "14:30", "15:00", "16:00"],
-  "harmonogram": {}
+  "zabiegi": [
+    {
+      "kod": "kapiel_siarczkowa",
+      "nazwa": "kąpiel siarczkowa Ukojenie Stawów",
+      "aliasy": [
+        "kąpiel siarczkowa",
+        "ukojenie stawów",
+        "siarczkowa",
+        "sulphur bath",
+        "sulfur bath"
+      ]
+    },
+    {
+      "kod": "masaz_leczniczy",
+      "nazwa": "masaż leczniczy pleców",
+      "aliasy": [
+        "masaż leczniczy",
+        "masaz leczniczy plecow",
+        "leczniczy pleców",
+        "masaż pleców",
+        "back massage",
+        "therapeutic massage"
+      ]
+    },
+    {
+      "kod": "kapiel_borowinowa",
+      "nazwa": "kąpiel borowinowa",
+      "aliasy": ["borowinowa", "borowina", "peat bath", "mud bath"]
+    },
+    {
+      "kod": "jonoforeza",
+      "nazwa": "jonoforeza",
+      "aliasy": ["ionoforeza", "jonoforeza zabieg", "iontophoresis"]
+    },
+    {
+      "kod": "masaz_klasyczny",
+      "nazwa": "masaż klasyczny",
+      "aliasy": ["masaz klasyczny", "klasyczny", "masaż relaksacyjny", "classic massage", "swedish massage"]
+    }
+  ]
 }

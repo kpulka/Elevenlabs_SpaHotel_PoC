@@ -1,4 +1,5 @@
-fastapi
-uvicorn[standard]
-pydantic
-httpx
+# Runtime backendu mock (PoC). Wersje przypięte — demo musi być powtarzalne.
+fastapi==0.136.1
+uvicorn[standard]==0.46.0
+pydantic==2.13.3
+httpx==0.28.1

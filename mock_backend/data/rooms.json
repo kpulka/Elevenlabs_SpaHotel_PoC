@@ -1,5 +1,5 @@
 {
-  "_comment": "Mock danych pokoi hotelowych dla Uzdrowiska Bukowy Dwór.",
+  "_comment": "JEDYNE źródło typów pokoi, cen i terminów zablokowanych. Wczytywany przez store.py przy starcie backendu. Ceny muszą pozostać zgodne z frontend/lib/hotel-data.ts (350 / 500 / 750 PLN).",
   "typy_pokoi": {
     "jednoosobowy": {
       "nazwa": "Pokój Jednoosobowy 'Spokojny Sen'",
@@ -22,10 +22,10 @@
   },
   "zajete_terminy": [
     {
-      "opis": "Szczyt sezonu — weekendy letnie 2026",
-      "daty": ["2026-08-29", "2026-08-30"],
+      "opis": "Szczyt sezonu — weekend 30-31 sierpnia 2026 (dane demo)",
+      "daty": ["2026-08-30", "2026-08-31"],
       "dotyczy": ["jednoosobowy", "dwuosobowy", "apartament"]
     }
   ],
-  "_note_zajete": "Weekend 30-31 sierpnia 2026: jeśli check_in=2026-08-30 lub check_out=2026-08-31, wszystkie pokoje zajęte."
+  "_note_zajete": "Daty są statyczne (dane demo). Gdy wypadną w przeszłości, blokada jest nieaktywna — przeszłe terminy i tak odrzuca osobna reguła."
 }
