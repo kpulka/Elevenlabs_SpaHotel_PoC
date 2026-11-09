@@ -19,7 +19,9 @@
 - stability 0.80 / similarity_boost 0.75
 - RAG: włączony (5 dokumentów bazy wiedzy)
 - Telefonia: **brak** (`phone_numbers: []`) — agent działa jako widget webowy, więc `transfer_to_number` nie jest podpięty; handoff jest symulowany webhookiem.
-- Branche: **brak** (`branches: []`). ID `agtbrch_9601m0n03dege4yvwseypec1hm81`, które krążyło w starym README, jest **niezweryfikowane** — w API nie ma żadnego brancha.
+- Branche: **1** — `agtbrch_9601m0n03dege4yvwseypec1hm81` („Main", 100% live traffic,
+  `GET /v1/convai/agents/{id}/branches`, sprawdzone 2026-11-09). Wcześniejsza notka „branche: brak"
+  była błędna; procedury i testy uruchamiamy z `branch_id` tego brancha.
 
 ## Narzędzia: 7 webhooków + wbudowane `end_call`
 
@@ -28,7 +30,7 @@
 | 1 | check_spa_availability | tool_4801m0ncs38tf8t93f45jfj992dt | `/check_spa_availability` |
 | 2 | book_spa_appointment | tool_6001m0ncs38vf73v1zbaa9p5vdfv | `/book_spa_appointment` |
 | 3 | cancel_spa_appointment | tool_6001m0smvb7geghbp7da7z458r06 | `/cancel_spa_appointment` |
-| 4 | reschedule_spa_appointment | tool_1601m0smvbqfaxaqppzcghdcpg8 | `/reschedule_spa_appointment` |
+| 4 | reschedule_spa_appointment | tool_1601m0smvbvqfaxaqppzcghdcpg8 | `/reschedule_spa_appointment` |
 | 5 | check_room_availability | tool_6301m0ncs38wewt865sh99v1qkm8 | `/check_room_availability` |
 | 6 | send_sms_summary | tool_8101m0ncs38xe6tb29923tjt9045 | `/send_sms_summary` |
 | 7 | transfer_to_simulated_handoff | tool_6001m0ntyt8xefgsx1e8mcqnsw1n | `/transfer_to_simulated_handoff` |
@@ -64,7 +66,30 @@ Pliki źródłowe: `docs/baza_wiedzy_rag_bukowy_dwor/` (wersje `.txt` w `docs/ba
 
 ID w `.planning/workflow/procedure_ids.json` (nazwy `procedura_*`).
 
+Wersje po K2 (2026-11-09, `branch_id=agtbrch_9601m0n03dege4yvwseypec1hm81`):
+
+| Procedura | version_id |
+|---|---|
+| procedura_anulowania_rezerwacji_spa | `agtprcv_5501m712cxmee3f9hgjad1zsdsc8` |
+| procedura_zmiany_terminu_zabiegu | `agtprcv_9001m713bqdqe3kv7bvzjsppb90d` (po naprawie błędnego `tool_id`) |
+| pozostałe 5 | bez zmian od 2026-11-09 (`procedure_ids.json`) |
+
+**Defekt wykryty i naprawiony 2026-11-09:** treść `procedura_zmiany_terminu_zabiegu` odwoływała się
+do nieistniejącego `tool_1601m0smvbqfaxaqppzcghdcpg8` (brak litery `v`; poprawnie
+`tool_1601m0smvbvqfaxaqppzcghdcpg8`). Skutek: testy agenta i kompilacja procedur kończyły się
+`Documents with ids {...} not found` / „Agent possibly misconfigured". Naprawa: PATCH draft + publish;
+kopia sprzed naprawy: `D:/Backups/anna-procedure-reschedule-before-fix-2026-11-09.json`.
+
+
 ## Stan warstwy live na 2026-11-09 (wykonane przez API)
+
+- **Wersja agenta (branch Main)** po naprawie procedury: `agtvrsn_4901m713bqdkedeb9f8vck1chb96`
+  (wcześniej `agtvrsn_7801m712cxmbf2ebb51jrx3hqbc4` z K2).
+- **Testy symulacyjne agenta:** zablokowane — `POST …/run-tests` kończy się
+  „Insufficient credits to run this simulation" (`credits_used: 0`), choć przebieg startuje
+  (2–3 tury). Konto: `tier=payg`, `character_count = character_limit = 10000`
+  (`GET /v1/user/subscription`), reset dopiero 2026-11-22 04:02 UTC. Do odblokowania potrzebne
+  doładowanie/zmiana planu w panelu ElevenLabs.
 
 - **Schematy narzędzi:** uzupełnione o brakujące opcjonalne pola —
   `cancel_spa_appointment.appointment_datetime`, `send_sms_summary.language`,
@@ -73,16 +98,17 @@ ID w `.planning/workflow/procedure_ids.json` (nazwy `procedura_*`).
 - **Baza wiedzy:** 5 dokumentów odtworzonych z `docs/baza_wiedzy_rag_bukowy_dwor_txt/*.txt`
   i ponownie podpiętych do agenta z zachowaniem `usage_mode`. ID powyżej są aktualne.
   Stare dokumenty usunięte; kopia poprzedniej treści: `kb_backup_before_refresh.json` (poza repo).
-- **Nie wgrane:** hosted prompt i hosted procedury. Plik `docs/anna_system_prompt_v3.md`
-  (2026-11) jest **do przodu** względem tego, co wisi na agencie — dopisuje m.in. anulowanie
-  i przełożenie zabiegu z `appointment_datetime`, obsługę `ambiguous` i `success:false`.
-  Wgranie to jeden PATCH `conversation_config.agent.prompt.prompt`; do zrobienia świadomie,
-  po odsłuchaniu próbnej rozmowy (dłuższy prompt = dłuższe odpowiedzi).
+- **Nie wgrane:** ~~hosted prompt i hosted procedury~~ — **nieaktualne od 2026-11-09**: prompt i 2 procedury
+  (anulowanie, zmiana terminu) są wgrane na branch `Main` i opublikowane. Szczegóły i dowód w sekcji „Prompt".
 
 ## Prompt
 
 - Plik kanoniczny w repo: `docs/anna_system_prompt_v3.md`.
-- Uwaga: **hosted prompt na agencie to wersja starsza niż plik w repo** (stan 2026-08/09) — nie zakładać, że są identyczne.
+- **Hosted prompt = repo** (od 2026-11-09): 10 520 znaków, zgodność potwierdzona porównaniem tekstu
+  (`sha256` fragmentu `ce1e51660ccb`). Marker kontrolny: obecne `>2 h`, `appointment_datetime`,
+  `ambiguous`, `fee_rule`, `medical_release`.
+- `first_message` na agencie jest **angielski** („Good morning, this is Anna…"), mimo polskiego promptu
+  i `language=pl` — świadomie niezmienione; do decyzji właściciela (osobno od treści promptu).
 - Historia: audyt z 2026-08 (`docs/audyt_agenta_2026-08.md`) opisuje stan sprzed dodania narzędzi `cancel_spa_appointment` / `reschedule_spa_appointment` i przed publikacją procedur; traktować jako zapis historyczny.
 
 ## Historia
