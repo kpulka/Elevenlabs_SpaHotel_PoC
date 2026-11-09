@@ -38,3 +38,8 @@
 - **Czas trwania:** 50 minut.
 - **Opis:** Klasyczny masaż całego ciała, poprawiający krążenie i redukujący napięcie mięśniowe. Wykonywany przez certyfikowanego terapeutę. Idealny jako uzupełnienie pobytu sanatoryjnego.
 - **Cena:** 160 PLN.
+
+### 6. Gimnastyka lecznicza (grupowa)
+- **Czas trwania:** 45 minut.
+- **Opis:** Zajęcia ruchowe prowadzone przez fizjoterapeutę, dostosowane do możliwości seniorów — gimnastyka lecznicza poprawiająca sprawność, równowagę i zakres ruchu. Bez przeciwwskazań poza ostrym stanem zapalnym. Nie wymaga konsultacji lekarskiej.
+- **Cena:** 30 PLN.

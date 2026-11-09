@@ -7,10 +7,10 @@
 
 ## SETUP PRZED DEMO
 
-1. Uruchom mock backend: `cd mock_backend && uvicorn main:app --reload --port 8000`
+1. Uruchom mock backend: `cd mock_backend && uvicorn main:app --reload --port 8011`
 2. Otwórz panel ElevenLabs z agentem Anna (lub otwórz widżet webowy)
 3. Jeśli Telegram: ustaw drugi monitor z kanałem Telegram widocznym
-4. Otwórz Swagger UI (`localhost:8000/docs`) na trzecim oknie — pokaż „co pod maską"
+4. Otwórz Swagger UI (`localhost:8011/docs`) na trzecim oknie — pokaż „co pod maską"
 
 ---
 
@@ -69,7 +69,7 @@ Ty:    "Czy basen wymaga czepka?"
 Anna:  "Nasze baseny termalne są dostępne z łagodnymi schodkami i mocnymi poręczami.
         Jeśli chodzi o zasady dotyczące czepka, połączę Pana z recepcją,
         gdzie uzyska Pan dokładną odpowiedź."
-        [wywołuje transfer_to_human]
+        [wywołuje transfer_to_simulated_handoff]
 ```
 
 **Co powiedz po demo:**
@@ -101,7 +101,7 @@ Anna:  "Rozumiem. Zanim zarezerwuję ten zabieg, chciałam zapytać
         o kwestię zdrowotną. Kąpiel borowinowa przy rozruszniku serca
         wymaga wcześniejszej konsultacji z naszym lekarzem uzdrowiskowym.
         Łączę Pana teraz z dyżurką medyczną. Chwileczkę proszę."
-        [wywołuje transfer_to_number → dzwoni Twój telefon]
+        [wywołuje transfer_to_simulated_handoff → log + alert na Telegramie]
 ```
 
 **Co powiedz po demo:**
@@ -116,7 +116,7 @@ Po demo otwórz 2-3 rzeczy:
 **1. Panel ElevenLabs — agent config:**
 > Pokaż system prompt, listę narzędzi z JSON Schema, parametry głosu (stability, speed), konfigurację bazy wiedzy (tryby prompt/auto).
 
-**2. Swagger UI (localhost:8000/docs):**
+**2. Swagger UI (localhost:8011/docs):**
 > Pokaż endpointy, wykonaj live request `POST /check_spa_availability` z okna Swagger — pokaż odpowiedź JSON.
 
 **3. Logi konsoli mock backendu:**

@@ -12,10 +12,10 @@ flowchart LR
 
     subgraph EL ["☁️ ElevenLabs Conversational AI"]
         STT["🎙️ STT\nScribe v2 Realtime\n~150 ms"]
-        LLM["🧠 LLM\nGPT-4o Mini\ntemp: 0.1"]
+        LLM["🧠 LLM\nGemini 3.5 Flash Lite\ntemp: 0.1"]
         TTS["🔊 TTS\nEleven v3 Conversational\n~280 ms"]
         KB[("📚 Baza Wiedzy RAG\n5 plików Markdown")]
-        TOOLS["🔧 Tool Calling\n4 webhooki"]
+        TOOLS["🔧 Tool Calling\n7 narzędzi webhook"]
     end
 
     subgraph BACKEND ["🖥️ Mock Backend (PoC)"]
@@ -23,7 +23,7 @@ flowchart LR
         SMS["📱 SMS / Telegram\nsend_sms_summary"]
     end
 
-    HUMAN(["👤 Recepcja\ntransfer_to_number"])
+    HUMAN(["👤 Recepcja\nhandoff symulowany\n(webhook)"])
 
     CALLER -->|"mowa"| STT
     STT -->|"transkrypcja"| LLM
@@ -45,7 +45,7 @@ sequenceDiagram
     actor Gość as 👴 Gość (senior)
     participant Phone as 📞 Telefon / WebRTC
     participant STT as 🎙️ STT (Scribe v2)
-    participant LLM as 🧠 LLM (GPT-4o Mini)
+    participant LLM as 🧠 LLM (Gemini 3.5 Flash Lite)
     participant RAG as 📚 RAG / KB
     participant Tools as 🔧 Tool Calling
     participant Mock as 🖥️ Mock Backend
@@ -94,7 +94,7 @@ flowchart TD
 
     SAFETY{"Protokół\nbezpieczeństwa:\nZabieg balneologiczny?\nPrzeciwwskazania?"}
 
-    HANDOFF["⚠️ Wywołuje:\ntransfer_to_human\n(natywne transfer_to_number)"]
+    HANDOFF["⚠️ Wywołuje:\ntransfer_to_simulated_handoff\n(webhook; docelowo natywne SIP)"]
 
     ANNA_MSG["Anna mówi:\n'Łączę Pana z dyżurką\nmedyczną. Chwileczkę.'"]
 
@@ -158,13 +158,13 @@ block-beta
 
   block:ROW1:3
     A["🎙️ STT\nScribe v2 Realtime\nlatencja: ~150 ms\njęzyk: pl-PL + VAD"]
-    B["🧠 LLM\nGPT-4o Mini\ntemp: 0.1\nstrict grounding"]
+    B["🧠 LLM\nGemini 3.5 Flash Lite\ntemp: 0.1\nstrict grounding"]
     C["🔊 TTS\nEleven v3 Conversational\nlatencja: ~280 ms\nspeed: 0.85x"]
   end
 
   block:ROW2:3
     D["📚 Knowledge Base (RAG)\n5 plików Markdown\ntryb: prompt + auto\nstrict grounding"]
-    E["🔧 Tool Calling\n4 webhooki + transfer\nJSON Schema\nmock → PMS prod"]
+    E["🔧 Tool Calling\n7 narzędzi webhook\nJSON Schema\nmock → PMS prod"]
     F["🔐 Security\nSigned URLs\nZero Retention Mode\nData Residency EU"]
   end
 ```

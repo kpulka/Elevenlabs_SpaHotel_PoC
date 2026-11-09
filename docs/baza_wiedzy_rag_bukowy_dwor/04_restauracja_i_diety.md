@@ -1,4 +1,4 @@
-# Restauracja "Zdrojowa" - Wyżywienie i Diety
+# Restauracja "Bukowy Smak" - Wyżywienie i Diety
 
 ## Godziny posiłków
 - **Śniadanie:** 7:30 - 10:00 (bufet szwedzki).
@@ -9,7 +9,7 @@
 - **Obsługa:** W przypadku trudności z poruszaniem się, kelnerzy pomagają w przyniesieniu jedzenia z bufetu do stolika.
 - **Room Service:** W przypadku złego samopoczucia, dostarczenie posiłku do pokoju jest bezpłatne (zazwyczaj kosztuje 20 PLN). Wymaga zgłoszenia telefonicznego z pokoju.
 
-## Dostępne diety (bez dodatkowych dopłat)
+## Dostępne diety (dokładnie trzy, bez dodatkowych dopłat)
 Agent przyjmujący rezerwację musi zapytać o preferencje żywieniowe i choroby.
 1. **Dieta cukrzycowa:** Posiłki o niskim indeksie glikemicznym, węglowodany złożone, brak cukru dodanego.
 2. **Dieta lekkostrawna (wątrobowa/żołądkowa):** Dania gotowane na parze, pieczone, bez produktów wzdymających i ostrych przypraw.

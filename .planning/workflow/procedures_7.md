@@ -7,29 +7,38 @@
 # tool_6301m0ncs38wewt865sh99v1qkm8 = check_room_availability
 # tool_8101m0ncs38xe6tb29923tjt9045 = send_sms_summary
 # tool_6001m0ntyt8xefgsx1e8mcqnsw1n = transfer_to_simulated_handoff
+# UWAGA: cancel_spa_appointment i reschedule_spa_appointment są zarejestrowane w agencie,
+# ale ich tool_id nie jest jeszcze znane (.planning/workflow/new_tools.json: null).
+# Do czasu uzupełnienia ID odwołujemy się do nich po nazwie: [tool name="..."].
+# Każde wywołanie przekazuje language (pl/en) z dynamicznej zmiennej user_language.
 
 ## 1. procedura_anulowania_rezerwacji_spa
 trigger: "Gdy gość mówi, że nie może przyjść na zabieg, chce zrezygnować z masażu lub kąpieli, lub prosi o odwołanie rezerwacji zabiegu SPA."
 type: free_form
 content: |
-  1. Uprzejmie poproś o numer rezerwacji (SPA-XXXX) lub imię, nazwisko i numer telefonu gościa.
-  2. Jeśli do zabiegu zostało mniej niż 2 godziny, zapytaj z troską: „Czy powodem odwołania jest gorsze samopoczucie lub kwestie zdrowotne?" Jeśli tak — anulacja w 100% bezpłatna (zwolnienie medyczne).
-  3. Odwołanie powyżej 2 godzin przed terminem: bezpłatna anulacja i zwolnienie slotu.
-  4. Odwołanie poniżej 2 godzin bez powodu medycznego: standardowo 50% opłaty.
-  5. Wywołaj [tool id="tool_6001m0ntyt8xefgsx1e8mcqnsw1n"] z department="recepcja" i reason opisującym anulację, aby poinformować zespół (na produkcji: cancel_spa_appointment).
-  6. Poinformuj gościa o pomyślnym anulowaniu i zaproponuj wysłanie potwierdzenia przez [tool id="tool_8101m0ncs38xe6tb29923tjt9045"].
-  7. Zapytaj, czy zapisać gościa na inny termin w trakcie pobytu.
+  1. Uprzejmie poproś o numer rezerwacji (SPA-XXXX). Bez numeru nie anuluj.
+  2. Ustal termin zabiegu — datę i godzinę (są w rezerwacji). Przekaż go jako appointment_datetime w ISO 8601 z godziną, np. 2026-11-09T18:30. Bez godziny backend zawsze nalicza 50%.
+  3. Jeśli do zabiegu zostało mniej niż 2 godziny, zapytaj z troską: „Czy powodem odwołania jest gorsze samopoczucie lub kwestie zdrowotne?" Jeśli tak — przekaż medical_release=true (anulacja 0%).
+  4. Odwołanie powyżej 2 godzin przed terminem: bezpłatna anulacja (fee: 0) i zwolnienie slotu.
+  5. Odwołanie poniżej 2 godzin bez powodu medycznego: 50% opłaty (fee: 0.5).
+  6. Wywołaj [tool name="cancel_spa_appointment"] z confirmation_id, reason, medical_release, appointment_datetime i language.
+  7. Odczytaj z odpowiedzi fee, free_of_charge i fee_rule — podaj gościowi dokładnie tę kwotę i uzasadnienie. Nigdy nie licz opłaty samodzielnie.
+  8. Jeśli odpowiedź ma success:false (nieznany numer) — NIE potwierdzaj anulowania, poproś o ponowne sprawdzenie numeru i ponów wywołanie.
+  9. Poinformuj gościa o pomyślnym anulowaniu i zaproponuj wysłanie potwierdzenia przez [tool id="tool_8101m0ncs38xe6tb29923tjt9045"].
+  10. Zapytaj, czy zapisać gościa na inny termin w trakcie pobytu.
 
 ## 2. procedura_zmiany_terminu_zabiegu
 trigger: "Gdy gość chce zmienić godzinę, przełożyć masaż na popołudnie lub zamienić dzień zabiegu SPA."
 type: free_form
 content: |
-  1. Pobierz numer rezerwacji (SPA-XXXX) i zidentyfikuj aktualny termin zabiegu.
+  1. Pobierz numer rezerwacji (SPA-XXXX), nazwę zabiegu i imię gościa.
   2. Zapytaj o preferowany nowy dzień i porę (rano / popołudnie).
-  3. Wywołaj [tool id="tool_4801m0ncs38tf8t93f45jfj992dt"] z service_name i nową datą.
-  4. Zaproponuj gościowi 2–3 konkretne godziny.
+  3. Najpierw sprawdź nowy termin: wywołaj [tool id="tool_4801m0ncs38tf8t93f45jfj992dt"] z service_name, nową datą i language. Przy odpowiedzi ambiguous przeczytaj kandydatów i dopytaj, który zabieg gość wybiera.
+  4. Zaproponuj gościowi 2–3 konkretne godziny z listy slots; podaj price_pln i duration_min z odpowiedzi.
   5. Po wyborze sparafrazuj zmianę: „Zmieniłam termin kąpieli siarczkowej z czwartku 10:00 na piątek o 15:00. Zgadza się?"
-  6. Po potwierdzeniu wywołaj [tool id="tool_6001m0ntyt8xefgsx1e8mcqnsw1n"] z department="recepcja" (na produkcji: aktualizacja PMS) i wyślij zaktualizowany SMS przez [tool id="tool_8101m0ncs38xe6tb29923tjt9045"].
+  6. Po potwierdzeniu wywołaj [tool name="reschedule_spa_appointment"] z confirmation_id, service_name, new_date, new_time, guest_name i language.
+  7. Podaj gościowi nowy numer z pola confirmation_id odpowiedzi i wyślij zaktualizowany SMS przez [tool id="tool_8101m0ncs38xe6tb29923tjt9045"].
+  8. Jeśli odpowiedź ma success:false: przy zajętym slocie zaproponuj inną godzinę z listy slots; przy „nie znaleziono rezerwacji" poproś o sprawdzenie numeru i nie twórz nowej rezerwacji bez zgody gościa.
 
 ## 3. procedura_odwolania_pobytu_i_zwrotu_zadatku
 trigger: "Gdy gość prosi o odwołanie rezerwacji pokoju hotelowego i pyta o zwrot wpłaconego zadatku (30%)."
@@ -51,7 +60,7 @@ trigger: "Gdy gość pyta, czy może przyjechać rano (early check-in) lub zosta
 type: free_form
 content: |
   1. Sprawdź termin rezerwacji gościa.
-  2. Doba hotelowa trwa od 14:00 do 11:00.
+  2. Doba hotelowa trwa od 15:00 do 11:00 (zameldowanie od 15:00, wymeldowanie do 11:00).
   3. Wczesny przyjazd: bezpłatna przechowalnia bagażu + bezpłatny dostęp do strefy basenów termalnych i restauracji od 9:00. Pokój udostępniany wcześniej bez opłat, jeśli posprzątany.
   4. Uspokój gościa: „Nawet jeśli pokój nie będzie jeszcze gotowy o 9:00, bezpłatnie przechowamy bagaże i może Pani/Pan od razu korzystać z basenów termalnych i kawiarni."
   5. Późny wyjazd: przedłużenie do 14:00 (50 PLN) / do 18:00 (100 PLN) w miarę dostępności pokoju.
@@ -62,10 +71,10 @@ trigger: "Gdy gość informuje o cukrzycy, celiakii, diecie lekkostrawnej, bezml
 type: free_form
 content: |
   1. Zapytaj o dokładny rodzaj diety i ewentualne alergie pokarmowe.
-  2. Poinformuj, że diety lecznicze (cukrzycowa, lekkostrawna, bezglutenowa, niskosodowa) są w cenie pobytu bez dopłat, ale wymagają zgłoszenia min. 24h przed przyjazdem.
-  3. Poinformuj, że posiłki są przygotowywane pod bezpośrednim nadzorem dietetyka klinicznego.
+  2. Poinformuj, że dostępne są dokładnie trzy diety — cukrzycowa, lekkostrawna oraz bezglutenowa i bezmleczna — wszystkie w cenie pobytu bez dopłat. Dieta bezglutenowa i bezmleczna wymaga zgłoszenia min. 3 dni przed przyjazdem.
+  3. Poinformuj, że posiłki w restauracji „Bukowy Smak" są przygotowywane pod bezpośrednim nadzorem dietetyka klinicznego.
   4. Zapisz adnotację żywieniową w profilu gościa.
-  5. Przekaż godziny posiłków: Śniadanie 7:30–9:30, Obiad 13:00–15:00, Kolacja 18:00–19:30.
+  5. Przekaż godziny posiłków: Śniadanie 7:30–10:00, Obiad 13:00–15:00, Kolacja 17:30–19:30.
 
 ## 6. procedura_zamowienia_transportu_i_meleksa
 trigger: "Gdy gość pyta o dojazd z dworca PKP/PKS, prosi o odebranie ze stacji lub podwiezienie meleksem z parkingu/SPA."

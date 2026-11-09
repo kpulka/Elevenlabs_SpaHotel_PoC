@@ -1,18 +1,18 @@
-Uzdrowisko Termalne "Bukowy Dwór" - Informacje Ogólne
+# Uzdrowisko Termalne "Bukowy Dwór" - Informacje Ogólne
 
-Podstawowe informacje
-- Nazwa: Uzdrowisko Termalne "Bukowy Dwór"
-- Charakterystyka: Resort o charakterze medyczno-wypoczynkowym, specjalizujący się w gościach 60+.
-- Recepcja: Czynna całą dobę (24/7).
-- Doba hotelowa: Rozpoczyna się o 15:00, kończy o 11:00.
+## Podstawowe informacje
+- **Nazwa:** Uzdrowisko Termalne "Bukowy Dwór"
+- **Charakterystyka:** Resort o charakterze medyczno-wypoczynkowym, specjalizujący się w gościach 60+.
+- **Recepcja:** Czynna całą dobę (24/7).
+- **Doba hotelowa:** Rozpoczyna się o 15:00, kończy o 11:00.
 
-Lokalizacja i Dojazd
-- Adres: ul. Zdrojowa 15, 33-380 Krynica-Zdrój.
-- Wskazówki dojazdu (dla gości starszych): Obiekt znajduje się tuż za głównym parkiem zdrojowym, naprzeciwko starej pijalni wód. Droga dojazdowa jest płaska, bez stromych podjazdów.
-- Parking: Parking dla gości znajduje się bezpośrednio przed głównym wejściem. Posiadamy 10 szerokich miejsc dla osób z niepełnosprawnościami.
-- Transport z dworca: Oferujemy bezpłatny transport meleksem z dworca PKP/PKS po wcześniejszym zgłoszeniu (wymagane zgłoszenie min. 24h przed przyjazdem).
+## Lokalizacja i Dojazd
+- **Adres:** ul. Zdrojowa 15, 33-380 Krynica-Zdrój.
+- **Wskazówki dojazdu (dla gości starszych):** Obiekt znajduje się tuż za głównym parkiem zdrojowym, naprzeciwko starej pijalni wód. Droga dojazdowa jest płaska, bez stromych podjazdów.
+- **Parking:** Parking dla gości znajduje się bezpośrednio przed głównym wejściem. Posiadamy 10 szerokich miejsc dla osób z niepełnosprawnościami.
+- **Transport z dworca:** Oferujemy bezpłatny transport meleksem z dworca PKP/PKS po wcześniejszym zgłoszeniu (wymagane zgłoszenie min. 24h przed przyjazdem).
 
-Dostępność i Architektura (Accessibility)
-- Brak barier: Cały obiekt (pokoje, korytarze, strefa SPA) pozbawiony jest progów.
-- Windy: W budynku znajdują się 4 szerokie windy z powiadomieniami głosowymi i przyciskami opisanymi alfabetem Braille'a.
-- Udogodnienia: W każdym korytarzu zamontowane są poręcze ułatwiające poruszanie się. Wypożyczalnia kijków do nordic walking i wózków inwalidzkich znajduje się w recepcji.
+## Dostępność i Architektura (Accessibility)
+- **Brak barier:** Cały obiekt (pokoje, korytarze, strefa SPA) pozbawiony jest progów.
+- **Windy:** W budynku znajdują się 4 szerokie windy z powiadomieniami głosowymi i przyciskami opisanymi alfabetem Braille'a.
+- **Udogodnienia:** W każdym korytarzu zamontowane są poręcze ułatwiające poruszanie się. Wypożyczalnia kijków do nordic walking i wózków inwalidzkich znajduje się w recepcji.

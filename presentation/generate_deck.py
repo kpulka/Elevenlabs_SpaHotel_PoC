@@ -310,7 +310,7 @@ def create_presentation():
     add_header(s7, "Anna nie tylko rozmawia — działa w systemie PMS", "TOOL CALLING & INTEGRACJA", dark_theme=False)
 
     # Table
-    rows = 6
+    rows = 8
     cols = 3
     table_shape = s7.shapes.add_table(rows, cols, Inches(0.8), Inches(1.9), Inches(11.7), Inches(4.8))
     table = table_shape.table
@@ -332,9 +332,11 @@ def create_presentation():
     data = [
         ("check_spa_availability", "Weryfikacja wolnych slotów na zabiegi w kalendarzu", "POST Webhook (FastAPI/PMS)"),
         ("book_spa_appointment", "Zapis gościa na zabieg, wygenerowanie ID (np. SPA-4821)", "POST Webhook (FastAPI/PMS)"),
+        ("cancel_spa_appointment", "Anulowanie zabiegu (bezpłatnie >2 h, 50% <2 h, 0% przy zwolnieniu medycznym)", "POST Webhook (FastAPI/PMS)"),
+        ("reschedule_spa_appointment", "Zmiana terminu zabiegu (bezpłatna, nowy kod SPA)", "POST Webhook (FastAPI/PMS)"),
         ("check_room_availability", "Sprawdzenie terminów pokoi i kalkulacja ceny pobytu", "POST Webhook (FastAPI/PMS)"),
         ("send_sms_summary", "Wysyłka SMS / Telegram z numerem rezerwacji i wskazówkami", "POST Webhook (Bramka SMS)"),
-        ("transfer_to_number", "Przełączenie na numer telefonu żywego recepcjonisty", "Natywne ElevenLabs SIP")
+        ("transfer_to_simulated_handoff", "Przekazanie do recepcji / dyżurki (log + alert Telegram)", "POST Webhook (handoff symulowany — brak SIP)")
     ]
 
     for row_idx, (c1, c2, c3) in enumerate(data, start=1):
@@ -347,7 +349,7 @@ def create_presentation():
             p.font.size = Pt(12)
             p.font.color.rgb = CHARCOAL
 
-    add_notes(s7, "Zwróć uwagę, że transfer to human jest natywną funkcją ElevenLabs SIP, a nie skomplikowanym custom webhookiem.")
+    add_notes(s7, "Zwróć uwagę, że handoff do człowieka jest w PoC symulowany webhookiem (log + alert Telegram), bo nie ma telefonii/SIP — docelowo zastąpi go natywne SIP REFER.")
 
     # ----------------------------------------------------
     # SLIDE 8: Omnichannel (Phone + Web)
@@ -365,13 +367,13 @@ def create_presentation():
     tf8.word_wrap = True
 
     p = tf8.paragraphs[0]
-    p.text = "Kanał 1: Tradycyjna Telefonia (SIP Trunk)"
+    p.text = "Kanał 1: Tradycyjna Telefonia (SIP Trunk) — ścieżka docelowa"
     p.font.size = Pt(18)
     p.font.bold = True
     p.font.color.rgb = GOLD
 
     p_t = tf8.add_paragraph()
-    p_t.text = "• Bezpośredni numer do recepcji hotelu\n• Dostępność 24/7 bez oczekiwania w kolejce\n• Turn timeout 3.0s, parafrazowanie ustaleń, wysyłka SMS po zakończeniu\n"
+    p_t.text = "• Ten sam agent i prompt po podpięciu SIP Trunk (Faza II — telefonii nie ma w PoC)\n• Bezpośredni numer do recepcji hotelu\n• Dostępność 24/7 bez oczekiwania w kolejce\n• Turn timeout 3.0s, parafrazowanie ustaleń, wysyłka SMS po zakończeniu\n"
     p_t.font.size = Pt(13)
     p_t.font.color.rgb = WHITE
 
@@ -386,7 +388,7 @@ def create_presentation():
     p_w.font.size = Pt(13)
     p_w.font.color.rgb = WHITE
 
-    add_notes(s8, "Jeden agent w panelu ElevenLabs obsługuje zarówno połączenia telefoniczne, jak i widget na stronie.")
+    add_notes(s8, "W PoC agent działa wyłącznie jako widget webowy; kanał telefoniczny przez SIP Trunk to ścieżka docelowa — ta sama konfiguracja agenta.")
 
     # ----------------------------------------------------
     # SLIDE 9: Live Demo Paths
@@ -553,7 +555,7 @@ def create_presentation():
     add_header(s13, "Roadmapa wdrożenia: od PoC do proaktywnego AI", "IMPLEMENTATION TIMELINE", dark_theme=False)
 
     phases = [
-        ("Faza I: PoC & Walidacja (Obecnie)", "• Baza wiedzy RAG (5 plików)\n• Mock backend (FastAPI, 4 webhooki)\n• Widget webowy z Quick Reply Chips\n• Testy czasu reakcji i promptu", SAGE),
+        ("Faza I: PoC & Walidacja (Obecnie)", "• Baza wiedzy RAG (5 plików)\n• Mock backend (FastAPI, 7 narzędzi webhook)\n• Widget webowy z Quick Reply Chips\n• Testy czasu reakcji i promptu", SAGE),
         ("Faza II: Integracja Produkcyjna (Miesiąc 1-2)", "• Bezpośrednie API do PMS (Opera/KWHotel)\n• Bramka Twilio SMS (potwierdzenia)\n• Wpięcie w centralę telefoniczną SIP PBX\n• Wielojęzyczność (DE, EN, UA)", GOLD),
         ("Faza III: Proaktywny Outbound AI (Miesiąc 3+)", "• Automatyczne telefony przed przyjazdem\n• Potwierdzanie transportu meleksem\n• Spersonalizowane rekomendacje zabiegów\n• Zaawansowana analityka intencji i CSAT", NAVY)
     ]

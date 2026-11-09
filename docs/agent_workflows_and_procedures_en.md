@@ -1,4 +1,6 @@
 ﻿> **Status:** aktualny (2026-11) — tłumaczenie EN dokumentów `docs/elevenlabs_agent_workflow.md` i `docs/elevenlabs_agent_procedures.md` (wersja źródłowa: PL).
+>
+> **Graph scope (read this first):** the Mermaid graph in §1 describes the **designed** conversational graph (target state, ~30 states). The graph **actually deployed and live** on the agent is a minimal **workflow v3: 3 nodes** (`start` → `main_agent` → `end`) and **2 edges**, defined in `.planning/workflow/workflow_v3.json`. §2 lists the 7 procedures that are published on the live agent.
 
 # Agent Workflows & Standard Operating Procedures (SOP) — Virtual AI Receptionist "Bukowy Dwór"
 
@@ -91,10 +93,10 @@ flowchart TD
     %% 6. ESCALATIONS
     subgraph SUB_HANDOFF ["🚨 HUMAN HANDOFF & ESCALATIONS"]
         EMERGENCY --> CALL_NURSE["🗣️ 'Your health is our top priority. I am immediately connecting you to the on-duty nurse station.'"]:::handoffNode
-        CALL_NURSE --> EXEC_TRANSFER_NURSE[["🔧 TOOL: transfer_to_number(+48 18 123 45 99)"]]:::handoffNode
+        CALL_NURSE --> EXEC_TRANSFER_NURSE[["🔧 TOOL: transfer_to_simulated_handoff(department='dyzurka_medyczna')"]]:::handoffNode
 
         HANDOFF_HUMAN --> CALL_RECEPTION["🗣️ 'Certainly, I am transferring you to a receptionist now. Please hold a moment.'"]:::handoffNode
-        CALL_RECEPTION --> EXEC_TRANSFER_REC[["🔧 TOOL: transfer_to_number(+48 18 123 45 67)"]]:::handoffNode
+        CALL_RECEPTION --> EXEC_TRANSFER_REC[["🔧 TOOL: transfer_to_simulated_handoff(department='recepcja')"]]:::handoffNode
     end
 
     %% 7. WRAP-UP & TERMINATION
@@ -111,12 +113,14 @@ flowchart TD
 
 ## 2. Catalog of 7 Enterprise Standard Operating Procedures (SOP)
 
-| # | Procedure ID | Trigger Condition | Business Logic & Operational Steps |
-|---|---|---|---|
-| **1** | **`spa_cancellation_procedure`** | Guest requests to cancel or withdraw from a scheduled spa treatment or massage. | **>2h before:** 100% free cancellation, releases slot in PMS calendar.<br>**<2h before:** 50% late fee, **EXCEPT if due to sudden medical condition/pain** (in which case 100% free cancellation). Dispatches SMS summary. |
-| **2** | **`spa_reschedule_procedure`** | Guest requests to move treatment to a different hour or day. | Queries PMS available slots (`check_spa_availability`) → presents 2-3 alternative options → updates booking in PMS → sends SMS with new appointment time. |
-| **3** | **`room_cancellation_and_refund_procedure`** | Guest cancels room stay and inquires about deposit refund (30%). | **>14 days before:** 100% refund OR **110% Future Stay Voucher**.<br>**7–14 days before:** 50% refund OR **100% Voucher**.<br>**<7 days:** non-refundable (exception: medical hospitalization → warm transfer to Manager). |
-| **4** | **`early_checkin_late_checkout_procedure`** | Inquiries regarding arriving before 2:00 PM (e.g. morning train) or departing after 11:00 AM. | **Early check-in:** Free luggage storage + free access to thermal pools and dining starting at 9:00 AM. Room provided early for free if cleaned.<br>**Late check-out:** $15 fee up to 2:00 PM. |
-| **5** | **`dietary_requirement_procedure`** | Guest reports diabetes, celiac, lactose intolerance, low-sodium, or cardiac diets. | Medical diets are included in stay at zero extra charge under clinical dietitian supervision. Must be registered in PMS min. 24h prior to arrival. Communicates meal times. |
-| **6** | **`transportation_and_shuttle_procedure`** | Guest requests pickup from Krynica-Zdrój train/bus station or electric golf cart on premises. | Free dedicated electric shuttle for resort guests. Logs arrival time, luggage count, wheelchair/mobility aid details → sends SMS with direct driver contact. |
-| **7** | **`complaint_and_escalation_procedure`** | Guest is dissatisfied, reports technical defect, noise, or service issue. | Active listening without interrupting → genuine institutional apology → immediate service ticket dispatched → complimentary herbal tea/salt cave pass and warm handoff to Duty Manager. |
+| # | Procedure (published name) | Procedure ID | Trigger Condition | Business Logic & Operational Steps |
+|---|---|---|---|---|
+| **1** | **`procedura_anulowania_rezerwacji_spa`** | `agtprc_5301m0r0e03mfy5b2se1afbye78z` | Guest requests to cancel a scheduled spa treatment or massage. | **>2h before:** free cancellation, releases the slot in the PMS calendar.<br>**<2h before:** **50%** fee, **EXCEPT** for a sudden medical condition/pain or doctor's release (`medical_release: true`) → **0%**. Dispatches SMS summary. |
+| **2** | **`procedura_zmiany_terminu_zabiegu`** | `agtprc_9001m0r0e0a5f4fv2j88e8ewz9t1` | Guest requests to move a treatment to a different hour or day. | Queries PMS slots (`check_spa_availability`) → offers 2-3 concrete options → rebooks → sends SMS with the new appointment time. Rescheduling is free of charge. |
+| **3** | **`procedura_odwolania_pobytu_i_zwrotu_zadatku`** | `agtprc_0701m0r0e0gre1ra8jhh51xm1pan` | Guest cancels a room stay and asks about the 30% deposit refund. | **>14 days before:** 100% refund OR **110% Future Stay Voucher**.<br>**7–14 days before:** 50% refund OR **100% voucher** (12 months).<br>**<7 days:** non-refundable (exception: medical hospitalization → handoff to the Manager). |
+| **4** | **`procedura_wczesnego_przyjazdu_i_poznego_wyjazdu`** | `agtprc_3701m0r0e0qnfpf9ysz2g5a62trs` | Arriving before 2:00 PM (e.g. morning train) or departing after 11:00 AM. | **Early check-in:** free luggage storage + free access to thermal pools and dining from 9:00 AM; room early for free if already cleaned.<br>**Late check-out:** until 2:00 PM — **50 PLN**; until 6:00 PM — **100 PLN** (subject to availability). |
+| **5** | **`procedura_zgloszenia_diety_leczniczej`** | `agtprc_8001m0r0e0yff679gj7sxvdgd1sk` | Guest reports diabetes, celiac, lactose intolerance, low-sodium, or cardiac diets. | Medical diets are included in the stay at no extra charge under clinical dietitian supervision. Must be registered in the PMS at least 24h before arrival. Communicates meal times. |
+| **6** | **`procedura_zamowienia_transportu_i_meleksa`** | `agtprc_7001m0r0e15kfv28bnc9x9x3p11t` | Guest requests pickup from the Krynica-Zdrój train/bus station or an electric golf cart on premises. | Free dedicated electric shuttle (melex) for resort guests, available 24h. Logs arrival time, luggage count, wheelchair/mobility aid details → sends SMS with the driver's direct contact. |
+| **7** | **`procedura_reklamacji_i_trudnego_goscia`** | `agtprc_1801m0r0e1c1enmvsrcttyh36jq7` | Guest is dissatisfied, reports a technical defect, noise, or a service issue. | Active listening without interrupting → genuine institutional apology → immediate service ticket dispatched → complimentary herbal tea / salt cave pass and handoff to the Duty Manager. |
+
+> IDs are the published procedure IDs stored in `.planning/workflow/procedure_ids.json`.

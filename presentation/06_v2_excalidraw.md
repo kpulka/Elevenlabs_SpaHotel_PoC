@@ -48,7 +48,7 @@ Zaplanuj: **2 szkice obowiązkowe + 1 opcjonalny** jeśli zostanie czas.
 5. **Narzędzia** (prawa strona): prostokąty „PMS / Rezerwacje", „SMS / Telegram", strzałki oznaczone „webhook"
    - Powiedz: *„Tool calling — agent może działać, nie tylko mówić."*
 
-6. **Człowiek** (dolny prawy): prostokąt „👤 Recepcja / Dyżurka" ze strzałką „transfer_to_number"
+6. **Człowiek** (dolny prawy): prostokąt „👤 Recepcja / Dyżurka" ze strzałką „transfer_to_simulated_handoff"
    - Powiedz: *„Zawsze musi być opcja wyjścia do człowieka — szczególnie w kontekście medycznym."*
 
 **Zamknij szkic zdaniem:** *„To jest MVP. Zanim przejdę do UI — czy ta architektura odpowiada na problem który zdefiniowaliśmy?"*
@@ -98,7 +98,7 @@ Zaplanuj: **2 szkice obowiązkowe + 1 opcjonalny** jeśli zostanie czas.
    - Przy „Parafrazowanie" napisz ★ i powiedz: *„To jest kluczowy krok — Anna zawsze powtarza ustalenia zanim zarezerwuje."*
 
 5. **Ścieżka prawa — Eskalacja:**
-   - „Wykryto: sytuacja awaryjna / brak info / prośba o człowieka" → `transfer_to_number()` → „Recepcja przejmuje"
+   - „Wykryto: sytuacja awaryjna / brak info / prośba o człowieka" → `transfer_to_simulated_handoff()` → „Recepcja przejmuje (symulacja)"
    - Powiedz: *„Zawsze deterministyczna — żaden warunek nie omija tej ścieżki."*
 
 6. **Na dole dodaj notatkę:** „turn_timeout: 3s | turn_eagerness: Patient | speed: 0.85x"

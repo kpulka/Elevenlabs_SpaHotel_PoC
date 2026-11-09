@@ -54,7 +54,7 @@
 | Warstwa | Wybór | Dlaczego |
 |---|---|---|
 | STT | Scribe v2 Realtime | ~150ms, VAD, pl-PL |
-| LLM | GPT-4o Mini | niska temperatura, RAG grounding |
+| LLM | Gemini 3.5 Flash Lite | niska temperatura, RAG grounding |
 | TTS | Eleven v3 Conversational | ekspresja > latencja dla seniorów |
 
 **Visual:** Diagram 5 (block diagram stacku)  
@@ -98,7 +98,11 @@
 | `book_spa_appointment` | Rezerwuje zabieg |
 | `check_room_availability` | Sprawdza pokoje |
 | `send_sms_summary` | Wysyła potwierdzenie |
-| `transfer_to_number` | Przekazuje do recepcji |
+| `cancel_spa_appointment` | Anuluje zabieg (50% <2 h, 0% medycznie) |
+| `reschedule_spa_appointment` | Zmienia termin zabiegu |
+| `transfer_to_simulated_handoff` | Symulowane przekazanie do recepcji (brak SIP) |
+
+**Uwaga:** razem 7 narzędzi webhook + wbudowane `end_call`.
 
 **Visual:** Diagram 2 (sequence diagram — uproszczony do 3-4 kroków)  
 **Uwaga:** „Webhooki trafiają do backendu który symuluje PMS. Pokażę to za chwilę."

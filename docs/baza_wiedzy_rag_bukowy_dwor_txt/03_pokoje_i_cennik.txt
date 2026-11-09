@@ -1,25 +1,25 @@
 ﻿# Pokoje i Udogodnienia
 
-Rodzaje Pokoi
+## Rodzaje Pokoi
 
-1. Pokój Jednoosobowy "Spokojny Sen"
-- Przeznaczenie: Dla jednej osoby, idealny na pobyty sanatoryjne.
-- Wyposażenie: Łóżko medyczne (regulowana wysokość i kąt oparcia za pomocą pilota), telefon z dużymi przyciskami, system przywoławczy SOS w łazience i przy łóżku.
-- Łazienka: Kabina prysznicowa typu walk-in (bez brodzika), krzesełko pod prysznicem, antypoślizgowe płytki, uchwyty przy toalecie.
-- Cena: 350 PLN / noc (ze śniadaniem i kolacją).
+### 1. Pokój Jednoosobowy "Spokojny Sen"
+- **Przeznaczenie:** Dla jednej osoby, idealny na pobyty sanatoryjne.
+- **Wyposażenie:** Łóżko medyczne (regulowana wysokość i kąt oparcia za pomocą pilota), telefon z dużymi przyciskami, system przywoławczy SOS w łazience i przy łóżku.
+- **Łazienka:** Kabina prysznicowa typu walk-in (bez brodzika), krzesełko pod prysznicem, antypoślizgowe płytki, uchwyty przy toalecie.
+- **Cena:** 350 PLN / noc (ze śniadaniem i kolacją).
 
-2. Pokój Dwuosobowy "Komfort Plus"
-- Przeznaczenie: Dla par lub gościa z opiekunem.
-- Wyposażenie: Dwa oddzielne łóżka (możliwość złączenia), lodówka na leki, przestronna szafa, sejf na wysokości wzroku (brak konieczności schylania się).
-- Cena: 500 PLN / noc (ze śniadaniem i kolacją).
+### 2. Pokój Dwuosobowy "Komfort Plus"
+- **Przeznaczenie:** Dla par lub gościa z opiekunem.
+- **Wyposażenie:** Dwa oddzielne łóżka (możliwość złączenia), lodówka na leki, przestronna szafa, sejf na wysokości wzroku (brak konieczności schylania się).
+- **Cena:** 500 PLN / noc (ze śniadaniem i kolacją).
 
-Informacje o rezerwacjach
-- Zaliczka: Wymagane 30% zadatku płatnego w ciągu 7 dni od dokonania rezerwacji.
-- Brak miejsc: Jeśli brak miejsc na parterze, agent powinien uspokoić gościa, informując o dużych, wolnobieżnych windach blisko pokoju.
+## Informacje o rezerwacjach
+- **Zaliczka:** Wymagane 30% zadatku płatnego w ciągu 7 dni od dokonania rezerwacji.
+- **Brak miejsc:** Jeśli brak miejsc na parterze, agent powinien uspokoić gościa, informując o dużych, wolnobieżnych windach blisko pokoju.
 
-3. Apartament „Zdrojowy"
-- Przeznaczenie: Dla gości oczekujących najwyższego standardu lub rodzin (gość + opiekun + drugi opiekun).
-- Powierzchnia: ok. 55 m². Składa się z salonu, sypialni i w pełni wyposażonej łazienki.
-- Wyposażenie: Regulowane łóżko medyczne, sofa rozkładana w salonie, lodówka na leki, ekspres do kawy, bezpieczny balkon z widokiem na park zdrojowy. System SOS zarówno przy łóżku, jak i w łazience.
-- Łazienka: Przestronna, w pełni dostępna dla osób na wózkach: prysznic walk-in (120×80 cm), stałe i przenośne uchwyty, krzesełko pod prysznicem.
-- Cena: 750 PLN / noc (ze śniadaniem i kolacją dla dwóch osób).
+### 3. Apartament „Zdrojowy"
+- **Przeznaczenie:** Dla gości oczekujących najwyższego standardu lub rodzin (gość + opiekun + drugi opiekun).
+- **Powierzchnia:** ok. 55 m². Składa się z salonu, sypialni i w pełni wyposażonej łazienki.
+- **Wyposażenie:** Regulowane łóżko medyczne, sofa rozkładana w salonie, lodówka na leki, ekspres do kawy, bezpieczny balkon z widokiem na park zdrojowy. System SOS zarówno przy łóżku, jak i w łazience.
+- **Łazienka:** Przestronna, w pełni dostępna dla osób na wózkach: prysznic walk-in (120×80 cm), stałe i przenośne uchwyty, krzesełko pod prysznicem.
+- **Cena:** 750 PLN / noc (ze śniadaniem i kolacją dla dwóch osób).

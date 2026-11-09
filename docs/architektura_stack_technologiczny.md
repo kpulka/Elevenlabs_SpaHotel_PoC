@@ -74,7 +74,7 @@ flowchart TB
         subgraph LOOP ["Zunifikowana Pętla Konwersacyjna (~430ms)"]
             STT["🎙️ STT: Scribe v2 Realtime<br/>• Latencja: ~150ms<br/>• Język: pl-PL z VAD<br/>• Szumotłumienie & Voice Activity"]:::aiSub
             
-            ORCHESTRATOR["🧠 LLM Orchestrator & State Machine<br/>• Model: GPT-4o Mini / Gemini 2.5 Flash<br/>• Temp: 0.1 (Strict Grounding)<br/>• Workflows & Procedury SOP"]:::aiCore
+            ORCHESTRATOR["🧠 LLM Orchestrator & State Machine<br/>• Model: Gemini 3.5 Flash Lite<br/>• Temp: 0.1 (Strict Grounding)<br/>• Workflows & Procedury SOP"]:::aiCore
             
             TTS["🔊 TTS: Eleven v3 Conversational<br/>• Latencja: ~280ms<br/>• Voice ID: Jessica (Warm/Calm)<br/>• Speed: 0.85x (Optymalizacja Senior 60+)"]:::aiSub
             
@@ -134,22 +134,24 @@ flowchart TB
     subgraph BACKEND ["🏨 5. SYSTEMY HOTELOWE, PMS & KOMUNIKACJA"]
         direction TB
         
-        FASTAPI_GW["Gateway PoC: FastAPI mock_backend<br/>• Uvicorn ASGI Server<br/>• Walidacja Pydantic<br/>• ngrok / Cloudflare Tunnel dla HTTPS"]:::backendLayer
+        FASTAPI_GW["Gateway PoC: FastAPI mock_backend<br/>• Uvicorn ASGI Server, port 8011<br/>• 7 tras POST + 2 GET (/ , /health)<br/>• Walidacja Pydantic<br/>• ngrok / Cloudflare Tunnel dla HTTPS"]:::backendLayer
         
         PMS_CORE["Hotelowy System PMS / ERP<br/>(np. Protel, KWHotel, Mews, Opera Cloud)<br/>• Kalendarz zabiegów balneologicznych<br/>• Stan obłożenia pokoi i rezerwacje"]:::pmsLayer
         
         SMS_GW["Bramka SMS / Komunikatory<br/>• Twilio / SMSAPI / Infobip REST API<br/>• Telegram Bot API"]:::backendLayer
         
-        HUMAN_ESC["Przełączenie na Żywego Człowieka<br/>• Recepcja Główna: +48 18 123 45 67<br/>• Dyżurka Medyczna: +48 18 123 45 99<br/>(Natywny transfer SIP REFER)"]:::pmsLayer
+        HUMAN_ESC["Przełączenie na Żywego Człowieka<br/>• Recepcja Główna: +48 18 123 45 67<br/>• Dyżurka Medyczna: +48 18 123 45 99<br/>(docelowo SIP REFER — w PoC handoff symulowany)"]:::pmsLayer
     end
 
     T1 -->|"HTTPS POST Webhook"| FASTAPI_GW
     T2 -->|"HTTPS POST Webhook"| FASTAPI_GW
+    T2B -->|"HTTPS POST Webhook"| FASTAPI_GW
+    T2C -->|"HTTPS POST Webhook"| FASTAPI_GW
     T3 -->|"HTTPS POST Webhook"| FASTAPI_GW
     T4 -->|"HTTPS POST Webhook"| FASTAPI_GW
     FASTAPI_GW <-->|"SQL / REST API"| PMS_CORE
     FASTAPI_GW -->|"HTTP POST"| SMS_GW
-    T5 -->|"SIP REFER / Handoff"| HUMAN_ESC
+    T5 -->|"HTTPS POST (handoff symulowany)"| HUMAN_ESC
 ```
 
 ---
@@ -174,7 +176,8 @@ flowchart TB
     ```
     User-to-User: hotel_id=bukowy_dwor;ani=+48600111222;lang=pl-PL;encoding=hex
     ```
-- **Handoff (Eskalacja):** Natywna obsługa `SIP REFER`, umożliwiająca natychmiastowe przekierowanie połączenia na telefon stacjonarny recepcji lub dyżurki pielęgniarskiej bez zrywania sesji.
+- **Handoff (Eskalacja):** Docelowo natywna obsługa `SIP REFER`, umożliwiająca natychmiastowe przekierowanie połączenia na telefon stacjonarny recepcji lub dyżurki pielęgniarskiej bez zrywania sesji.
+  > **Stan PoC:** telefonii/SIP nie ma — agent działa wyłącznie jako widget webowy, a `transfer_to_number` nie jest podpięty. Eskalacja jest symulowana webhookiem `transfer_to_simulated_handoff` (log + opcjonalny alert Telegram).
 
 ---
 
@@ -211,13 +214,16 @@ ElevenLabs wywołuje zewnętrzne narzędzia za pomocą schematu **Client Tools (
 | **`send_sms_summary`** | HTTPS POST | `/send_sms_summary` | Wysłanie wiadomości SMS/Telegram z potwierdzeniem |
 | **`transfer_to_simulated_handoff`** | HTTPS POST | `/transfer_to_simulated_handoff` | Symulowane przekazanie do człowieka (PoC — brak telefonii) |
 
+**Razem 7 narzędzi webhook** (+ wbudowane `end_call`). Nie istnieje narzędzie `transfer_to_human` ani podpięty `transfer_to_number`; handoff do człowieka jest w PoC symulowany.
+
 ---
 
 ### E. Backend PoC & PMS Gateway (FastAPI)
-- **Środowisko:** Python 3.11+, FastAPI, Uvicorn ASGI Server.
+- **Środowisko:** Python 3.11+, FastAPI, Uvicorn ASGI Server, port **8011** (8000 na hoście deweloperskim zajmuje proces systemowy).
+- **Powierzchnia API:** 7 tras `POST` (po jednej na narzędzie agenta) + 2 `GET` (`/` — opis serwisu, `/health` — health check). Swagger UI: `http://localhost:8011/docs`.
 - **Model Danych:** Walidacja wejścia za pomocą modeli `Pydantic v2`.
 - **Ekspozycja w sieci:**
-  - Lokalnie dla agenta chmurowego: Tunel HTTPS za pośrednictwem `ngrok http 8000` lub `Cloudflare Tunnel`.
+  - Lokalnie dla agenta chmurowego: Tunel HTTPS za pośrednictwem `ngrok http 8011`, `cloudflared tunnel --url http://localhost:8011` lub stały Cloudflare Tunnel.
   - Produkcyjnie: Konteneryzacja Docker na chmurze Render / AWS ECS / Google Cloud Run.
 - **Kanały Notyfikacji:** Asynchroniczne wywołania HTTP do bramki SMS oraz Telegram Bot API (`sendMessage`).
 

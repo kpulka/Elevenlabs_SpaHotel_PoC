@@ -1,11 +1,77 @@
-# Agent ID — ElevenLabs „Anna"
+# Agent ID — ElevenLabs „Anna" (stan 2026-11)
 
 - **Agent:** Bukowy_Dwor_Anna
 - **Agent ID:** agent_8401m0n03cggfgebhfh0cj96t7aj
 - **Głos:** cgSgspJ2msm6clMCkdW9 (Jessica - Playful, Bright, Warm)
 - **Model TTS:** eleven_v3_conversational
-- **LLM:** gemini-2.0-flash-001
+- **LLM:** gemini-3.5-flash-lite (temperatura 0.1)
 - **Language:** pl
+- **Model STT:** scribe_realtime
 - **Utworzono:** 2026-08-22
+- **ID zweryfikowane przez API:** 2026-11-09 (`GET /v1/convai/agents/{id}` i `GET /v1/convai/tools`)
 
-Uwaga: tool calling (webhooki) + turn_eagerness/speed/PLS należy dodać w panelu (Phase 6).
+## Konfiguracja rozmowy (live)
+
+- `turn_eagerness`: patient
+- `speed`: 0.85
+- `max_duration_seconds`: 900 (15 min)
+- `turn_timeout`: 3.0 s
+- stability 0.80 / similarity_boost 0.75
+- RAG: włączony (5 dokumentów bazy wiedzy)
+- Telefonia: **brak** (`phone_numbers: []`) — agent działa jako widget webowy, więc `transfer_to_number` nie jest podpięty; handoff jest symulowany webhookiem.
+- Branche: **brak** (`branches: []`). ID `agtbrch_9601m0n03dege4yvwseypec1hm81`, które krążyło w starym README, jest **niezweryfikowane** — w API nie ma żadnego brancha.
+
+## Narzędzia: 7 webhooków + wbudowane `end_call`
+
+| # | Nazwa | ID | Endpoint |
+|---|---|---|---|
+| 1 | check_spa_availability | tool_4801m0ncs38tf8t93f45jfj992dt | `/check_spa_availability` |
+| 2 | book_spa_appointment | tool_6001m0ncs38vf73v1zbaa9p5vdfv | `/book_spa_appointment` |
+| 3 | cancel_spa_appointment | tool_6001m0smvb7geghbp7da7z458r06 | `/cancel_spa_appointment` |
+| 4 | reschedule_spa_appointment | tool_1601m0smvbqfaxaqppzcghdcpg8 | `/reschedule_spa_appointment` |
+| 5 | check_room_availability | tool_6301m0ncs38wewt865sh99v1qkm8 | `/check_room_availability` |
+| 6 | send_sms_summary | tool_8101m0ncs38xe6tb29923tjt9045 | `/send_sms_summary` |
+| 7 | transfer_to_simulated_handoff | tool_6001m0ntyt8xefgsx1e8mcqnsw1n | `/transfer_to_simulated_handoff` |
+
+Narzędzia `cancel_spa_appointment` i `reschedule_spa_appointment` powstały później niż reszta i przez
+jakiś czas nie były przepinane po restarcie tunelu (skrypty znały tylko 5 ID). Skrypt
+`mock_backend/tunnel/sync_agent_tools.py` rozwiązuje teraz narzędzia **po nazwie** — lista ID powyżej
+służy do diagnostyki (`--list`), nie jest już wpisana na sztywno w żadnym skrypcie.
+
+Nie istnieje i nigdy nie istniało narzędzie `transfer_to_human`. `transfer_to_number` (natywne SIP)
+nie jest podpięte.
+
+## Graf workflow
+
+- **Wdrożony:** workflow **v3** — 3 węzły: `start_node` → `main_agent` → `end_node`, 2 krawędzie.
+  Plik źródłowy: `.planning/workflow/workflow_v3.json`.
+- **ID grafu:** brak — workflow jest **osadzony w konfiguracji agenta** (`platform_settings`/`conversation_config`),
+  nie istnieje jako osobny zasób z własnym ID. Plik `workflow_v3.json` jest kopią struktury w repo.
+
+## Baza wiedzy (RAG): 5 dokumentów
+
+Pliki źródłowe: `docs/baza_wiedzy_rag_bukowy_dwor/` (wersje `.txt` w `docs/baza_wiedzy_rag_bukowy_dwor_txt/`).
+
+| # | Plik | usage_mode | ID dokumentu |
+|---|---|---|---|
+| 1 | 01_informacje_ogolne_i_dojazd | auto | lcDyS0TfQOrYUtDd6RE2 |
+| 2 | 02_katalog_zabiegow_spa_i_zdrowie | auto | TeG4NWe9mZPZp7Jj9tjN |
+| 3 | 03_pokoje_i_cennik | prompt | Gcd9Xrfo6o7B6CSA0BlP |
+| 4 | 04_restauracja_i_diety | auto | 1iVu7Dqtt0JTzVAJoA8Z |
+| 5 | 05_procedury_i_polityki | prompt | 08dEZvSrACI5wKEIzwhk |
+
+## Procedury: 7 opublikowanych
+
+ID w `.planning/workflow/procedure_ids.json` (nazwy `procedura_*`).
+
+## Prompt
+
+- Plik kanoniczny w repo: `docs/anna_system_prompt_v3.md`.
+- Uwaga: **hosted prompt wgrany na żywo różni się długością od pliku w repo** — nie zakładać, że są identyczne.
+- Historia: audyt z 2026-08 (`docs/audyt_agenta_2026-08.md`) opisuje stan sprzed dodania narzędzi `cancel_spa_appointment` / `reschedule_spa_appointment` i przed publikacją procedur; traktować jako zapis historyczny.
+
+## Historia
+
+Wcześniejsza wersja tego pliku podawała LLM „Gemini 2.0 Flash" oraz notkę „tool calling (webhooki)
++ turn_eagerness/speed/PLS należy dodać w panelu (Phase 6)". Oba punkty są nieaktualne: narzędzia są
+zarejestrowane i podpięte, parametry ustawione, model zmieniony.

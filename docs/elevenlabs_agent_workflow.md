@@ -1,4 +1,4 @@
-﻿> **Status:** aktualny (2026-11) — źródło prawdy dla grafu workflow agenta.
+﻿> **Status:** aktualny (2026-11) — źródło prawdy dla PROJEKTU grafu; wdrożona wersja to `workflow_v3.json` (3 węzły: start → main_agent → end), nie pełny graf z tego dokumentu.
 
 # Specyfikacja i Graf Workflow Agenta ElevenLabs — Anna (Bukowy Dwór)
 
@@ -162,8 +162,8 @@ flowchart TD
 | **`N_SPA_SMS`** | Notification Dispatch | Natychmiastowe wysłanie wiadomości SMS z numerem potwierdzenia. | `send_sms_summary` |
 | **`N_ROOM_AVAIL`** | PMS Room Engine | Weryfikacja wolnych pokoi jednoosobowych, dwuosobowych i apartamentów. | `check_room_availability` |
 | **`N_RAG_LOOKUP`** | Knowledge Engine | Udzielenie odpowiedzi ze ścisłym uziemieniem (strict grounding) w 5 plikach bazy wiedzy. | RAG KB Files (01–05) |
-| **`N_HANDOFF_MED`** | Medical Escalation | Natychmiastowe przekierowanie połączenia na numer dyżurki pielęgniarskiej. | `transfer_to_number` (Dyżurka) |
-| **`N_HANDOFF_REC`** | Reception Transfer | Przekazanie połączenia do żywego pracownika recepcji w przypadku życzenia gościa lub braku wiedzy. | `transfer_to_number` (Recepcja) |
+| **`N_HANDOFF_MED`** | Medical Escalation | Natychmiastowe powiadomienie dyżurki pielęgniarskiej (PoC: alert, nie połączenie telefoniczne). | `transfer_to_simulated_handoff` (dyzurka_medyczna) |
+| **`N_HANDOFF_REC`** | Reception Transfer | Powiadomienie recepcji o potrzebie przejęcia rozmowy (PoC: alert + log; docelowo SIP REFER). | `transfer_to_simulated_handoff` (recepcja) |
 | **`N_END`** | End Conversation | Uprzejme podziękowanie i życzenie miłego dnia. | `end_call` |
 
 ---

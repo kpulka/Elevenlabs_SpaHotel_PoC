@@ -168,7 +168,7 @@ Dwa etapy wymagają materiałów:
 | `book_spa_appointment` | Rezerwuje zabieg | Webhook → mock PMS |
 | `check_room_availability` | Sprawdza dostępność pokoi | Webhook → mock PMS |
 | `send_sms_summary` | Wysyła potwierdzenie SMS / Telegram | Webhook → bramka |
-| `transfer_to_number` | Przekazuje połączenie do recepcji | Natywna funkcja ElevenLabs |
+| `transfer_to_simulated_handoff` | Symulowane przekazanie do recepcji / dyżurki (log + alert Telegram) | Webhook (brak SIP w PoC) |
 
 **Visual:** Mały sequence diagram (Diagram 2 — 3-4 kroki, nie pełny)  
 **Notatka prezentera:** „Webhooki trafiają do backendu który na PoC symuluje PMS. Pokażę to za chwilę."
