@@ -33,4 +33,4 @@ Phase 8 (deck) + Phase 7 (demo) + Phase 9 (V2).
 - [ ] Metryki sukcesu z `ROADMAP.md` spełnione.
 
 ## Po zakończeniu
-Zaktualizuj `.planning/ROADMAP.md` i `../plan/00_roadmapa.md` — odhacz fazy (Faza 2 „BRAKUJE: agent" → zrobione).
+Zaktualizuj `.planning/ROADMAP.md` i `../../docs/archive/pre-gsd/00_roadmapa.md` — odhacz fazy (Faza 2 „BRAKUJE: agent" → zrobione).

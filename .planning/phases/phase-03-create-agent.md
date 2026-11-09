@@ -9,7 +9,7 @@ Phase 2 (realne `model_id` / `llm` / `voice_id`).
 ## Przygotowanie danych
 
 ### System prompt
-Pełny tekst z `docs/anna_system_prompt.md` — zawartość wewnątrz bloku kodu (między pierwszą linią ``` a domykającą ```, ok. linie 10–115). Wklej CAŁY tekst jako `system_prompt` (razem z sekcjami persona, strict grounding, protokoły rezerwacji, scenariusze specjalne).
+Pełny tekst z `docs/anna_system_prompt_v3.md` — zawartość wewnątrz bloku kodu (między pierwszą linią ``` a domykającą ```, ok. linie 10–115). Wklej CAŁY tekst jako `system_prompt` (razem z sekcjami persona, strict grounding, protokoły rezerwacji, scenariusze specjalne).
 
 ### First message
 ```
@@ -24,7 +24,7 @@ tool_call: mcp__elevenlabs__create_agent, args:
   "name": "Bukowy_Dwor_Anna",
   "language": "pl",
   "first_message": "Dzień dobry, tu Anna z recepcji Uzdrowiska Bukowy Dwór w Krynicy-Zdroju. W czym mogę Panu lub Pani dzisiaj pomóc?",
-  "system_prompt": "<CAŁY TEKST Z docs/anna_system_prompt.md>",
+  "system_prompt": "<CAŁY TEKST Z docs/anna_system_prompt_v3.md>",
   "voice_id": "cgSgspJ2msm6clMCkdW9",
   "llm": "<z Phase 2, domyślnie gemini-2.0-flash-001>",
   "temperature": 0.1,

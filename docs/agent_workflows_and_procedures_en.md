@@ -1,4 +1,6 @@
-﻿# Agent Workflows & Standard Operating Procedures (SOP) — Virtual AI Receptionist "Bukowy Dwór"
+﻿> **Status:** aktualny (2026-11) — tłumaczenie EN dokumentów `docs/elevenlabs_agent_workflow.md` i `docs/elevenlabs_agent_procedures.md` (wersja źródłowa: PL).
+
+# Agent Workflows & Standard Operating Procedures (SOP) — Virtual AI Receptionist "Bukowy Dwór"
 
 > Complete technical specification for conversation flow graphs (**ElevenLabs Agent Workflows**) and dynamic standard operating procedures (**ElevenLabs Agent Procedures**) translated to English.
 

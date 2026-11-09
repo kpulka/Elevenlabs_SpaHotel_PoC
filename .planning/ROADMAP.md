@@ -33,8 +33,8 @@ Cel: żywy agent „Anna" + działające demo + prezentacja. 10 faz w 4 epikach.
 - [ ] Wywołaj `create_agent` z parametrami z Phase 2 + decyzji:
   - `name: "Bukowy_Dwor_Anna"` (lub `Anna`)
   - `language: "pl"`
-  - `system_prompt` = pełny tekst z `docs/anna_system_prompt.md`
-  - `first_message` = z `docs/anna_system_prompt.md` (sekcja First Message)
+  - `system_prompt` = pełny tekst z `docs/anna_system_prompt_v3.md`
+  - `first_message` = z `docs/anna_system_prompt_v3.md` (sekcja First Message)
   - `voice_id: cgSgspJ2msm6clMCkdW9`
   - `temperature: 0.1`, `stability: 0.80`, `similarity_boost: 0.75`, `turn_timeout: 3`
   - `model_id` / `llm` z Phase 2

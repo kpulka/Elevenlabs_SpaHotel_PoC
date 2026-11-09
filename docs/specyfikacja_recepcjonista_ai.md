@@ -1,3 +1,5 @@
+> **Status:** aktualny (2026-11) — źródło prawdy dla zakresu funkcjonalnego (CO robi produkt).
+
 # Specyfikacja Funkcjonalna: Wirtualny Recepcjonista Głosowy AI „Anna" — Sieć Hoteli & SPA
 
 > **Dokument kanoniczny.** Łączy wymagania biznesowe + specyfikę grupy docelowej (seniorzy 60+) z możliwościami platformy **ElevenLabs Agents (Conversational AI)**.
@@ -168,4 +170,4 @@ Pełna tabela — plan implementacji §7.
 
 - **Plan techniczny (źródło prawdy):** `plan_implementacji_recepcjonisty.md`
 - **Baza wiedzy RAG:** `baza_wiedzy_rag_bukowy_dwor/` (5 plików)
-- **Wytyczne rekrutacyjne:** `../ElevenLabs_Etap_V1.md`, `../ElevenLabs_Etap_V2.md`
+- **Wytyczne rekrutacyjne:** `archive/ElevenLabs_Etap_V1.md`, `archive/ElevenLabs_Etap_V2.md` (archiwum)

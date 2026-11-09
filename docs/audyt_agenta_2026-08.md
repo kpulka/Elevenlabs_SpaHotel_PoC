@@ -1,3 +1,5 @@
+> **Status:** aktualny (2026-11) — źródło prawdy dla audytu konfiguracji live (guardrails, flow, zalecenia).
+
 # Audyt Agenta „Anna" — Guardrails, Flow i Usprawnienia (2026-08)
 
 **Agent:** Bukowy_Dwor_Anna — `agent_8401m0n03cggfgebhfh0cj96t7aj` (Creator $22/mies.)
@@ -35,7 +37,7 @@ Dodatkowo brakuje (jeśli wymagane):
 
 ## 3. PROPOZYCJE USPRA
 
-1. **Aktywuj `transfer_to_number`** (built-in system tool) przez panel/API, podając numer recepcji. W prompcie zamień `transfer_to_human` → `transfer_to_number` (przygotowany plik `docs/anna_system_prompt_v2.md` — 1:1, tylko zamiana nazwy).
+1. **Aktywuj `transfer_to_number`** (built-in system tool) przez panel/API, podając numer recepcji. W prompcie zamień `transfer_to_human` → `transfer_to_number` (przygotowany plik `docs/archive/anna_system_prompt_v2.md` — 1:1, tylko zamiana nazwy).
 2. **Podbij `max_duration_seconds`** 300 → 900 (15 min) dla spokojnych rozmów.
 3. **Rozważ stały tunel** dla webhooków (cloudflared stały domeny / public DOMEN), żeby 4 narady nie padały po restarcie.
 4. Opcjonalnie: włącz monitoring konwersacji, gdy będzie plan z tego wsparciem.

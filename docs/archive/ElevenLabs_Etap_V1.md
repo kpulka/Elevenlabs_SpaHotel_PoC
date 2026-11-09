@@ -1,3 +1,5 @@
+> **Status:** historyczne — materiały z etapu rekrutacyjnego, nie są dokumentacją systemu (archiwum, nieaktualne). Zarchiwizowano 2026-11: wymagania procesu V1 zachowano wyłącznie jako kontekst powstania projektu.
+
 # Etap V1: Rozmowa Wprowadzająca i Case Study
 
 ## Wymagania

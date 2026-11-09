@@ -1,3 +1,5 @@
+> **Status:** aktualny (2026-11) — źródło prawdy dla architektury systemu i stacku technologicznego.
+
 # Architektura Systemowa i Stack Technologiczny — Wirtualna Recepcjonistka AI (Bukowy Dwór)
 
 > Kompleksowa dokumentacja techniczna architektury wdrożeniowej, stosu technologicznego, interfejsów, konektorów i protokołów komunikacyjnych łączących platformę **ElevenLabs Conversational AI** z infrastrukturą hotelową i medyczną uzdrowiska.

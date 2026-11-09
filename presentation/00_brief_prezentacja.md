@@ -7,7 +7,7 @@
 > **Pliki źródłowe (przeczytaj przed tworzeniem):**
 > - `docs/plan_implementacji_recepcjonisty.md` — źródło prawdy technicznej
 > - `docs/specyfikacja_recepcjonista_ai.md` — spec funkcjonalna
-> - `docs/anna_system_prompt.md` — system prompt gotowy do wklejenia
+> - `docs/anna_system_prompt_v3.md` — system prompt gotowy do wklejenia
 > - `presentation/01_diagram_architektury.md` — 5 diagramów Mermaid (architektura, sequence, multi-hotel…)
 > - `presentation/02_tok_myslenia_v1.md` — tok myślenia V1, odpowiedzi na trudne pytania, liczby ROI
 > - `presentation/03_narracja_demo.md` — skrypt 3 ścieżek demo + fallbacki
@@ -318,7 +318,7 @@ Dwa etapy wymagają materiałów:
 - Slajd A1: Pełny stack technologiczny (Diagram 5 z `01_diagram_architektury.md`)
 - Slajd A2: Sequence diagram rezerwacji krok po kroku (Diagram 2)
 - Slajd A3: JSON Schema narzędzi (copy-paste z planu implementacji)
-- Slajd A4: System prompt Anny (fragment — `docs/anna_system_prompt.md`)
+- Slajd A4: System prompt Anny (fragment — `docs/anna_system_prompt_v3.md`)
 
 ---
 

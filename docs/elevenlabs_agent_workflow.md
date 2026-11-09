@@ -1,4 +1,6 @@
-﻿# Specyfikacja i Graf Workflow Agenta ElevenLabs — Anna (Bukowy Dwór)
+﻿> **Status:** aktualny (2026-11) — źródło prawdy dla grafu workflow agenta.
+
+# Specyfikacja i Graf Workflow Agenta ElevenLabs — Anna (Bukowy Dwór)
 
 > Dokumentacja architektury przepływu konwersacji (**ElevenLabs Agent Workflows**) dla Wirtualnej Recepcjonistki Anny w Uzdrowisku Termalnym „Bukowy Dwór”.
 > Zgodna z oficjalnym modelem grafowym ElevenAgents: stany (węzły), warunki przejść (krawędzie), wywołania narzędzi (Tool Calling) i procedury bezpieczeństwa (Medical Guardrails).

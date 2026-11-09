@@ -6,7 +6,7 @@
 Dokonać wdrożenia żywego agenta „Anna" w ElevenLabs (PoC → wizja docelowa) oraz zbudować prezentację na rekrutację (Deployment Strategist, etapy V1 + V2).
 
 ## Punkt startowy (co już jest)
-- ✅ Dokumentacja ujednolicona: `docs/specyfikacja_recepcjonista_ai.md` (CO), `docs/plan_implementacji_recepcjonisty.md` (JAK), `docs/anna_system_prompt.md` (prompt).
+- ✅ Dokumentacja ujednolicona: `docs/specyfikacja_recepcjonista_ai.md` (CO), `docs/plan_implementacji_recepcjonisty.md` (JAK), `docs/anna_system_prompt_v3.md` (prompt).
 - ✅ Baza wiedzy RAG: 5 plików `.md` (`docs/baza_wiedzy_rag_bukowy_dwor/`).
 - ✅ Mock backend: `mock_backend/` (FastAPI, 4 endpointy webhook + dane).
 - ✅ Materiały prezentacyjne: `presentation/` (brief, outline 14 slajdów, diagramy, narracja, V2).
@@ -49,6 +49,6 @@ Dokonać wdrożenia żywego agenta „Anna" w ElevenLabs (PoC → wizja docelowa
 - **Weryfikacja po każdej fazie:** potwierdź realnym outputem (agent_id, `get_agent`, odpowiedź curl, liczba plików) — nie wierz deklaracjom.
 
 ## Powiązane pliki (kontekst)
-- Prezentacyjny roadmap (wysokopoziomowy): `../plan/00_roadmapa.md`
+- Prezentacyjny roadmap (wysokopoziomowy): `../docs/archive/pre-gsd/00_roadmapa.md` (archiwum)
 - Źródło prawdy technicznej: `../docs/plan_implementacji_recepcjonisty.md` (§8 = kolejność MCP)
-- System prompt: `../docs/anna_system_prompt.md`
+- System prompt: `../docs/anna_system_prompt_v3.md`
