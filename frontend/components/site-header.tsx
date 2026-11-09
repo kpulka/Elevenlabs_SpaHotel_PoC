@@ -30,7 +30,7 @@ export function SiteHeader() {
           </span>
         </Link>
 
-        <nav aria-label={t.nav.openMenu} className="hidden items-center gap-6 lg:flex">
+        <nav aria-label={t.nav.mainMenu} className="hidden items-center gap-6 lg:flex">
           {navItems.map((item) => (
             <Link
               key={item.href}
@@ -86,7 +86,7 @@ export function SiteHeader() {
           id="mobile-menu"
           className="fixed inset-x-0 top-[64px] bottom-0 z-40 flex flex-col bg-navy px-6 py-8 lg:hidden"
         >
-          <nav aria-label="Menu mobilne" className="flex flex-col gap-2">
+          <nav aria-label={t.nav.mobileMenu} className="flex flex-col gap-2">
             {navItems.map((item) => (
               <Link
                 key={item.href}

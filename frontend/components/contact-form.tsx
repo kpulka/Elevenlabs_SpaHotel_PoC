@@ -53,6 +53,12 @@ export function ContactForm() {
         <p className="text-base leading-relaxed text-charcoal/80">
           {t.contactPage.successText}
         </p>
+        {/* Jawna informacja: to demo, formularz nic nie wysyła. */}
+        <p className="mt-1 rounded-lg border border-gold/40 bg-warm-white px-4 py-2 text-sm text-charcoal/70">
+          {language === 'pl'
+            ? 'Wersja demonstracyjna: formularz nie wysyła wiadomości i nie zapisuje danych — w razie pilnej rezerwacji zadzwoń do recepcji.'
+            : 'Demo build: this form does not send or store anything — for an urgent booking, please call the front desk.'}
+        </p>
       </div>
     )
   }

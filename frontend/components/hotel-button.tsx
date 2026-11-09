@@ -1,6 +1,6 @@
 import { cva, type VariantProps } from 'class-variance-authority'
 import Link from 'next/link'
-import type { ComponentProps } from 'react'
+import type { ComponentProps, ReactNode } from 'react'
 
 import { cn } from '@/lib/utils'
 
@@ -26,10 +26,24 @@ const hotelButtonVariants = cva(
   },
 )
 
-type HotelButtonProps = VariantProps<typeof hotelButtonVariants> & {
-  href?: string
+type CommonProps = VariantProps<typeof hotelButtonVariants> & {
   className?: string
-} & (ComponentProps<'button'> | ComponentProps<typeof Link>)
+  children?: ReactNode
+}
+
+/** Renders `next/link` — `href` is required and never spread a second time. */
+type HotelButtonAsLink = CommonProps &
+  Omit<ComponentProps<typeof Link>, 'href' | 'className' | 'children'> & {
+    href: string
+  }
+
+/** Renders a native `<button>` — `href` is not part of the API at all. */
+type HotelButtonAsButton = CommonProps &
+  Omit<ComponentProps<'button'>, 'className' | 'children'> & {
+    href?: undefined
+  }
+
+type HotelButtonProps = HotelButtonAsLink | HotelButtonAsButton
 
 export function HotelButton({
   href,
@@ -41,16 +55,16 @@ export function HotelButton({
 }: HotelButtonProps) {
   const classes = cn(hotelButtonVariants({ variant, fullWidth }), className)
 
-  if (href) {
+  if (href !== undefined) {
     return (
-      <Link href={href} className={classes} {...(props as ComponentProps<typeof Link>)}>
+      <Link href={href} className={classes} {...(props as Omit<ComponentProps<typeof Link>, 'href' | 'className' | 'children'>)}>
         {children}
       </Link>
     )
   }
 
   return (
-    <button className={classes} {...(props as ComponentProps<'button'>)}>
+    <button className={classes} {...(props as Omit<ComponentProps<'button'>, 'className' | 'children'>)}>
       {children}
     </button>
   )

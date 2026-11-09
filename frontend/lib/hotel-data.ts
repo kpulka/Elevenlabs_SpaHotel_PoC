@@ -1,4 +1,4 @@
-﻿import type { Language } from "./translations"
+import type { Language } from "./translations"
 
 export type Room = {
   id: string
@@ -440,10 +440,13 @@ export function getAccessibilityFeatures(lang: Language) {
   return lang === "en" ? accessibilityFeaturesEn : accessibilityFeatures
 }
 
+const phoneNumber = "+48 18 123 45 67"
+
 export const contactInfo = {
   address: "ul. Zdrojowa 15, 33-380 Krynica-Zdrój",
-  phone: "+48 18 123 45 67",
-  phoneHref: "tel:+48181234567",
+  phone: phoneNumber,
+  // Link tel: wyprowadzony z numeru wyświetlanego — jedno źródło prawdy.
+  phoneHref: `tel:+${phoneNumber.replace(/\D/g, "")}`,
   email: "recepcja@bukowydwor.pl",
   receptionHours: "Recepcja: całodobowo, 24 godziny na dobę",
 }
