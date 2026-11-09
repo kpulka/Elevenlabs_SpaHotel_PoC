@@ -4,8 +4,10 @@ import { Mic, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 
 import { useLanguage } from '@/context/language-context'
+import type { ElevenLabsConvaiElement } from '@/types/elevenlabs-convai'
 
-const AGENT_ID = 'agent_8401m0n03cggfgebhfh0cj96t7aj'
+// Nadpisywalne przez env; literał zostaje jako udokumentowany fallback dla dev/demo.
+const AGENT_ID = process.env.NEXT_PUBLIC_ELEVENLABS_AGENT_ID ?? 'agent_8401m0n03cggfgebhfh0cj96t7aj'
 const WIDGET_SCRIPT = '/widget/convai-widget-embed.js'
 
 export function AnnaEmbedWidget() {
@@ -14,7 +16,7 @@ export function AnnaEmbedWidget() {
   const [showHint, setShowHint] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const scriptInserted = useRef(false)
-  const widgetRef = useRef<HTMLElement | null>(null)
+  const widgetRef = useRef<ElevenLabsConvaiElement | null>(null)
 
   // 1. Pobierz Signed URL z serwera z parametrem wybranego języka
   useEffect(() => {
@@ -89,7 +91,7 @@ export function AnnaEmbedWidget() {
   // 6. Funkcja uruchamiania rozmowy
   function triggerConvai() {
     setShowHint(false)
-    const host = widgetRef.current as any
+    const host = widgetRef.current
     if (!host) {
       console.warn('Anna: element widgetu nie gotowy')
       return
@@ -159,7 +161,7 @@ export function AnnaEmbedWidget() {
 
       {/* Oficjalny komponent ElevenLabs ConvAI */}
       <elevenlabs-convai
-        ref={(el: any) => {
+        ref={(el) => {
           widgetRef.current = el
         }}
         agent-id={AGENT_ID}

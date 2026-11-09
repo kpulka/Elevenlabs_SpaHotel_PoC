@@ -1,4 +1,4 @@
-﻿export type Language = "pl" | "en"
+export type Language = "pl" | "en"
 
 export const translations = {
   pl: {
@@ -13,6 +13,8 @@ export const translations = {
       skipToContent: "Przejdź do treści",
       openMenu: "Otwórz menu",
       closeMenu: "Zamknij menu",
+      mainMenu: "Menu główne",
+      mobileMenu: "Menu mobilne",
     },
     footer: {
       tagline: "Uzdrowisko Termalne w Krynicy-Zdroju. Regeneracja, leczenie i cisza w sercu Beskidu Sądeckiego.",
@@ -146,6 +148,8 @@ export const translations = {
       skipToContent: "Skip to content",
       openMenu: "Open menu",
       closeMenu: "Close menu",
+      mainMenu: "Main menu",
+      mobileMenu: "Mobile menu",
     },
     footer: {
       tagline: "Thermal Spa & Health Resort in Krynica-Zdrój. Regeneration, clinical wellness, and tranquility in the heart of the mountains.",

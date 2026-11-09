@@ -1,10 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  typescript: {
-    ignoreBuildErrors: true,
-  },
   images: {
-    unoptimized: true,
+    // Optymalizator next/image włączony: AVIF/WebP zamiast surowych PNG/JPEG.
+    unoptimized: false,
+    formats: ['image/avif', 'image/webp'],
   },
   async headers() {
     return [
