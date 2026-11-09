@@ -1,3 +1,5 @@
+> **Status:** historyczne — materiały z etapu rekrutacyjnego, nie są dokumentacją systemu (archiwum, nieaktualne). Zarchiwizowano 2026-11: wymagania procesu V2 zachowano wyłącznie jako kontekst powstania projektu.
+
 # Etap V2: Product Design, System Design oraz Hiring Manager
 
 ## Wymagania

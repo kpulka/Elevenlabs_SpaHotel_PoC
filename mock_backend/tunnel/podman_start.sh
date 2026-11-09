@@ -7,7 +7,8 @@
 #   1. Uruchamia kontener `bukowy-dwor-backend` (mock backend, port 8011).
 #   2. Uruchamia cloudflared tunnel (trycloudflare) → localhost:8011.
 #   3. Wyłapuje publiczny URL, aktualizuje wpis w hosts (IPv4) — omija DNS routera.
-#   4. Aktualizuje 5 narzędzi webhook agenta ElevenLabs na nowy URL.
+#   4. Aktualizuje 7 narzędzi webhook agenta ElevenLabs na nowy URL
+#      (wspólny skrypt sync_agent_tools.py — szuka narzędzi po nazwie).
 # Zatrzymanie: ./podman_stop.sh
 # ─────────────────────────────────────────────────────────────────────────────
 set -u
@@ -19,6 +20,7 @@ TUNNEL_DIR="$BACKEND_DIR/tunnel"
 STATE_FILE="$TUNNEL_DIR/state.json"
 PORT=8011
 CLOUDFLARED="$TUNNEL_DIR/cloudflared.exe"
+PYTHON_BIN="$(command -v python || command -v py || command -v python3 || true)"
 HOSTS_FILE="/c/Windows/System32/drivers/etc/hosts"
 HOSTS_MARK="# ElevenLabs Anna - tunnel"
 
@@ -92,36 +94,16 @@ update_hosts() {
 }
 update_hosts "$(echo "$URL" | sed 's|https://||; s|/||')"
 
-# 4) webhooki agenta
+# 4) webhooki agenta — jeden wspólny skrypt, wszystkie 7 narzędzi po nazwie
 ENV_FILE="$PROJECT_ROOT/frontend/.env.local"
 if [[ -f "$ENV_FILE" ]] && grep -q 'ELEVENLABS_API_KEY=' "$ENV_FILE"; then
-  KEY="$(grep -oE 'ELEVENLABS_API_KEY=[^ ]+' "$ENV_FILE" | head -1 | cut -d= -f2 | tr -d '\r\n"')"
-  python - "$KEY" "$URL" <<'PYEOF'
-import json,sys,urllib.request
-key,newurl=sys.argv[1],sys.argv[2]
-tools={
- "tool_4801m0ncs38tf8t93f45jfj992dt":"check_spa_availability",
- "tool_6001m0ncs38vf73v1zbaa9p5vdfv":"book_spa_appointment",
- "tool_6301m0ncs38wewt865sh99v1qkm8":"check_room_availability",
- "tool_8101m0ncs38xe6tb29923tjt9045":"send_sms_summary",
- "tool_6001m0ntyt8xefgsx1e8mcqnsw1n":"transfer_to_simulated_handoff",
-}
-def api(m,path,b=None):
-    req=urllib.request.Request("https://api.elevenlabs.io"+path,method=m)
-    req.add_header('xi-api-key',key)
-    data=json.dumps(b).encode() if b is not None else None
-    if b is not None: req.add_header('Content-Type','application/json')
-    try:
-        with urllib.request.urlopen(req,data=data) as r: return r.status,json.loads(r.read().decode())
-    except urllib.error.HTTPError as e: return e.code,e.read().decode()[:200]
-for tid,name in tools.items():
-    st,d=api('GET',f'/v1/convai/tools/{tid}')
-    if st!=200: print(f"  ⚠️ {name}: GET {st}"); continue
-    tc=d.get('tool_config',d)
-    tc['api_schema']['url']=newurl+"/"+name
-    st2,_=api('PATCH',f'/v1/convai/tools/{tid}',{'tool_config':tc})
-    print(f"  {'✅' if st2 in (200,201) else '❌'} {name}: {st2}")
-PYEOF
+  if [[ -z "$PYTHON_BIN" ]]; then
+    echo "⚠️  brak interpretera python — nie zaktualizowano webhooków"
+  elif "$PYTHON_BIN" "$TUNNEL_DIR/sync_agent_tools.py" --base-url "$URL"; then
+    echo "✅ webhooki agenta zaktualizowane na $URL"
+  else
+    echo "❌ nie wszystkie webhooki udało się zaktualizować — patrz komunikaty powyżej"
+  fi
 else
   echo "⚠️  brak klucza — nie zaktualizowano webhooków"
 fi

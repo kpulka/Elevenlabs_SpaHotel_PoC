@@ -1,4 +1,6 @@
-﻿# Procedury Operacyjne Agenta ElevenLabs (Procedures SOP) — Anna (Bukowy Dwór)
+﻿> **Status:** aktualny (2026-11) — źródło prawdy dla procedur operacyjnych (Procedures/SOP).
+
+# Procedury Operacyjne Agenta ElevenLabs (Procedures SOP) — Anna (Bukowy Dwór)
 
 > Dokumentacja procedur zadaniowych (**ElevenLabs Agent Procedures**) dla Wirtualnej Recepcjonistki Anny w Uzdrowisku Termalnym „Bukowy Dwór”.
 > Zgodna z oficjalną specyfikacją ElevenAgents: dynamicznie ładowane instrukcje operacyjne (SOP), warunki aktywacji (Trigger Conditions), reguły biznesowe, walidacje i integracje z systemem hotelowym PMS.

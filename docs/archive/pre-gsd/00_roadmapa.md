@@ -1,3 +1,5 @@
+> **Status:** historyczne — zastąpione przez `.planning/ROADMAP.md` (archiwum, nieaktualne). Zarchiwizowano 2026-11: plan sprzed wdrożenia frameworka GSD.
+
 # Roadmapa do Prezentacji „Wirtualny Recepcjonista AI"
 
 Cel: prezentacja case study zgodna z Etapem V1 (rozmowa + wspólna sesja) i Etapem V2 (product design, wireframing, system design, hiring manager).

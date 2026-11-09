@@ -1,3 +1,5 @@
+> **Status:** aktualny (2026-11) — źródło prawdy dla konfiguracji technicznej (JAK jest zbudowany).
+
 # Plan Implementacji Wirtualnego Recepcjonisty AI dla Uzdrowiska „Bukowy Dwór”
 
 Dokument ten stanowi kompletny, kanoniczny plan implementacji wdrożenia wirtualnego asystenta głosowego **Anna** w Uzdrowisku Termalnym „Bukowy Dwór” w Krynicy-Zdroju. Specyfikacja łączy wymagania biznesowe i specyfikę grupy docelowej (seniorzy 60+) z technicznymi możliwościami platformy **ElevenLabs Agents** (Conversational AI) [cite: 12, 13].
@@ -287,7 +289,7 @@ Podczas prezentacji dla Hiring Managera należy wytłumaczyć, w jaki sposób El
    * `turn_timeout: 3` (w sekundach; parametr MCP jest liczbą całkowitą)
    * `model_id: eleven_v3_conversational` (zweryfikuj dostępność przez `list_models`)
    * `voice_id: cgSgspJ2msm6clMCkdW9` (Jessica — Playful, Bright, Warm)
-   * `first_message` + `system_prompt` = treść z `docs/anna_system_prompt.md`
+   * `first_message` + `system_prompt` = treść z `docs/anna_system_prompt_v3.md`
 
 ### 8.2. Baza wiedzy — konwersja i ograniczenie
 * MCP `add_knowledge_base_to_agent` przyjmuje wyłącznie **epub / pdf / docx / txt / html** — NIE `.md`.

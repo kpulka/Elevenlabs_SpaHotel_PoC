@@ -1,3 +1,5 @@
+> **Status:** historyczne — zadanie jednorazowe, wykonane (archiwum, nieaktualne). Zarchiwizowano 2026-11: brief dla zewnętrznego agenta ElevenLabs sprzed wdrożenia GSD.
+
 # Brief / Wytyczne dla agenta (ElevenLabs Docs)
 
 Poniższy dokument to **kompletny pakiet do przekazania zewnętrznemu agentowi/asystentowi**, który ma pełną dokumentację ElevenLabs. Przekaż mu ten plik + pliki źródłowe wymienione w sekcji „Dane wejściowe".

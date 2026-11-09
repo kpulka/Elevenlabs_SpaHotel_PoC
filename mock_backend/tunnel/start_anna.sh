@@ -7,7 +7,8 @@
 #  1. Uruchamia mock backend (uvicorn) na wolnym porcie (domyślnie 8011).
 #  2. Uruchamia cloudflared tunnel (trycloudflare) wskazujący na backend.
 #  3. Wyłapuje publiczny URL tunelu z logu.
-#  4. Aktualizuje 5 narzędzi webhook agenta ElevenLabs na ten URL.
+#  4. Aktualizuje 7 narzędzi webhook agenta ElevenLabs na ten URL
+#     (wspólny skrypt sync_agent_tools.py — szuka narzędzi po nazwie).
 #  5. Zapisuje stan (backend_pid, tunnel_pid, url) do tunnel/state.json.
 #
 # Rozwiązuje awarię webhooków po restarcie (trycloudflare zmienia URL):
@@ -24,6 +25,11 @@ BACKEND_DIR="$PROJECT_ROOT/mock_backend"
 TUNNEL_DIR="$BACKEND_DIR/tunnel"
 STATE_FILE="$TUNNEL_DIR/state.json"
 PORT="${1:-8011}"
+PYTHON_BIN="$(command -v python || command -v py || command -v python3 || true)"
+if [[ -z "$PYTHON_BIN" ]]; then
+  echo "❌ brak interpretera Python w PATH (python/py/python3). Zainstaluj Python albo dodaj go do PATH."
+  exit 1
+fi
 
 # ── znajdź cloudflared ──────────────────────────────────────────────────────
 CLOUDFLARED=""
@@ -43,7 +49,8 @@ if curl -s -m 5 "http://127.0.0.1:$PORT/" | grep -q '"status":"OK"'; then
   BACKEND_PID="already-running"
 else
   echo "🚀 startuję backend na :$PORT"
-  (cd "$BACKEND_DIR" && python -m uvicorn main:app --host 0.0.0.0 --port "$PORT" >"$TUNNEL_DIR/backend.log" 2>&1) &
+  # PYTHON_BIN, nie literalne "python" — autostart o logowaniu bywa bez Pythona w PATH.
+  (cd "$BACKEND_DIR" && "$PYTHON_BIN" -m uvicorn main:app --host 0.0.0.0 --port "$PORT" >"$TUNNEL_DIR/backend.log" 2>&1) &
   BACKEND_PID=$!
   ok=0
   for i in $(seq 1 15); do
@@ -112,37 +119,16 @@ update_hosts() {
 }
 update_hosts "$(echo "$URL" | sed 's|https://||; s|/||')"
 
-# ── aktualizacja webhooków agenta ElevenLabs ───────────────────────────────
+# ── aktualizacja webhooków agenta ElevenLabs (jeden wspólny skrypt) ───────
 ENV_FILE="$PROJECT_ROOT/frontend/.env.local"
 if [[ -f "$ENV_FILE" ]] && grep -q 'ELEVENLABS_API_KEY=' "$ENV_FILE"; then
-  KEY="$(grep -oE 'ELEVENLABS_API_KEY=[^ ]+' "$ENV_FILE" | head -1 | cut -d= -f2 | tr -d '\r\n"')"
-  python - "$KEY" "$URL" <<'PYEOF'
-import json,sys,urllib.request
-key,newurl=sys.argv[1],sys.argv[2]
-tools={
- "tool_4801m0ncs38tf8t93f45jfj992dt":"check_spa_availability",
- "tool_6001m0ncs38vf73v1zbaa9p5vdfv":"book_spa_appointment",
- "tool_6301m0ncs38wewt865sh99v1qkm8":"check_room_availability",
- "tool_8101m0ncs38xe6tb29923tjt9045":"send_sms_summary",
- "tool_6001m0ntyt8xefgsx1e8mcqnsw1n":"transfer_to_simulated_handoff",
-}
-def api(m,path,b=None):
-    req=urllib.request.Request("https://api.elevenlabs.io"+path,method=m)
-    req.add_header('xi-api-key',key)
-    data=json.dumps(b).encode() if b is not None else None
-    if b is not None: req.add_header('Content-Type','application/json')
-    try:
-        with urllib.request.urlopen(req,data=data) as r: return r.status,json.loads(r.read().decode())
-    except urllib.error.HTTPError as e: return e.code,e.read().decode()[:200]
-for tid,name in tools.items():
-    st,d=api('GET',f'/v1/convai/tools/{tid}')
-    if st!=200: print(f"  ⚠️ {name}: GET {st}"); continue
-    tc=d.get('tool_config',d)
-    tc['api_schema']['url']=newurl+"/"+name
-    st2,d2=api('PATCH',f'/v1/convai/tools/{tid}',{'tool_config':tc})
-    print(f"  {'✅' if st2 in (200,201) else '❌'} {name}: {st2}")
-PYEOF
-  echo "✅ webhooki agenta zaktualizowane na $URL"
+  if [[ -z "$PYTHON_BIN" ]]; then
+    echo "⚠️  brak interpretera python — NIE zaktualizowano webhooków."
+  elif "$PYTHON_BIN" "$TUNNEL_DIR/sync_agent_tools.py" --base-url "$URL"; then
+    echo "✅ webhooki agenta zaktualizowane na $URL"
+  else
+    echo "❌ nie wszystkie webhooki udało się zaktualizować — patrz komunikaty powyżej"
+  fi
 else
   echo "⚠️  brak klucza w $ENV_FILE — NIE zaktualizowano webhooków."
 fi

@@ -1,3 +1,5 @@
+> **Status:** aktualny (2026-11) — źródło prawdy dla system promptu agenta Anna.
+
 # System Prompt Agenta „Anna" — WERSJA v3 (PoC, symulowany handoff)
 
 > **Po audycie 2026-08.** Realny `transfer_to_number` wymaga telefonii (SIP/telefonia) — niedostępnej na samym widgetcie webowym (agent ma `phone_numbers: []`). Dla PoC agent zamiast tego wywołuje webhook **`transfer_to_simulated_handoff`** z mock backendu (log do konsoli + opcjonalny alert Telegram).

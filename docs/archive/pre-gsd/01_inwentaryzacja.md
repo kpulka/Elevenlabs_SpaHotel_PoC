@@ -1,3 +1,5 @@
+> **Status:** historyczne — zastąpione przez `.planning/PROJECT.md` i `docs/INDEX.md` (archiwum, nieaktualne). Zarchiwizowano 2026-11: inwentaryzacja sprzed porządków; bieżący stan dokumentów opisuje `docs/INDEX.md`.
+
 # Inwentaryzacja dokumentów + niespójności do ujednolicenia
 
 ## 1. Inwentaryzacja
