@@ -20,7 +20,9 @@ Wizytówka: **`README.md`**.
 
 ## 2. Stan faktyczny (zmierzony, nie z raportów)
 
-- Gałąź `main`, drzewo czyste, `main` == `origin/main`. Ostatni commit: `3ca2ac0` (EPIK K).
+- Gałąź `main`, drzewo czyste, `main` == `origin/main`. Ostatni commit historii: `fc22c74` (K1);
+  dokumentacja K1 w kolejnym commicie. `.git` = **31 MB** po K1 (było 64 MB; usunięte z historii:
+  `cloudflared.exe` 52,35 MiB i stara wersja decku 8,94 MiB).
 - CI (`.github/workflows/ci.yml`) zielone: job `backend (pytest)` + job `frontend (typecheck + build)`
   z dodatkowymi bramkami `pnpm i18n:check` i `pnpm data:check`.
 - Bramki lokalne: `cd mock_backend && python -m pytest -q` → **68 passed**;
@@ -44,18 +46,21 @@ Pełne briefy: `.planning/phases/phase-K1…K5-*.md`. Skrót z zależnościami:
 
 | Faza | Cel | Zależność | Wymaga decyzji |
 |---|---|---|---|
-| **K1** historia gita | `.git` 55 MB → < 6 MB; usunięcie blobu `cloudflared.exe` (53 MB) przez `git filter-repo`, backup `git bundle`, force-push | pierwsza | **TAK — force-push unieważnia klony** (m.in. laptop) |
+| **K1** historia gita | ✅ 2026-11-09 — `.git` 64 MB → **31 MB**; usunięte `cloudflared.exe` (52,35 MiB) i stara wersja decku (8,94 MiB); tree HEAD bez zmian (`2f184d8`); świeży klon 31 MB, 0 trafień `cloudflared`, 68 testów; backup bundle + tag `archive/english-wip-2026-11-04`, gałąź `claude/*` usunięta | pierwsza | zamknięte |
 | **K2** prompt live | wgrać `docs/anna_system_prompt_v3.md` na agenta + procedury z `appointment_datetime`; 3 transkrypty dowodowe | może równolegle z K3 | **TAK — okno czasowe** (zmienia zachowanie demo) |
 | **K3** deck | regeneracja obu PPTX z poprawionych źródeł (7 narzędzi, 8011, brak `transfer_to_number`); decyzja o generatorze EN | niezależna | TAK — EN: generator czy HTML→PDF |
-| **K4** higiena GitHuba | tag `v1.0.0` + release, homepage, martwe klucze i18n (~40), gałąź `claude/*` | po K1 i K3 | **TAK — los gałęzi `origin/claude/trusting-fermi-dy8rdu`** |
+| **K4** higiena GitHuba | tag `v1.0.0` + release, homepage, martwe klucze i18n (~40) | po K1 i K3 | gałąź `claude/*` **zamknięta w K1** (tag archiwalny + delete); zostaje `gh auth login` |
 | **K5** demo online | Vercel + backend na Fly/Render (Docker z `mock_backend/tunnel/Dockerfile`) albo nagranie jako fallback | po K2 | **TAK — wariant A/B/C i budżet kredytów** |
 
-Otwarte decyzje właściciela (nie podejmuj ich sam):
-1. Czy wolno przepisać historię i force-pushować `main` (K1).
-2. Gałąź `origin/claude/trusting-fermi-dy8rdu` (3 commity z 2026-11-04, WIP angielskiej wersji,
-   143 pliki, rozjechana z `main`) — tag archiwalny + usunięcie, czy zostawić.
-3. Kiedy wgrywać prompt (K2): przed rozmową rekrutacyjną czy po niej (ryzyko regresji w demo).
-4. Wariant demo online (K5) i czy godzi się na publiczny klucz API na hostingu.
+Decyzje właściciela — **wszystkie podjęte 2026-11-09** (nie pytaj ponownie):
+1. **K1:** zgoda na przepisanie historii i force-push po backupie bundle; zakres = `cloudflared.exe` +
+   stara wersja decku; backup `D:/Backups/spahotels-pre-filter-2026-11-09.bundle`.
+2. **K4/gałąź:** `origin/claude/trusting-fermi-dy8rdu` → tag `archive/english-wip-2026-11-04` + usunięcie
+   gałęzi (wykonane razem z K1, bo inaczej klon nadal ciągnął 52 MB).
+3. **K2/prompt:** wgrać teraz, z backupem live promptu i markerem potwierdzającym wejście treści.
+4. **K5/demo:** wariant **C** — nagranie 60–90 s jako fallback; bez hostingu i bez publicznego klucza API.
+5. **K3/deck EN:** rozszerzyć `generate_deck.py` o `--lang en` i generować oba PPTX.
+6. **K4/GitHub:** właściciel zaloguje `gh` sam; do tego czasu release/metadane czekają.
 
 ## 4. Zasady pracy w tym repo
 
@@ -87,8 +92,8 @@ Otwarte decyzje właściciela (nie podejmuj ich sam):
    a w ostateczności `cat > plik <<'EOF'`.
 7. **GitHub Actions miało 2026-11-09 major outage** — runy padały z 0 jobów. Przed diagnozą kodu
    sprawdź `githubstatus.com/api/v2/components.json`. Workflow waliduj `actionlint -no-color`.
-8. **Historia gita to część deliverable** — `.git` ma 55 MB przez binarkę usuniętą z drzewa, ale nie
-   z historii. Dlatego K1 istnieje.
+8. **Historia gita to część deliverable** — `.git` miało 64 MB przez binarkę usuniętą z drzewa, ale nie
+   z historii. K1 (2026-11-09) usunęło `cloudflared.exe` i starą wersję decku: `.git` = 31 MB.
 9. **Martwe klucze i18n** nie kłują w oczy, ale `i18n:check` sprawdza tylko parytet, nie użycie —
    usuwanie rób partiami z `tsc`+`build` po każdej.
 
@@ -106,6 +111,7 @@ ZACZNIJ OD PRZECZYTANIA (w tej kolejności):
 5. README.md — co repo obiecuje
 
 STAN: main == origin/main, drzewo czyste, CI zielone, 68 testów, 182 klucze i18n, 6 zabiegów.
+K1 (historia gita) UKOŃCZONE 2026-11-09 — `.git` 31 MB, szczegóły w `.planning/README.md`.
 Nie powtarzaj pracy z sekcji 2 HANDOFF — jest zrobiona i zweryfikowana.
 
 ZADANIE: realizuj EPIK K fazami, w kolejności zależności (K1 → [K2 ∥ K3] → K4 → K5),
@@ -120,9 +126,9 @@ BRAMKI po każdej fazie (wszystkie muszą być zielone, wklej wyniki):
 ZASADY:
 - Przed każdą fazą sprawdź `git status --short` i `git fetch --all --prune` — inne sesje mogą pisać
   w tym samym drzewie. Nigdy `git add -A`.
-- ZATRZYMAJ SIĘ i zapytaj właściciela przed: (a) force-push / przepisaniem historii (K1),
-  (b) usunięciem gałęzi origin/claude/trusting-fermi-dy8rdu (K4), (c) wgraniem promptu na żywego
-  agenta (K2) — te trzy rzeczy są nieodwracalne albo zmieniają zachowanie demo.
+- ZATRZYMAJ SIĘ i zapytaj właściciela przed: (a) kolejnym przepisaniem historii / force-push,
+  (b) usunięciem czegokolwiek na remote, (c) zmianą promptu lub bazy wiedzy na żywym agencie (K2)
+  — te rzeczy są nieodwracalne albo zmieniają zachowanie demo.
 - Nic nie twierdź bez dowodu: każdą liczbę i każdy fakt weryfikuj komendą albo zapytaniem do API.
   Nie ufaj raportom poprzednich agentów — w tej sesji dwa raporty były nieprawdziwe (liczba podpiętych
   narzędzi, istnienie .dockerignore).
@@ -131,6 +137,8 @@ ZASADY:
 - Nie dodawaj bramki CI na artefakt generowany, zanim go nie wygenerujesz.
 - Raportuj krótko: faza, commit, liczby bramek, co odłożone i dlaczego.
 
-ZACZNIJ od fazy K1, chyba że właściciel wskaże inną. Jeśli K1 wymaga jego zgody na force-push —
-najpierw przygotuj backup (git bundle), przedstaw pomiar przed/po i zapytaj.
+ZACZNIJ od fazy K2 (prompt live) równolegle z K3 (deck) — K1 jest zrobione i zweryfikowane.
+Po nich K4 (czeka na `gh auth login` właściciela), na końcu K5 wariant C (nagranie 60–90 s).
+Zatrzymaj się i zapytaj właściciela przed każdą zmianą na żywym agencie (K2), usunięciem czegokolwiek
+na remote i wgraniem czegokolwiek publicznego.
 ```

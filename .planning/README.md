@@ -40,7 +40,7 @@ Status faz oceniam po tym, czy **artefakt istnieje w repo** — nie po checkboxa
 | phase-G4 autostart | G Stabilizacja | done | `mock_backend/tunnel/start_anna.sh` (log autostartu jest lokalny, poza repo) |
 | phase-H1/H2/H3 widget frontend | H Naprawa widgetu | done | `frontend/public/widget/convai-widget-embed.js` (self-host) |
 | phase-I/J workflow + procedures | I/J Wdrożenie | done | `workflow/workflow_v3.json` + `procedure_ids.json` |
-| phase-K1 historia gita | K Portfolio | todo | cel: `.git` < 6 MB (dziś 55 MB — blob `cloudflared.exe` w historii) |
+| phase-K1 historia gita | K Portfolio | done (2026-11-09) | `.git` 64 MB → **31 MB**, `size-pack` **30,57 MiB**; blob `cloudflared.exe` (52,35 MiB) i stara wersja decku (8,94 MiB) usunięte z historii; HEAD tree identyczny (`2f184d8`); świeży klon 31 MB / 0 trafień `cloudflared` / 68 testów; backup `D:/Backups/spahotels-pre-filter-2026-11-09.bundle`; tag `archive/english-wip-2026-11-04`, gałąź `claude/*` usunięta. **DoD „<6 MB” odrzucone jako nieosiągalne** (bieżące drzewo = 34,18 MiB) |
 | phase-K2 prompt live | K Portfolio | todo | cel: hosted prompt = `docs/anna_system_prompt_v3.md` + procedury z `appointment_datetime` |
 | phase-K3 deck | K Portfolio | todo | cel: oba PPTX po korekcie faktów (7 narzędzi, 8011) |
 | phase-K4 higiena repo | K Portfolio | todo | cel: jedna gałąź, tag `v1.0.0`, homepage, martwe klucze i18n |

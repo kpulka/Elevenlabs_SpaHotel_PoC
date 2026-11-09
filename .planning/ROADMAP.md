@@ -341,8 +341,11 @@ Cel: wykorzystać dwa puste w żywym agencie pola — `workflow` (graf orchestra
 - **K5 (demo online)** — ostatnia; korzysta z decyzji o warstwie live (K2) i z odchudzonego repo (K1).
 
 ### Fazy
-- **Phase K1 — Historia gita i rozmiar repo** (`.git` 55 MB → < 6 MB; usunięcie blobu
-  `cloudflared.exe` z historii, backup bundle, force-push, re-klon na laptopie)
+- **Phase K1 — Historia gita i rozmiar repo** ✅ (2026-11-09) — `.git` 64 MB → **31 MB**;
+  usunięte z historii: `cloudflared.exe` (52,35 MiB) i stara wersja decku PL (8,94 MiB);
+  backup bundle, `--force-with-lease`, świeży klon 31 MB, tree HEAD identyczny.
+  **Cel „< 6 MB” odrzucony jako nieosiągalny** — samo bieżące drzewo to 34,18 MiB (decki + zrzuty +
+  obrazy strony); nowy cel: brak blobu > 10 MB i `.git` < 35 MB.
 - **Phase K2 — Wgranie promptu i procedur na żywo** (hosted prompt = repo v3; procedury przekazują
   `appointment_datetime`; 3 transkrypty jako dowód)
 - **Phase K3 — Deck: regeneracja i zgodność z kodem** (oba PPTX po korekcie faktów: 7 narzędzi, 8011,
@@ -352,7 +355,8 @@ Cel: wykorzystać dwa puste w żywym agencie pola — `workflow` (graf orchestra
 - **Phase K5 — Żywe demo online** (Vercel + backend na Fly/Render albo nagranie jako fallback)
 
 ### Metryki sukcesu (Epik K)
-- Klon repo < 10 s i < 10 MB; historia bez binariów > 10 MB.
+- Clon repo < 10 s i `.git` < 35 MB; historia bez blobów > 10 MB (cel „< 6 MB” odrzucony
+  2026-11-09 — bieżące pliki repo ważą 34,18 MiB).
 - Prompt i procedury na agencie = stan z repo; anulowanie > 2 h realnie mówi „0 %”.
 - Obie prezentacje (PL/EN) mówią 7 narzędzi i 8011; żadna nie wspomina `transfer_to_number`.
 - GitHub: jedna gałąź, tag `v1.0.0`, release, homepage; brak martwych gałęzi.
