@@ -47,10 +47,10 @@ Pełne briefy: `.planning/phases/phase-K1…K5-*.md`. Skrót z zależnościami:
 | Faza | Cel | Zależność | Wymaga decyzji |
 |---|---|---|---|
 | **K1** historia gita | ✅ 2026-11-09 — `.git` 64 MB → **31 MB**; usunięte `cloudflared.exe` (52,35 MiB) i stara wersja decku (8,94 MiB); tree HEAD bez zmian (`2f184d8`); świeży klon 31 MB, 0 trafień `cloudflared`, 68 testów; backup bundle + tag `archive/english-wip-2026-11-04`, gałąź `claude/*` usunięta | pierwsza | zamknięte |
-| **K2** prompt live | ✅/⚠️ 2026-11-09 — prompt live = `docs/anna_system_prompt_v3.md` (10 520 znaków, sha256 `ce1e5166…`), 8 narzędzi / 7 tool_id, 5 plików KB; naprawiony martwy `tool_id` w procedurze zmiany terminu (nowa wersja agenta `agtvrsn_4901m713bqdkedeb9f8vck1chb96`). **Otwarte:** 3 testy symulacyjne startują i kończą się „Insufficient credits” → brak transkryptów w `.planning/transcripts/` | może równolegle z K3 | zamknięte (czekamy na reset kredytów) |
+| **K2** prompt live | ✅/⚠️ 2026-11-09 — prompt live = `docs/anna_system_prompt_v3.md` (10 520 znaków, sha256 `ce1e5166…`), 8 narzędzi / 7 tool_id, 5 plików KB; naprawiony martwy `tool_id` w procedurze zmiany terminu (nowa wersja agenta `agtvrsn_4901m713bqdkedeb9f8vck1chb96`). **Otwarte:** brak transkryptów — runbook `mock_backend/tunnel/run_simulations.py` gotowy i sprawdzony offline, odpala się po resecie kredytów | może równolegle z K3 | zamknięte (czekamy na reset kredytów) |
 | **K3** deck | ✅ 2026-11-09 — oba PPTX z `generate_deck.py --lang all`: 14 slajdów, 7/7 narzędzi, `:8011`, 0× `transfer_to_number`/`8000`/`4 webhook`/`$15`; README opisuje realny generator | niezależna | zamknięte (wybór: `--lang`, nie HTML→PDF) |
 | **K4** higiena GitHuba | ✅ 2026-11-09 — tag `v1.0.0` + release z oboma PPTX, Pages z deckiem (homepage), topics, Wiki off, 0 issues; 44 martwe klucze i18n usunięte (182 → 138, `tsc`/`build` zielone) | po K1 i K3 | zamknięte (`gh auth login` zrobiony) |
-| **K5** demo online | Vercel + backend na Fly/Render (Docker z `mock_backend/tunnel/Dockerfile`) albo nagranie jako fallback | po K2 | **TAK — wariant A/B/C i budżet kredytów** |
+| **K5** demo online | ✅ przygotowane 2026-11-09 — decyzja: wariant **C** (nagranie 60–90 s); scenariusz z listą ujęć w `.planning/phases/phase-K5-demo-online.md`. **Wykonanie po 22.11** (kredyty): nagrać, zapisać `presentation/assets/demo_anna_60s.mp4`, jedno zdanie w `README.md` | po K2 | zamknięte |
 
 Decyzje właściciela — **wszystkie podjęte 2026-11-09** (nie pytaj ponownie):
 1. **K1:** zgoda na przepisanie historii i force-push po backupie bundle; zakres = `cloudflared.exe` +
@@ -68,7 +68,7 @@ Decyzje właściciela — **wszystkie podjęte 2026-11-09** (nie pytaj ponownie)
 
 ## 4. Zasady pracy w tym repo
 
-- **Bramki przed każdym commitem:** `pytest` (68+), `tsc --noEmit`, `check-i18n.mjs`, `sync-data.mjs
+- **Bramki przed każdym commitem:** `pytest` (76), `tsc --noEmit`, `check-i18n.mjs`, `sync-data.mjs
   --check`, `next build`. Czerwona bramka = nie ma commita „na potem”.
 - **Commit per logiczny obszar, jawne ścieżki**, nigdy `git add -A`. `git status --short` przed każdym
   commitem — użytkownik prowadzi równoległe sesje na tym samym drzewie.
