@@ -60,3 +60,24 @@ Otwarte: 3 testy symulacyjne (`POST /v1/convai/agents/{id}/run-tests`) tworzą s
 przebieg kończy się „Insufficient credits to run this simulation” — konto ma
 `character_count = character_limit = 10000`, reset **2026-11-22 04:02 UTC**. Decyzja właściciela:
 czekamy do resetu, więc DoD „3 transkrypty” pozostaje niezaznaczony do tego czasu.
+
+**Runbook po resecie kredytów:** `mock_backend/tunnel/run_simulations.py` (stdlib, jak
+`sync_agent_tools.py`):
+
+```
+python mock_backend/tunnel/run_simulations.py --check          # kredyty + backend + gałąź (exit 3 = brak kredytów)
+python mock_backend/tunnel/run_simulations.py --dry-run        # payloady bez seedu i bez POST
+python mock_backend/tunnel/run_simulations.py                  # pełny przebieg + transkrypty
+```
+
+Skrypt liczy daty **w czasie uruchomienia** (backend liczy opłatę z `appointment_datetime` vs `now`,
+więc scenariusz z zamrożoną datą po tygodniu dawałby 0% zamiast 50%), seeduje rezerwacje w pamięci
+backendu i wplata ich prawdziwe numery `SPA-XXXX` w scenariusz, więc `cancel_*` trafia w istniejącą
+rezerwację. Zapisuje `.planning/transcripts/k2-0X-*.json` + `SUMMARY.md` i sprawdza w transkrypcie:
+obecność `SPA-`, `120`, `0%`/`50%` oraz brak zakazanych fraz. Scenariusz <2 h wymaga wolnego slotu
+w najbliższych 2 h — skrypt powie wprost, jeśli trzeba uruchomić go między 08:00 a 16:00.
+
+Walidacja dziś (bez kredytów): `--check` → exit 3 z datą resetu; `--dry-run` → payloady z datami
+2026-11-10/11; cykl życia testów sprawdzony realnie — `DELETE` starych testów 204, `create` 200,
+`DELETE` nowego 204 (workspace: 0 testów). Stare testy z zamrożonymi datami (9/18/20/21.11) usunięte,
+bo po 22.11 byłyby w przeszłości.

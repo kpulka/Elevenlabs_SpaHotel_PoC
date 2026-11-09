@@ -28,3 +28,20 @@ Synchronizacja musi więc wykonać się **po każdym** uruchomieniu tunelu.
 `--ensure-schema` (bez `--dry-run`) dopisuje tylko brakujące **opcjonalne** pola
 body: `appointment_datetime` w anulowaniu oraz `language` w SMS i handoffie.
 Nigdy nie usuwa ani nie zmienia istniejących pól i jest idempotentny.
+
+## `run_simulations.py` — dowód z żywych symulacji (K2)
+
+Trzy symulacje agenta (niejednoznaczny zabieg, anulowanie >2 h = 0%, anulowanie <2 h = 50%)
+razem z transkryptami zapisywanymi do `.planning/transcripts/`:
+
+```bash
+python mock_backend/tunnel/run_simulations.py --check      # kredyty ElevenLabs + /health + gałąź
+python mock_backend/tunnel/run_simulations.py --dry-run    # payloady scenariuszy, zero wywołań płatnych
+python mock_backend/tunnel/run_simulations.py              # pełny przebieg
+```
+
+Skrypt sam seeduje rezerwacje i wplata ich numery `SPA-XXXX` w scenariusze (backend liczy opłatę
+z `appointment_datetime` vs `now`, więc daty są liczone w momencie uruchomienia). Exit codes:
+`0` wszystko przeszło, `1` test nie przeszedł, `2` konfiguracja/backend, `3` brak kredytów,
+`4` timeout. Scenariusz <2 h wymaga wolnego slotu w najbliższych 2 h — uruchom między 08:00 a 16:00
+albo dodaj `--skip-scenario3`.
