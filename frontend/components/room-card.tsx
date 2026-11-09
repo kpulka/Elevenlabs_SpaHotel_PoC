@@ -8,7 +8,7 @@ import { useLanguage } from '@/context/language-context'
 import type { Room } from '@/lib/hotel-data'
 
 export function RoomCard({ room }: { room: Room }) {
-  const { language, t } = useLanguage()
+  const { t } = useLanguage()
 
   return (
     <article className="flex flex-col overflow-hidden rounded-2xl border border-gold/20 bg-warm-white">
@@ -37,8 +37,7 @@ export function RoomCard({ room }: { room: Room }) {
         </ul>
         <div className="mt-auto flex items-center justify-between gap-4 pt-2">
           <p className="font-serif text-2xl font-bold text-navy">
-            {room.price} {language === 'pl' ? 'zł' : 'PLN'}
-            <span className="text-sm font-normal text-muted-grey"> {language === 'pl' ? '/ doba' : '/ night'}</span>
+            {room.price} <span className="text-sm font-normal text-muted-grey">{t.roomsPage.perNight}</span>
           </p>
           <HotelButton href="/kontakt" variant="secondary" className="px-6">
             {t.roomsPage.bookRoom}

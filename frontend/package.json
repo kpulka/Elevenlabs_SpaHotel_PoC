@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build --webpack",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "i18n:check": "node scripts/check-i18n.mjs",
+    "data:sync": "node scripts/sync-data.mjs",
+    "data:check": "node scripts/sync-data.mjs --check"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",

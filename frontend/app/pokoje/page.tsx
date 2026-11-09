@@ -20,7 +20,7 @@ export default function RoomsPage() {
         <section className="relative flex min-h-[420px] items-center overflow-hidden">
           <Image
             src="/images/hero-rooms.png"
-            alt="Pokoje i apartamenty — Bukowy Dwór"
+            alt={t.images.roomsHeroAlt}
             fill
             priority
             className="object-cover"
@@ -78,16 +78,14 @@ export default function RoomsPage() {
         <section className="bg-navy py-16 text-center md:py-20">
           <div className="mx-auto max-w-2xl px-4 md:px-8">
             <h2 className="font-serif text-3xl font-bold text-white">
-              {language === 'pl' ? 'Masz pytania dotyczące pokoi?' : 'Have Questions About Our Rooms?'}
+              {t.roomsPage.contactTitle}
             </h2>
             <p className="mt-4 text-lg leading-relaxed text-white/85">
-              {language === 'pl'
-                ? 'Zadzwoń do recepcji lub zapytaj wirtualną asystentkę Annę — pomożemy dobrać idealny pokój dla Ciebie.'
-                : 'Call our front desk or chat live with Anna — we will help you choose the ideal room for your stay.'}
+              {t.roomsPage.contactText}
             </p>
             <div className="mt-8 flex justify-center">
               <HotelButton href="/kontakt" variant="primary" className="bg-gold text-navy hover:bg-gold/90">
-                {language === 'pl' ? 'Skontaktuj się z nami' : 'Contact Front Desk'}
+                {t.roomsPage.contactCta}
               </HotelButton>
             </div>
           </div>

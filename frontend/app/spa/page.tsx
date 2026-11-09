@@ -8,16 +8,17 @@ import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { TreatmentCard } from '@/components/treatment-card'
 import { useLanguage } from '@/context/language-context'
-import { getTreatments } from '@/lib/hotel-data'
+import { getTreatments, type TreatmentCategory } from '@/lib/hotel-data'
 
 export default function SpaPage() {
   const { language, t } = useLanguage()
   const currentTreatments = getTreatments(language)
 
-  const categories =
-    language === 'pl'
-      ? ['Baseny termalne', 'Zabiegi balneologiczne', 'Masaże i fizykoterapia']
-      : ['Thermal Pools', 'Balneological Treatments', 'Massage & Physiotherapy']
+  const categories: Array<{ key: TreatmentCategory; label: string }> = [
+    { key: 'thermal', label: t.spaPage.categoryThermal },
+    { key: 'balneo', label: t.spaPage.categoryBalneo },
+    { key: 'physio', label: t.spaPage.categoryPhysio },
+  ]
 
   return (
     <>
@@ -26,7 +27,7 @@ export default function SpaPage() {
         <section className="relative flex min-h-[420px] items-center overflow-hidden">
           <Image
             src="/images/spa-pool.png"
-            alt="Basen termalny w hali SPA Bukowego Dworu"
+            alt={t.images.spaHeroAlt}
             fill
             priority
             className="object-cover"
@@ -48,12 +49,12 @@ export default function SpaPage() {
         <AnnaInlineBanner />
 
         {categories.map((category) => (
-          <section key={category} className="border-b border-gold/15 bg-warm-white py-16 md:py-20">
+          <section key={category.key} className="border-b border-gold/15 bg-warm-white py-16 md:py-20">
             <div className="mx-auto max-w-[1280px] px-4 md:px-8">
-              <h2 className="font-serif text-3xl font-bold text-navy">{category}</h2>
+              <h2 className="font-serif text-3xl font-bold text-navy">{category.label}</h2>
               <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {currentTreatments
-                  .filter((treatment) => treatment.category === category)
+                  .filter((treatment) => treatment.category === category.key)
                   .map((treatment) => (
                     <TreatmentCard key={treatment.id} treatment={treatment} />
                   ))}
@@ -67,25 +68,23 @@ export default function SpaPage() {
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
               <Image
                 src="/images/treatment-room.png"
-                alt="Gabinet zabiegowy do zabiegów balneologicznych"
+                alt={t.images.treatmentRoomAlt}
                 fill
                 className="object-cover"
               />
             </div>
             <div>
               <p className="text-sm font-semibold tracking-[0.15em] text-sage uppercase">
-                {language === 'pl' ? 'Opieka medyczna' : 'Clinical Supervision'}
+                {t.spaPage.supervisionEyebrow}
               </p>
               <h2 className="mt-3 font-serif text-3xl font-bold text-navy md:text-4xl">
-                {language === 'pl' ? 'Zabiegi dobrane indywidualnie' : 'Personalized Treatment Plans'}
+                {t.spaPage.supervisionTitle}
               </h2>
               <p className="mt-4 text-lg leading-relaxed text-charcoal/85">
-                {language === 'pl'
-                  ? 'Przed każdym pobytem leczniczym oferujemy konsultację z lekarzem uzdrowiskowym i fizjoterapeutami, aby dobrać bezpieczny plan zabiegów.'
-                  : 'Prior to your therapeutic stay, our balneologists and physiotherapists evaluate your health to design a completely safe and effective treatment schedule.'}
+                {t.spaPage.supervisionText}
               </p>
               <HotelButton href="/kontakt" variant="secondary" className="mt-8">
-                {language === 'pl' ? 'Umów konsultację' : 'Schedule Consultation'}
+                {t.spaPage.supervisionCta}
               </HotelButton>
             </div>
           </div>

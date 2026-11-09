@@ -15,12 +15,12 @@ type FormState = {
 }
 
 export function ContactForm() {
-  const { language, t } = useLanguage()
+  const { t } = useLanguage()
   const [form, setForm] = useState<FormState>({
     name: '',
     email: '',
     phone: '',
-    topic: language === 'pl' ? 'Rezerwacja pokoju' : 'Room Reservation',
+    topic: t.contactPage.topicOptions[0],
     message: '',
   })
   const [errors, setErrors] = useState<Partial<FormState>>({})
@@ -30,13 +30,13 @@ export function ContactForm() {
     event.preventDefault()
     const nextErrors: Partial<FormState> = {}
     if (!form.name.trim()) {
-      nextErrors.name = language === 'pl' ? 'Podaj swoje imię i nazwisko.' : 'Please provide your full name.'
+      nextErrors.name = t.contactPage.formErrors.name
     }
     if (!/^\S+@\S+\.\S+$/.test(form.email)) {
-      nextErrors.email = language === 'pl' ? 'Podaj prawidłowy adres e-mail.' : 'Please enter a valid email address.'
+      nextErrors.email = t.contactPage.formErrors.email
     }
     if (!form.message.trim()) {
-      nextErrors.message = language === 'pl' ? 'Napisz krótką treść zapytania.' : 'Please provide a message.'
+      nextErrors.message = t.contactPage.formErrors.message
     }
 
     setErrors(nextErrors)
@@ -55,9 +55,7 @@ export function ContactForm() {
         </p>
         {/* Jawna informacja: to demo, formularz nic nie wysyła. */}
         <p className="mt-1 rounded-lg border border-gold/40 bg-warm-white px-4 py-2 text-sm text-charcoal/70">
-          {language === 'pl'
-            ? 'Wersja demonstracyjna: formularz nie wysyła wiadomości i nie zapisuje danych — w razie pilnej rezerwacji zadzwoń do recepcji.'
-            : 'Demo build: this form does not send or store anything — for an urgent booking, please call the front desk.'}
+          {t.contactPage.demoNote}
         </p>
       </div>
     )
@@ -111,7 +109,7 @@ export function ContactForm() {
 
       <div className="flex flex-col gap-2">
         <label htmlFor="phone" className="text-sm font-medium text-navy">
-          {t.contactPage.phoneLabel} ({language === 'pl' ? 'opcjonalnie' : 'optional'})
+          {t.contactPage.phoneLabel} ({t.contactPage.phoneOptional})
         </label>
         <input
           id="phone"
@@ -135,23 +133,9 @@ export function ContactForm() {
           onChange={(e) => setForm({ ...form, topic: e.target.value })}
           className="min-h-[52px] rounded-lg border border-input bg-warm-white px-4 text-base text-charcoal outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
         >
-          {language === 'pl' ? (
-            <>
-              <option>Rezerwacja pokoju</option>
-              <option>Zabiegi SPA</option>
-              <option>Dieta lecznicza</option>
-              <option>Dojazd i dostępność</option>
-              <option>Inne</option>
-            </>
-          ) : (
-            <>
-              <option>Room Reservation</option>
-              <option>Medical Spa Treatments</option>
-              <option>Specialized Diets</option>
-              <option>Directions & Accessibility</option>
-              <option>Other Inquiry</option>
-            </>
-          )}
+          {t.contactPage.topicOptions.map((topic) => (
+            <option key={topic}>{topic}</option>
+          ))}
         </select>
       </div>
 
