@@ -1,5 +1,7 @@
 {
-  "_comment": "Seed kalendarza SPA dla Uzdrowiska Bukowy Dwór. Wczytywany przez aplikację przy starcie (catalog.py) jako JEDYNE źródło listy zabiegów, aliasów i godzin. Plik NIE jest nadpisywany przez backend — stan rezerwacji żyje tylko w pamięci procesu.",
+  "_comment": "Seed kalendarza SPA dla Uzdrowiska Bukowy Dwór. Wczytywany przez aplikację przy starcie (catalog.py) jako JEDYNE źródło listy zabiegów, aliasów, godzin, CEN i CZASÓW. Plik NIE jest nadpisywany przez backend — stan rezerwacji żyje tylko w pamięci procesu.",
+  "_ceny_zrodlo": "Ceny i czasy pochodzą z bazy wiedzy agenta (docs/baza_wiedzy_rag_bukowy_dwor/02_katalog_zabiegow_spa_i_zdrowie.md) — to wartości, które Anna wypowiada na głos, więc są kanoniczne. Wyjątek: gimnastyka_lecznicza nie występuje w bazie wiedzy, więc jej cena/czas pochodzą ze strony marketingowej (frontend/lib/hotel-data.ts: 30 PLN / 45 min). Pole zrodlo_ceny mówi wprost, skąd wzięły się liczby.",
+  "_baseny": "Basen termalny 32°C i basen solankowy 34°C to UDOGODNIENIA strefy basenowej (wstęp w cenie pobytu), a nie zabiegi do rezerwacji — dlatego nie ma ich w 'zabiegi' i agent nie może ich zarezerwować.",
   "horyzont_dni": 14,
   "sloty_domyslne": ["10:00", "11:00", "14:00", "14:30", "15:00", "16:00"],
   "zabiegi": [
@@ -12,7 +14,10 @@
         "siarczkowa",
         "sulphur bath",
         "sulfur bath"
-      ]
+      ],
+      "price_pln": 80,
+      "duration_min": 20,
+      "zrodlo_ceny": "baza_wiedzy"
     },
     {
       "kod": "masaz_leczniczy",
@@ -24,22 +29,51 @@
         "masaż pleców",
         "back massage",
         "therapeutic massage"
-      ]
+      ],
+      "price_pln": 120,
+      "duration_min": 30,
+      "zrodlo_ceny": "baza_wiedzy"
     },
     {
       "kod": "kapiel_borowinowa",
       "nazwa": "kąpiel borowinowa",
-      "aliasy": ["borowinowa", "borowina", "peat bath", "mud bath"]
+      "aliasy": ["borowinowa", "borowina", "peat bath", "mud bath"],
+      "price_pln": 100,
+      "duration_min": 25,
+      "zrodlo_ceny": "baza_wiedzy"
     },
     {
       "kod": "jonoforeza",
       "nazwa": "jonoforeza",
-      "aliasy": ["ionoforeza", "jonoforeza zabieg", "iontophoresis"]
+      "aliasy": ["ionoforeza", "jonoforeza zabieg", "iontophoresis"],
+      "price_pln": 70,
+      "duration_min": 20,
+      "zrodlo_ceny": "baza_wiedzy"
     },
     {
       "kod": "masaz_klasyczny",
       "nazwa": "masaż klasyczny",
-      "aliasy": ["masaz klasyczny", "klasyczny", "masaż relaksacyjny", "classic massage", "swedish massage"]
+      "aliasy": ["masaz klasyczny", "klasyczny", "masaż relaksacyjny", "classic massage", "swedish massage"],
+      "price_pln": 160,
+      "duration_min": 50,
+      "zrodlo_ceny": "baza_wiedzy"
+    },
+    {
+      "kod": "gimnastyka_lecznicza",
+      "nazwa": "gimnastyka lecznicza (grupowa)",
+      "aliasy": [
+        "gimnastyka lecznicza",
+        "gimnastyka",
+        "gimnastyka grupowa",
+        "gimnastyka dla seniorów",
+        "ćwiczenia grupowe",
+        "ćwiczenia",
+        "therapeutic gymnastics",
+        "group gymnastics"
+      ],
+      "price_pln": 30,
+      "duration_min": 45,
+      "zrodlo_ceny": "strona_www"
     }
   ]
 }

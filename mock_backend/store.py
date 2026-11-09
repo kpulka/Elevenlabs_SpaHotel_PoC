@@ -33,17 +33,31 @@ class Rezerwacja:
     gosc: str
 
     @property
-    def klucz_slotu(self) -> tuple[str, str]:
-        return (self.kod_uslugi, self.data)
+    def klucz_slotu(self) -> str:
+        """Klucz zasobu = sama DATA (godzina jest w zbiorze zajętych godzin dnia).
+
+        Model zasobu (świadome ograniczenie PoC): w uzdrowisku jest JEDEN
+        gabinet zabiegowy / jeden fizjoterapeuta na daną godzinę, wspólny dla
+        wszystkich zabiegów. Dlatego klucz nie zawiera kodu zabiegu — inaczej
+        dałoby się sprzedać tę samą osobę dwóm gościom na dwie różne usługi
+        o 14:00. Konsekwencja: kalendarz jest celowo bardziej restrykcyjny niż
+        realne SPA z kilkoma gabinetami (tam klucz byłby (gabinet, data)).
+        """
+
+        return self.data
 
 
 class SpaStore:
-    """Kalendarz SPA: 14-dniowe okno przewijane od dzisiejszej daty + zajęte sloty."""
+    """Kalendarz SPA: 14-dniowe okno przewijane od dzisiejszej daty + zajęte sloty.
+
+    Zajętość trzymamy jako ``{data_iso: {godzina, ...}}`` — jeden wspólny
+    kalendarz zabiegowy, patrz ``Rezerwacja.klucz_slotu``.
+    """
 
     def __init__(self, uslugi: Sequence[Usluga], horyzont_dni: int = 14) -> None:
         self.uslugi = list(uslugi)
         self.horyzont_dni = horyzont_dni
-        self._zajete: dict[tuple[str, str], set[str]] = {}
+        self._zajete: dict[str, set[str]] = {}
         self._rezerwacje: dict[str, Rezerwacja] = {}
 
     # ── okno czasowe ────────────────────────────────────────────────────────
@@ -67,14 +81,19 @@ class SpaStore:
         """Wolne godziny dla zabiegu i dnia (pusta lista gdy brak lub poza oknem)."""
         if not self.w_oknie(data_iso):
             return []
-        zajete = self._zajete.get((usluga.kod, data_iso), set())
+        zajete = self._zajete.get(data_iso, set())
         return [godzina for godzina in usluga.sloty if godzina not in zajete]
 
     def czy_wolny(self, usluga: Usluga, data_iso: str, godzina: str) -> bool:
         return godzina in self.sloty_dnia(usluga, data_iso)
 
     def zajmij(self, rezerwacja: Rezerwacja) -> bool:
-        """Rezerwuje slot. Zwraca False, jeśli slot jest już zajęty."""
+        """Rezerwuje slot. Zwraca False, jeśli slot jest już zajęty.
+
+        Sprawdzenie i zapis są w jednej sekcji bez ``await``, a klucz jest
+        wspólny dla wszystkich zabiegów — drugi gość na tę samą godzinę
+        (nawet na inny zabieg) dostaje False.
+        """
         klucz = rezerwacja.klucz_slotu
         zajete = self._zajete.setdefault(klucz, set())
         if rezerwacja.godzina in zajete:
@@ -142,15 +161,28 @@ class KatalogPokoi:
         }
 
         self.zablokowane: dict[str, set[str]] = {kod: set() for kod in self.typy}
+        # Etykiety blokad trzymamy osobno, żeby opis w odpowiedzi był generowany
+        # z danych, a nie przepisywany ręcznie obok nich.
+        self.etykiety_blokad: list[str] = []
+        self._daty_blokad: set[str] = set()
         for blokada in dane.get("zajete_terminy", []):
             daty = set(blokada.get("daty", []))
-            for kod in blokada.get("dotyczy", ()):  # brak listy = wszystkie typy
+            self._daty_blokad.update(daty)
+            etykieta = str(blokada.get("opis", "")).strip()
+            if daty and etykieta and etykieta not in self.etykiety_blokad:
+                self.etykiety_blokad.append(etykieta)
+            dotyczy = list(blokada.get("dotyczy") or ()) or self.kody  # brak listy = wszystkie typy
+            for kod in dotyczy:
                 if kod in self.zablokowane:
                     self.zablokowane[kod].update(daty)
 
     @property
     def kody(self) -> list[str]:
         return list(self.typy)
+
+    @property
+    def nazwy(self) -> list[str]:
+        return [typ.nazwa for typ in self.typy.values()]
 
     def znajdz(self, room_type: str) -> TypPokoju | None:
         """Dopasowuje typ pokoju po kodzie lub nazwie (bez diakrytyków)."""
@@ -171,7 +203,47 @@ class KatalogPokoi:
         return self.zablokowane.get(kod, set())
 
     def opis_blokady(self) -> str:
-        return "30-31.08.2026"
+        """Zakres dat blokad GENEROWANY z JSON-a (np. ``28-29.12.2026``).
+
+        Wcześniej ten string był zaszyty w kodzie obok dat z ``rooms.json``,
+        więc obie wartości mogły się rozjechać. Teraz jedynym źródłem jest
+        pole ``daty`` w pliku.
+        """
+        return ", ".join(_zakresy_dat(sorted(self._daty_blokad)))
+
+    def etykieta_blokady(self) -> str:
+        """Czytelny powód blokady z JSON-a (np. przerwa świąteczno-noworoczna)."""
+        return "; ".join(self.etykiety_blokad)
+
+
+def _zakresy_dat(daty: Sequence[str]) -> list[str]:
+    """Skleja kolejne dni w zakresy: ['2026-12-28','2026-12-29'] → ['28-29.12.2026']."""
+    dni = sorted(date.fromisoformat(wpis) for wpis in daty)
+    zakresy: list[str] = []
+    poczatek = poprzedni = None
+    for dzien in dni:
+        if poczatek is None:
+            poczatek = poprzedni = dzien
+            continue
+        if (dzien - poprzedni).days == 1:
+            poprzedni = dzien
+            continue
+        zakresy.append(_formatuj_zakres(poczatek, poprzedni))
+        poczatek = poprzedni = dzien
+    if poczatek is not None:
+        zakresy.append(_formatuj_zakres(poczatek, poprzedni))
+    return zakresy
+
+
+def _formatuj_zakres(poczatek: date, koniec: date) -> str:
+    if poczatek == koniec:
+        return f"{poczatek.day:02d}.{poczatek.month:02d}.{poczatek.year}"
+    if (poczatek.year, poczatek.month) == (koniec.year, koniec.month):
+        return f"{poczatek.day:02d}-{koniec.day:02d}.{koniec.month:02d}.{koniec.year}"
+    return (
+        f"{poczatek.day:02d}.{poczatek.month:02d}.{poczatek.year}"
+        f" – {koniec.day:02d}.{koniec.month:02d}.{koniec.year}"
+    )
 
 
 def daty_pobytu(check_in: str, check_out: str) -> Iterable[str]:

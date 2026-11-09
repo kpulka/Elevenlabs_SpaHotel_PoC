@@ -22,10 +22,10 @@
   },
   "zajete_terminy": [
     {
-      "opis": "Szczyt sezonu — weekend 30-31 sierpnia 2026 (dane demo)",
-      "daty": ["2026-08-30", "2026-08-31"],
+      "opis": "przerwa świąteczno-noworoczna",
+      "daty": ["2026-12-28", "2026-12-29"],
       "dotyczy": ["jednoosobowy", "dwuosobowy", "apartament"]
     }
   ],
-  "_note_zajete": "Daty są statyczne (dane demo). Gdy wypadną w przeszłości, blokada jest nieaktywna — przeszłe terminy i tak odrzuca osobna reguła."
+  "_note_zajete": "Format blokady: 'opis' (etykieta czytana przez agenta) + 'daty' (ISO 8601). Zakres dat w odpowiedziach jest GENEROWANY z pola 'daty' przez store.opis_blokady() — nie wpisuj go ręcznie, bo wtedy opis i dane mogą się rozjechać. Daty muszą leżeć w przyszłości, inaczej ścieżka demo 'wszystko zajęte' nigdy nie zadziała."
 }

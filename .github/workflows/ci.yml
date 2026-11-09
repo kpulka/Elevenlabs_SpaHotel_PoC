@@ -65,6 +65,16 @@ jobs:
         working-directory: frontend
         run: pnpm typecheck
 
+      # Drift gates: the site must not quote a price the backend disagrees with,
+      # and no PL/EN key may go missing.
+      - name: PL/EN dictionary parity
+        working-directory: frontend
+        run: pnpm i18n:check
+
+      - name: Generated hotel data is up to date
+        working-directory: frontend
+        run: pnpm data:check
+
       - name: Build
         working-directory: frontend
         run: pnpm build
