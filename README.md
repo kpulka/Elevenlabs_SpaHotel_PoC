@@ -146,6 +146,9 @@ be sold twice, a malformed date is a 422, and a business rejection is never a 5x
 - **The knowledge base is a snapshot.** Prices and policies also live in the text files uploaded to
   ElevenLabs; regenerating and re-uploading them is a manual step and is called out in `docs/INDEX.md`.
 - **The contact form is a demo.** It validates and shows a confirmation; it does not send e-mail.
+- **Language is client-side.** PL/EN lives in a context plus `localStorage`, not in `[lang]` routes, so
+  there is one set of URLs and no `hreflang`. That was a deliberate trade-off for a five-page marketing
+  site; a real multi-market deployment should move to routed locales.
 
 ---
 
