@@ -1,0 +1,6 @@
+# Kontekst builda obrazu (Podman/Docker) — nie wysyłaj do demona zbędnych plików.
+tunnel/
+tests/
+__pycache__/
+.env
+*.pyc

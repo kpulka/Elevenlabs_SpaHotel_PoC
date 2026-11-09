@@ -1,0 +1,4 @@
+# Zależności deweloperskie: runtime + pytest (testy nie wymagają sieci ani Telegrama).
+-r requirements.txt
+
+pytest==9.0.3
