@@ -47,8 +47,8 @@ Pełne briefy: `.planning/phases/phase-K1…K5-*.md`. Skrót z zależnościami:
 | Faza | Cel | Zależność | Wymaga decyzji |
 |---|---|---|---|
 | **K1** historia gita | ✅ 2026-11-09 — `.git` 64 MB → **31 MB**; usunięte `cloudflared.exe` (52,35 MiB) i stara wersja decku (8,94 MiB); tree HEAD bez zmian (`2f184d8`); świeży klon 31 MB, 0 trafień `cloudflared`, 68 testów; backup bundle + tag `archive/english-wip-2026-11-04`, gałąź `claude/*` usunięta | pierwsza | zamknięte |
-| **K2** prompt live | wgrać `docs/anna_system_prompt_v3.md` na agenta + procedury z `appointment_datetime`; 3 transkrypty dowodowe | może równolegle z K3 | **TAK — okno czasowe** (zmienia zachowanie demo) |
-| **K3** deck | regeneracja obu PPTX z poprawionych źródeł (7 narzędzi, 8011, brak `transfer_to_number`); decyzja o generatorze EN | niezależna | TAK — EN: generator czy HTML→PDF |
+| **K2** prompt live | ✅/⚠️ 2026-11-09 — prompt live = `docs/anna_system_prompt_v3.md` (10 520 znaków, sha256 `ce1e5166…`), 8 narzędzi / 7 tool_id, 5 plików KB; naprawiony martwy `tool_id` w procedurze zmiany terminu (nowa wersja agenta `agtvrsn_4901m713bqdkedeb9f8vck1chb96`). **Otwarte:** 3 testy symulacyjne startują i kończą się „Insufficient credits” → brak transkryptów w `.planning/transcripts/` | może równolegle z K3 | zamknięte (czekamy na reset kredytów) |
+| **K3** deck | ✅ 2026-11-09 — oba PPTX z `generate_deck.py --lang all`: 14 slajdów, 7/7 narzędzi, `:8011`, 0× `transfer_to_number`/`8000`/`4 webhook`/`$15`; README opisuje realny generator | niezależna | zamknięte (wybór: `--lang`, nie HTML→PDF) |
 | **K4** higiena GitHuba | tag `v1.0.0` + release, homepage, martwe klucze i18n (~40) | po K1 i K3 | gałąź `claude/*` **zamknięta w K1** (tag archiwalny + delete); zostaje `gh auth login` |
 | **K5** demo online | Vercel + backend na Fly/Render (Docker z `mock_backend/tunnel/Dockerfile`) albo nagranie jako fallback | po K2 | **TAK — wariant A/B/C i budżet kredytów** |
 
@@ -61,6 +61,10 @@ Decyzje właściciela — **wszystkie podjęte 2026-11-09** (nie pytaj ponownie)
 4. **K5/demo:** wariant **C** — nagranie 60–90 s jako fallback; bez hostingu i bez publicznego klucza API.
 5. **K3/deck EN:** rozszerzyć `generate_deck.py` o `--lang en` i generować oba PPTX.
 6. **K4/GitHub:** właściciel zaloguje `gh` sam; do tego czasu release/metadane czekają.
+7. **Kredyty ElevenLabs (2026-11-09):** konto `payg`, `character_count = character_limit = 10000`
+   (limit wyczerpany, reset **2026-11-22 04:02 UTC**). Decyzja właściciela: **czekamy do resetu**, nie
+   doładowujemy — K2 (transkrypty) i K5 (nagranie) zostają otwarte do kolejnej sesji po tej dacie.
+   Do tego czasu nie odpalaj symulacji ani rozmów z agentem (każda kończy się błędem i zaśmieca stan).
 
 ## 4. Zasady pracy w tym repo
 

@@ -47,3 +47,16 @@ jest starszy niż plik w repo (repo: blok ~10,5 tys. znaków z sekcją anulowani
 - Bez telefonii nadal nie ma `transfer_to_number`; handoff pozostaje symulowany (spójne z README).
 - Procedury na żywo mogą nie mieć publicznego endpointu PATCH — wtedy zmiana idzie przez panel, a faza
   kończy się zapisem „wykonane ręcznie + dowód w transkrypcie”.
+
+## Stan (2026-11-09)
+
+Zrobione: prompt wgrany (10 520 znaków, sha256 `ce1e5166…` — zgodny z repo), 8 narzędzi / 7 `tool_id`,
+5 plików KB, workflow bez zmian; backupy w `D:/Backups/`. Naprawiony realny defekt: procedura
+`procedura_zmiany_terminu_zabiegu` wskazywała nieistniejący `tool_1601m0smvbqfaxaqppzcghdcpg8`
+(brak `v`) — po PATCH+publish nowa wersja agenta `agtvrsn_4901m713bqdkedeb9f8vck1chb96`, 0 martwych
+referencji w 7 procedurach (szczegóły w `.planning/AGENT_ID.txt`).
+
+Otwarte: 3 testy symulacyjne (`POST /v1/convai/agents/{id}/run-tests`) tworzą się i startują, ale każdy
+przebieg kończy się „Insufficient credits to run this simulation” — konto ma
+`character_count = character_limit = 10000`, reset **2026-11-22 04:02 UTC**. Decyzja właściciela:
+czekamy do resetu, więc DoD „3 transkrypty” pozostaje niezaznaczony do tego czasu.
