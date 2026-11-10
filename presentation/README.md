@@ -18,7 +18,7 @@ python presentation/generate_deck.py --lang en   # EN  → Bukowy_Dwor_Case_Stud
 python presentation/generate_deck.py --lang all  # oba
 ```
 
-Uwaga: oba HTML-e (`prezentacja.html`, `presentation_en.html`) nie mają generatora w repo — utrzymywane ręcznie; `presentation_en.html` jest źródłem treści EN dla decku.
+Uwaga: oba HTML-e (`prezentacja.html`, `presentation_en.html`) nie mają generatora w repo — utrzymywane ręcznie, niezależnie od `TEXTS` w `generate_deck.py`. Kanonem treści decku jest `TEXTS`; HTML-e są osobną powierzchnią i trzeba je uzgadniać ręcznie (wcześniej `presentation_en.html` uchodził za źródło EN, choć generator go nie czyta — stąd cichy rozjazd liczb). Różnice wyłapuje `verify_deck.py`.
 
 > **Stan liczb (2026-11-10):** decki, HTML-e, `deck_spec*.json` i `docs/business-case.md` mają jedną wspólną arytmetykę — $22 / 275 min i $299 / 3 738 min, czyli **$0,08/min**; $22 ≈ 3,5 h pracy recepcjonisty (25 PLN/h); 3 rezerwacje pokoju w nocy (3 × 500 PLN ≈ $375) pokrywają plan Scale ($299). Kurs 4,0 PLN/USD jest zapisany w notatkach prelegenta. Poprzednia wersja miała `~$0.027/min` (299 ÷ 3 738 = 0,08), „2 × 500 PLN pokrywa Scale" (pokrywało $250, nie $299) oraz „5 rezerwacji × $400–800 = $2 000–4 000 w 60 dni", na co repo nie ma danych. Przyczyna rozjazdu: HTML-e są utrzymywane ręcznie, a `presentation_en.html` był źródłem treści EN dla generatora.
 >

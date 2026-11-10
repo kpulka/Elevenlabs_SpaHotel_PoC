@@ -17,7 +17,8 @@ agent lives on, the CI that guards all of it, and the scripts that keep the demo
 ![A live conversation with Anna](presentation/assets/anna_widget_rozmowa.jpg)
 
 **Case-study deck (online):** [kpulka.github.io/Elevenlabs_SpaHotel_PoC](https://kpulka.github.io/Elevenlabs_SpaHotel_PoC/) — 14 slides, PL and EN, opens in the browser.
-Editable `PPTX` files are attached to [release v1.0.0](https://github.com/kpulka/Elevenlabs_SpaHotel_PoC/releases/tag/v1.0.0).
+Editable `PPTX` files are attached to [release v1.0.1](https://github.com/kpulka/Elevenlabs_SpaHotel_PoC/releases/tag/v1.0.1)
+(`v1.0.0` is superseded — its decks carry pre-correction ROI figures).
 
 ---
 
@@ -103,7 +104,7 @@ an explicit `fee_rule` string), not in the model's reasoning.
 ## Engineering decisions
 
 **Mock PMS instead of a happy-path fake.** A real deployment calls the hotel's PMS. A mock that reproduces
-the awkward parts — no availability, a slot already taken, an unknown room type, "massage" matching three
+the awkward parts - no availability, a slot already taken, an unknown room type, "masaż" matching two
 treatments — is a better demo and a far better test surface than a stub that always says yes.
 
 **Procedures, not just a prompt.** Booking a spa treatment is a regulated process: cancellation fees,
