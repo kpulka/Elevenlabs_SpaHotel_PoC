@@ -65,9 +65,15 @@ oraz 14 slajdów w obu deckach. Uruchamiany jako job `docs` w CI — bez nowych 
 | „brak CI / trzeba dodać workflow" | `ci.yml` + `pages.yml` działają, runy zielone |
 | „brak LICENSE, brak zrzutów w README" | MIT w repo, dwa zrzuty w README, opis i 10 tematów na GitHubie |
 
-## Otwarte
+## Domknięte 2026-11-10 (decyzja agenta, właściciel nie miał preferencji)
 
-- **Assety release'a `v1.0.0`** zawierają stare PPTX (z `~$0.027/min`). Do decyzji: podmienić assety czy
-  wypuścić `v1.0.1` z przegenerowanymi deckami (tag `v1.0.0` wskazuje commit `57755ab`).
-- Lokalna gałąź `claude/trusting-fermi-dy8rdu` nadal istnieje (ten sam commit co tag). Można ją usunąć
-  lokalnie, żeby nikt jej przypadkiem nie zmergował — treść zostaje w tagu.
+- **Release:** `v1.0.1` utworzony na `d4facb6` z przegenerowanymi PPTX (SHA256 zgodne z lokalnymi plikami,
+  sprawdzone przez `gh release view`). Nota nowego release'a wymienia poprawki liczb i bramki (76 testów,
+  run CI `42729181662`). `v1.0.0` **nie został przepisany** — historia tagu nietknięta; w jego notatkach
+  dopisano na górze blok „superseded by v1.0.1", a oryginalna treść (z „68 tests") została pod nim.
+  Link w `README.md` wskazuje `v1.0.1`.
+- **Lokalny ref:** `git branch -D claude/trusting-fermi-dy8rdu` (był `86ddeff`). Treść nietknięta —
+  tag `archive/english-wip-2026-11-04` (annotated, na origin) wskazuje ten sam commit; sprawdzone
+  `git rev-parse "archive/english-wip-2026-11-04^{commit}"` → `86ddeff`. Lokalnie zostaje tylko `main`.
+- **Higiena:** `git gc` po nowych commitach z PPTX — `.git` 46,7 MB → **30,7 MB** (`size-pack` 30,67 MiB).
+  Każdy commit z dwoma PPTX dodaje ~8 MB luźnych obiektów, dopóki nie przejdzie gc.

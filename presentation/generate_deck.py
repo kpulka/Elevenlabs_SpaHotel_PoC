@@ -11,8 +11,10 @@ Wyjście:
 
 Teksty trzymamy w słowniku `TEXTS` (jeden wpis na język), a kod slajdów jest
 wspólny — dzięki temu oba decki mają identyczny layout i te same liczby.
-Źródłem treści EN jest `presentation_en.html` (utrzymywany ręcznie).
-"""
+`TEXTS` jest **kanonem treści decku**. Ręcznie utrzymywane HTML-e
+(`presentation_en.html`, `prezentacja.html`) nie są przez ten skrypt czytane —
+to osobna powierzchnia, z którą trzeba je uzgadniać; spójność liczb między
+jednym a drugim pilnuje `presentation/verify_deck.py` (job `docs` w CI)."""
 
 import argparse
 import os

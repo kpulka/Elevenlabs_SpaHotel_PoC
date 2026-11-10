@@ -20,21 +20,24 @@ Wizytówka: **`README.md`**.
 
 ## 2. Stan faktyczny (zmierzony, nie z raportów)
 
-- Gałąź `main`, drzewo czyste, `main` == `origin/main`. Ostatni commit historii: `fc22c74` (K1);
-  dokumentacja K1 w kolejnym commicie. `.git` = **31 MB** po K1 (było 64 MB; usunięte z historii:
-  `cloudflared.exe` 52,35 MiB i stara wersja decku 8,94 MiB).
-- CI (`.github/workflows/ci.yml`) zielone: job `backend (pytest)` + job `frontend (typecheck + build)`
-  z dodatkowymi bramkami `pnpm i18n:check` i `pnpm data:check`.
-- Bramki lokalne: `cd mock_backend && python -m pytest -q` → **68 passed**;
-  `cd frontend && ./node_modules/.bin/tsc --noEmit` → 0; `node scripts/check-i18n.mjs` → **182 klucze**;
-  `node scripts/sync-data.mjs --check` → **3 pokoje, 6 zabiegów**; `next build` → 11 stron statycznych.
+- Gałąź `main`, drzewo czyste, `main` == `origin/main`. Ostatni commit: `d4facb6` (K6). `.git` = **30,7 MB**
+  po `git gc` (było 64 MB; usunięte z historii: `cloudflared.exe` 52,35 MiB i stara wersja decku 8,94 MiB).
+  Uwaga: każdy nowy commit z PPTX dodaje ~4 MB luźnych obiektów — `git gc` wraca do ~31 MB.
+- CI (`.github/workflows/ci.yml`) zielone, **trzy** joby: `backend (pytest)`, `docs (deck + business-case
+  figures)` → `presentation/verify_deck.py`, `frontend (typecheck + build)` z bramkami `pnpm i18n:check`
+  i `pnpm data:check`.
+- Bramki lokalne: `cd mock_backend && python -m pytest -q` → **76 passed**;
+  `cd frontend && ./node_modules/.bin/tsc --noEmit` → 0; `node scripts/check-i18n.mjs` → **138 kluczy**;
+  `node scripts/sync-data.mjs --check` → **3 pokoje, 6 zabiegów**; `next build` → 11 stron statycznych;
+  `python presentation/verify_deck.py` → 7 artefaktów + 14 slajdów, liczby spójne.
 - Backend: 7 tras POST + `/health` + `/`. Walidacja typów, reguła opłat >2 h/<2 h/medyczna, slot
   sprzedawany raz (klucz data+godzina), ceny z `data/*.json`, blokada 28–29.12.2026 generowana z JSON.
 - Frontend: jedno źródło copy (`lib/translations.ts`, `pl` definiuje typ, `en` musi pasować — jest też
   skrypt bramki), dane dwujęzyczne + ceny generowane z backendu (`lib/generated/hotel-facts.ts`,
   generator `scripts/sync-data.mjs`), per-route metadata + sitemap/robots/OG, obrazy AVIF/WebP.
-- Dokumentacja: `docs/INDEX.md` + `docs/archive/`, `.planning/README.md` (tabela 24 faz + K1–K5),
-  `presentation/README.md`. Porty, liczba narzędzi, modele i ID wyrównane do kodu.
+- Dokumentacja: `docs/INDEX.md` + `docs/archive/`, `.planning/README.md` (tabela faz + K1–K6),
+  `presentation/README.md`, `docs/business-case.md` / `deployment-playbook.md` / `lessons-learned.md` (EN).
+  Porty, liczba narzędzi, modele i ID wyrównane do kodu.
 - **Żywa warstwa agenta (przez API, zweryfikowane):** 7 narzędzi webhook podpiętych; schematy body
   uzupełnione o `appointment_datetime` (cancel) i `language` (send_sms, handoff); 5 dokumentów bazy
   wiedzy odtworzonych z poprawionych `.txt` i ponownie podpiętych (nowe ID w `AGENT_ID.txt`).
@@ -49,7 +52,7 @@ Pełne briefy: `.planning/phases/phase-K1…K5-*.md`. Skrót z zależnościami:
 | **K1** historia gita | ✅ 2026-11-09 — `.git` 64 MB → **31 MB**; usunięte `cloudflared.exe` (52,35 MiB) i stara wersja decku (8,94 MiB); tree HEAD bez zmian (`2f184d8`); świeży klon 31 MB, 0 trafień `cloudflared`, 68 testów; backup bundle + tag `archive/english-wip-2026-11-04`, gałąź `claude/*` usunięta | pierwsza | zamknięte |
 | **K2** prompt live | ✅/⚠️ 2026-11-09 — prompt live = `docs/anna_system_prompt_v3.md` (10 520 znaków, sha256 `ce1e5166…`), 8 narzędzi / 7 tool_id, 5 plików KB; naprawiony martwy `tool_id` w procedurze zmiany terminu (nowa wersja agenta `agtvrsn_4901m713bqdkedeb9f8vck1chb96`). **Otwarte:** brak transkryptów — runbook `mock_backend/tunnel/run_simulations.py` gotowy i sprawdzony offline, odpala się po resecie kredytów | może równolegle z K3 | zamknięte (czekamy na reset kredytów) |
 | **K3** deck | ✅ 2026-11-09 — oba PPTX z `generate_deck.py --lang all`: 14 slajdów, 7/7 narzędzi, `:8011`, 0× `transfer_to_number`/`8000`/`4 webhook`/`$15`; README opisuje realny generator | niezależna | zamknięte (wybór: `--lang`, nie HTML→PDF) |
-| **K4** higiena GitHuba | ✅ 2026-11-09 — tag `v1.0.0` + release z oboma PPTX, Pages z deckiem (homepage), topics, Wiki off, 0 issues; 44 martwe klucze i18n usunięte (182 → 138, `tsc`/`build` zielone) | po K1 i K3 | zamknięte (`gh auth login` zrobiony) |
+| **K4** higiena GitHuba | ✅ 2026-11-09 — tag `v1.0.0` + release z oboma PPTX, Pages z deckiem (homepage), topics, Wiki off, 0 issues; 44 martwe klucze i18n usunięte (182 → 138, `tsc`/`build` zielone). **2026-11-10:** `v1.0.1` z przegenerowanymi deckami (poprawione ROI), `v1.0.0` oznaczony jako superseded | po K1 i K3 | zamknięte (`gh auth login` zrobiony) |
 | **K5** demo online | ✅ przygotowane 2026-11-09 — decyzja: wariant **C** (nagranie 60–90 s); scenariusz z listą ujęć w `.planning/phases/phase-K5-demo-online.md`. **Wykonanie po 22.11** (kredyty): nagrać, zapisać `presentation/assets/demo_anna_60s.mp4`, jedno zdanie w `README.md` | po K2 | zamknięte |
 | **K6** dokumentacja i liczby | ✅ 2026-11-10 — `docs/business-case.md`, `deployment-playbook.md`, `lessons-learned.md` (EN) zebrane z zarchiwizowanej gałęzi i zweryfikowane; ROI poprawione na `$0,08/min` w 7 artefaktach; nowa bramka liczb `presentation/verify_deck.py` + job `docs` w CI | po K4 | zamknięte |
 
@@ -73,6 +76,9 @@ Decyzje właściciela — **wszystkie podjęte 2026-11-09** (nie pytaj ponownie)
 9. **Bramki liczb (2026-11-10):** `pytest` (76), `tsc`, `i18n:check`, `data:check`, `next build` **plus**
    `python presentation/verify_deck.py` — arytmetyka i spójność liczb między deckiem, HTML-ami,
    `deck_spec*.json` i business case.
+10. **Release i gałąź (2026-11-10):** assety `v1.0.0` zostają nietknięte (historia tagu się nie zmienia);
+    nowy **`v1.0.1`** na `d4facb6` z przegenerowanymi PPTX + nota „supersedes v1.0.0". Lokalny ref
+    `claude/trusting-fermi-dy8rdu` **usunięty** — treść żyje w tagu `archive/english-wip-2026-11-04`.
 
 ## 4. Zasady pracy w tym repo
 
