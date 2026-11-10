@@ -172,6 +172,16 @@ presentation/     interview deck (PL/EN), demo narration, screenshots
 Start at **[docs/INDEX.md](docs/INDEX.md)** — it says which document is canonical for which topic and what
 sits in the archive.
 
+If you are reading this as a hiring manager, the three documents written for you are:
+
+- [docs/business-case.md](docs/business-case.md) — the problem, the scope boundary ("never automate" list),
+  KPIs and the illustrative economics with every assumption labelled.
+- [docs/deployment-playbook.md](docs/deployment-playbook.md) — phases with exit gates, go-live checklist,
+  production target architecture, security/GDPR, the outage runbook and governance.
+- [docs/lessons-learned.md](docs/lessons-learned.md) — eight incidents from this build, each one verifiable
+  in the repository (dead tunnel, a tool the prompt invented, a widget from a blocked CDN, a `200 OK` that
+  changed nothing).
+
 ---
 
 ## Scope, honesty, license

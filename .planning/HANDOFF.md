@@ -51,6 +51,7 @@ Pełne briefy: `.planning/phases/phase-K1…K5-*.md`. Skrót z zależnościami:
 | **K3** deck | ✅ 2026-11-09 — oba PPTX z `generate_deck.py --lang all`: 14 slajdów, 7/7 narzędzi, `:8011`, 0× `transfer_to_number`/`8000`/`4 webhook`/`$15`; README opisuje realny generator | niezależna | zamknięte (wybór: `--lang`, nie HTML→PDF) |
 | **K4** higiena GitHuba | ✅ 2026-11-09 — tag `v1.0.0` + release z oboma PPTX, Pages z deckiem (homepage), topics, Wiki off, 0 issues; 44 martwe klucze i18n usunięte (182 → 138, `tsc`/`build` zielone) | po K1 i K3 | zamknięte (`gh auth login` zrobiony) |
 | **K5** demo online | ✅ przygotowane 2026-11-09 — decyzja: wariant **C** (nagranie 60–90 s); scenariusz z listą ujęć w `.planning/phases/phase-K5-demo-online.md`. **Wykonanie po 22.11** (kredyty): nagrać, zapisać `presentation/assets/demo_anna_60s.mp4`, jedno zdanie w `README.md` | po K2 | zamknięte |
+| **K6** dokumentacja i liczby | ✅ 2026-11-10 — `docs/business-case.md`, `deployment-playbook.md`, `lessons-learned.md` (EN) zebrane z zarchiwizowanej gałęzi i zweryfikowane; ROI poprawione na `$0,08/min` w 7 artefaktach; nowa bramka liczb `presentation/verify_deck.py` + job `docs` w CI | po K4 | zamknięte |
 
 Decyzje właściciela — **wszystkie podjęte 2026-11-09** (nie pytaj ponownie):
 1. **K1:** zgoda na przepisanie historii i force-push po backupie bundle; zakres = `cloudflared.exe` +
@@ -65,11 +66,19 @@ Decyzje właściciela — **wszystkie podjęte 2026-11-09** (nie pytaj ponownie)
    (limit wyczerpany, reset **2026-11-22 04:02 UTC**). Decyzja właściciela: **czekamy do resetu**, nie
    doładowujemy — K2 (transkrypty) i K5 (nagranie) zostają otwarte do kolejnej sesji po tej dacie.
    Do tego czasu nie odpalaj symulacji ani rozmów z agentem (każda kończy się błędem i zaśmieca stan).
+8. **Gałąź `claude/trusting-fermi-dy8rdu` (2026-11-10):** nie merge'ujemy. Jest zarchiwizowana jako tag
+   `archive/english-wip-2026-11-04` (`86ddeff`), a `main` poszedł 25 commitów dalej w innym układzie —
+   merge to powtórka K1–K5. Zebrane z niej selektywnie trzy dokumenty (K6), resztę raportu sprawdzono
+   i odrzucono jako nieprawdziwą wobec `main` (szczegóły: `phase-K6-docs-i-liczby.md`).
+9. **Bramki liczb (2026-11-10):** `pytest` (76), `tsc`, `i18n:check`, `data:check`, `next build` **plus**
+   `python presentation/verify_deck.py` — arytmetyka i spójność liczb między deckiem, HTML-ami,
+   `deck_spec*.json` i business case.
 
 ## 4. Zasady pracy w tym repo
 
 - **Bramki przed każdym commitem:** `pytest` (76), `tsc --noEmit`, `check-i18n.mjs`, `sync-data.mjs
-  --check`, `next build`. Czerwona bramka = nie ma commita „na potem”.
+  --check`, `next build`, a przy zmianach w decku/dokumentach `python presentation/verify_deck.py`.
+  Czerwona bramka = nie ma commita „na potem”.
 - **Commit per logiczny obszar, jawne ścieżki**, nigdy `git add -A`. `git status --short` przed każdym
   commitem — użytkownik prowadzi równoległe sesje na tym samym drzewie.
 - **Nie pushuj zmian w żywym systemie** (prompt, KB, deck) bez backupu i sprawdzenia markerem, że nowa

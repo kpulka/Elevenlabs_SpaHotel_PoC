@@ -38,6 +38,24 @@ jobs:
         working-directory: mock_backend
         run: python -m pytest -q
 
+  docs:
+    name: docs (deck + business-case figures)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      # Arithmetic gate: the plan prices and the per-minute rate published in the decks,
+      # the HTML versions, the spec files and the business case must agree. No dependencies
+      # (a .pptx is read as a zip), so this job costs seconds.
+      - name: Figures agree across artifacts
+        run: python presentation/verify_deck.py
+
   frontend:
     name: frontend (typecheck + build)
     runs-on: ubuntu-latest
