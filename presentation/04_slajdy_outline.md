@@ -157,7 +157,7 @@
 | Minuty | 275 min | 3 738 min |
 | Concurrent calls | 10 | 30 (+Burst 3x) |
 
-- **Break-even:** 275 min = ok. 1h pracy recepcjonisty = $22 vs $20-25
+- **Break-even:** 275 min = $22 ≈ 3,5 h pracy recepcjonisty (~25 PLN/h) — parytet kosztu, nie oszczędność
 - **24/7 bez chorobowego** — recepcjonista AI nie bierze urlopu
 
 **Visual:** Prosta kalkulacja: koszt miesięczny AI vs. 0.5 etatu recepcjonisty  

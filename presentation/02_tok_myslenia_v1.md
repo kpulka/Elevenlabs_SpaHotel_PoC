@@ -105,8 +105,8 @@ Użyj tej struktury gdy dostaniesz otwarte pytanie:
 | Metryka | Wartość |
 |---|---|
 | Koszt minuty rozmowy (ElevenLabs) | ~$0.08 |
-| Koszt recepcjonisty / godzina | ~$15-25 (Polska) |
-| Break-even przy 275 min/mies. (Creator plan) | ~22$ → odpowiada 1h pracy recepcjonisty |
+| Koszt recepcjonisty / godzina | ~25–35 PLN brutto ≈ $6–9 (Polska; narzuty pracodawcy podnoszą to o ok. 20–40%) |
+| Break-even przy 275 min/mies. (Creator plan) | $22 ≈ 88 PLN ≈ 3,5 h pracy recepcjonisty — parytet kosztu, nie oszczędność |
 | Czas pracy recepcjonisty AI | 24/7, 0 zwolnień lekarskich |
 | Czas wdrożenia MVP | 2-4 tygodnie (PoC w 1 dzień) |
 | Skalowanie na 10 hoteli | +0 agentów (Dynamic Variables) |

@@ -58,6 +58,8 @@ Use this 5-step decomposition when addressing any open-ended design challenge:
 - Adding a new property requires creating a configuration profile in PMS — zero code or prompt duplication.
 
 ### Financial Justification (ROI Calculation):
-- **Scale Subscription Tier:** $299/mo includes 3,738 minutes (~$0.027/min).
-- **Labor Parity:** 275 minutes equals ~1 hour of human receptionist wage ($22 vs $25).
-- **The True ROI Driver:** The hotel front desk is unstaffed after 10:00 PM. An average spa stay booking represents $400–$800. Capturing just **5 after-hours bookings per month** generates **$2,000–$4,000 in incremental revenue**, paying for the entire annual ElevenLabs contract in under 60 days.
+- **Scale Subscription Tier:** $299/mo includes 3,738 minutes (≈ $0.08/min — the same rate as the $22 / 275 min Creator tier).
+- **Labor Parity:** 275 minutes costs $22 ≈ 88 PLN, i.e. ~3.5 hours of a receptionist at 25 PLN/h. That is parity, not a saving worth banking on.
+- **The True ROI Driver:** The desk is unstaffed after 10:00 PM. A night room booking is worth ≈ 500 PLN (≈ $125), so **three captured bookings per month (≈ $375) cover the monthly Scale plan ($299)**.
+
+> Historical note (V1 interview): the figures above were corrected on 2026-11-10 to match the deck generator and `docs/business-case.md`. The original text quoted `~$0.027/min` (arithmetic error: 299/3,738 ≈ 0.08) and "$2,000–$4,000 from 5 bookings", which assumed a $400–800 booking value that this repo has no data for.

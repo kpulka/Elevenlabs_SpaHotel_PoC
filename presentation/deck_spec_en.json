@@ -156,14 +156,14 @@
          "rows": [
            ["Metric", "PoC / Pilot Plan", "Scale Production Plan"],
            ["Subscription Tier", "Creator ($22/mo)", "Scale ($299/mo)"],
-           ["Included Voice Minutes", "275 minutes", "3,738 minutes (~$0.027/min)"],
+           ["Included Voice Minutes", "275 minutes", "3,738 minutes (≈ $0.08/min)"],
            ["Concurrent Call Capacity", "10 concurrent channels", "30 concurrent channels (+Burst up to 90)"]
          ]}
       ],
       "bullets": [
-        "275 minutes ≈ 1 hr of human receptionist wage ($22 vs $25) — immediate operational parity",
-        "AI Agent operates 24/7/365 with zero sick leave, zero call abandonment, and zero burnout",
-        "True ROI Driver: Capturing 5 high-margin after-hours bookings ($1,500+ revenue) pays for the entire monthly system in 48 hours"
+        "275 minutes costs $22 ≈ 3.5 h of a receptionist at 25 PLN/h — operational parity, not a saving to bank on",
+        "The agent runs 24/7/365: no sick leave, no abandoned calls, no burnout",
+        "True ROI driver: a night room booking is ≈ 500 PLN; three of them (≈ $375) cover the monthly Scale plan ($299)"
       ],
       "notes": "Do not frame AI as headcount replacement — frame it as an after-hours revenue capture engine."
     },

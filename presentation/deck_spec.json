@@ -157,14 +157,14 @@
          "rows": [
            ["", "PoC / Demo", "Produkcja"],
            ["Plan", "Creator ($22/mies.)", "Scale ($299/mies.)"],
-           ["Minuty w pakiecie", "275 min", "3 738 min"],
+           ["Minuty w pakiecie", "275 min", "3 738 min (≈ 0,08 USD/min)"],
            ["Jednoczesne połączenia", "10", "30 (+Burst 90)"]
          ]}
       ],
       "bullets": [
-        "275 min = ok. 1h pracy recepcjonisty = $22 vs $22-25",
+        "275 min = $22 ≈ 3,5 h pracy recepcjonisty (25 PLN/h) — parytet kosztu, nie oszczędność do zbankowania",
         "Agent AI: 24/7, zero zwolnień, zero „już nie odbieram”",
-        "ROI nie jest w minutach. Jest w rezerwacjach o 23:00."
+        "ROI nie jest w minutach. 3 rezerwacje pokoju w nocy (≈ 1 500 PLN) pokrywają abonament Scale ($299)."
       ],
       "notes": "Nie sprzedaję oszczędności — sprzedaję nowy kanał przychodu."
     },
