@@ -260,7 +260,7 @@ Dwa etapy wymagają materiałów:
 | Jednoczesne połączenia | 10 | 30 (+Burst: 90) |
 
 **Kalkulacja ROI (poniżej tabeli):**
-- 275 minut = ok. 4,5h obsługi = koszt ok. 1h pracy recepcjonisty ($22 vs $22-25)
+- 275 minut = ok. 4,5h obsługi; $22 odpowiada ok. 3,5 h pracy recepcjonisty (~25 PLN/h ≈ $6/h)
 - Agent AI: 24/7, zero zwolnień, zero „już nie odbieram"
 - Dodatkowy przychód: rezerwacja zabiegów o 22:00 — niemożliwa bez AI
 

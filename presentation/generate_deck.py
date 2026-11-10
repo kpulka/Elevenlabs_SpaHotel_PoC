@@ -140,12 +140,12 @@ TEXTS = {
         "s12_headers": ["Parametr", "Faza Pilotażu / PoC (Creator)", "Faza Skalowania (Scale)"],
         "s12_rows": [
             ("Koszt platformy", "$22 / miesiąc", "$299 / miesiąc"),
-            ("Minuty w pakiecie", "275 minut rozmów", "3 738 minut rozmów"),
+            ("Minuty w pakiecie", "275 minut rozmów", "3 738 minut rozmów (≈ 0,08 USD/min)"),
             ("Jednoczesne połączenia (Concurrency)", "10 kanałów", "30 kanałów (+Burst do 90)"),
         ],
         "s12_roi_title": "Kalkulacja ROI (Return on Investment):",
-        "s12_roi_body": "• Koszt 275 min AI ($22) odpowiada kosztowi zaledwie 3,5 godziny pracy recepcjonisty (~25 PLN/h).\n• Ochrona Przychodów: Pozyskanie 2 rezerwacji pokoju w nocy (2 x 500 PLN) pokrywa miesięczny abonament Scale.\n• Wartość dla Personelu: Zero wypalenia zawodowego i możliwość skupienia się na gościach obecnych fizycznie w obiekcie.",
-        "s12_notes": "Nie pozycjonujemy AI jako redukcji personelu. To ochrona przed utraconym przychodem w nocy i w szczytach.",
+        "s12_roi_body": "• Koszt 275 min AI ($22 ≈ 88 PLN) odpowiada 3,5 godzinom pracy recepcjonisty (~25 PLN/h).\n• Ochrona Przychodów: 3 rezerwacje pokoju w nocy (3 × 500 PLN = 1 500 PLN ≈ $375) pokrywają miesięczny abonament Scale ($299).\n• Wartość dla Personelu: Zero wypalenia zawodowego i możliwość skupienia się na gościach obecnych fizycznie w obiekcie.",
+        "s12_notes": "Nie pozycjonujemy AI jako redukcji personelu. To ochrona przed utraconym przychodem w nocy i w szczytach. Kurs w kalkulacji: 4,0 PLN/USD; cennik platformy według stanu z 2026-11.",
         # 13 — roadmap
         "s13_title": "Roadmapa wdrożenia: od PoC do proaktywnego AI",
         "s13_cat": "IMPLEMENTATION TIMELINE",
@@ -265,12 +265,12 @@ TEXTS = {
         "s12_headers": ["Parameter", "Pilot / PoC Phase (Creator)", "Scaling Phase (Scale)"],
         "s12_rows": [
             ("Platform cost", "$22 / month", "$299 / month"),
-            ("Included minutes", "275 call minutes", "3,738 call minutes"),
+            ("Included minutes", "275 call minutes", "3,738 call minutes (≈ $0.08/min)"),
             ("Concurrent calls (Concurrency)", "10 channels", "30 channels (+burst to 90)"),
         ],
         "s12_roi_title": "ROI calculation:",
-        "s12_roi_body": "• 275 min of AI ($22) costs as much as just 3.5 hours of a receptionist (~25 PLN/h).\n• Revenue protection: two room bookings at night (2 x 500 PLN) cover the monthly Scale subscription.\n• Value for staff: no burnout and full focus on guests physically present at the property.",
-        "s12_notes": "Do not position AI as headcount reduction. It protects revenue at night and during call peaks.",
+        "s12_roi_body": "• 275 min of AI ($22 ≈ 88 PLN) costs as much as 3.5 hours of a receptionist (~25 PLN/h).\n• Revenue protection: three night room bookings (3 × 500 PLN = 1,500 PLN ≈ $375) cover the monthly Scale plan ($299).\n• Value for staff: no burnout and full focus on guests physically present at the property.",
+        "s12_notes": "Do not position AI as headcount reduction. It protects revenue at night and during call peaks. FX rate used: 4.0 PLN/USD; platform pricing as of 2026-11.",
         # 13 — roadmap
         "s13_title": "Implementation Roadmap: from PoC to Proactive AI",
         "s13_cat": "IMPLEMENTATION TIMELINE",
