@@ -76,13 +76,13 @@ Decyzje właściciela — **wszystkie podjęte 2026-11-09** (nie pytaj ponownie)
 9. **Bramki liczb (2026-11-10):** `pytest` (76), `tsc`, `i18n:check`, `data:check`, `next build` **plus**
    `python presentation/verify_deck.py` — arytmetyka i spójność liczb między deckiem, HTML-ami,
    `deck_spec*.json` i business case.
-10. **Release i gałąź (2026-11-10, poprawione tego samego dnia):** tag `v1.0.1` wskazuje **`0aecd33`** —
-    release utworzono ponownie, bo pierwsze wydanie stało na `d4facb6`, czyli commicie *przed* poprawką
-    README linkującą `v1.0.1`. Assety **obu** release'ów są teraz identyczne
-    (SHA256 `1e1062db…` / `1bf6dcfe…`, sprawdzone przez API): w `v1.0.0` podmieniono oba PPTX na
-    przegenerowane, a jego notatki mają blok „Assets replaced" nad treścią z 2026-11-09. Sam tag `v1.0.0`
-    (`57755ab`) i jego historia są nietknięte. Lokalny ref `claude/trusting-fermi-dy8rdu` usunięty —
-    treść żyje w tagu `archive/english-wip-2026-11-04`.
+10. **Release i gałąź (2026-11-10, poprawione tego samego dnia):** tag `v1.0.1` wskazuje ten sam commit
+    co `main` w chwili wydania — czyli ten, w którym `README.md` linkuje do `v1.0.1` (pierwsze wydanie
+    stało na commicie *przed* tą poprawką i zostało utworzone ponownie). Assety **obu** release'ów są
+    identyczne (SHA256 `1e1062db…` / `1bf6dcfe…`, sprawdzone przez API): w `v1.0.0` podmieniono oba PPTX
+    na przegenerowane, a jego notatki mają blok „Assets replaced" nad treścią z 2026-11-09. Sam tag
+    `v1.0.0` (`57755ab`) i jego historia są nietknięte. Lokalny ref `claude/trusting-fermi-dy8rdu`
+    usunięty — treść żyje w tagu `archive/english-wip-2026-11-04`.
 
 ## 4. Zasady pracy w tym repo
 

@@ -67,10 +67,10 @@ oraz 14 slajdów w obu deckach. Uruchamiany jako job `docs` w CI — bez nowych 
 
 ## Domknięte 2026-11-10 (decyzja agenta, właściciel nie miał preferencji)
 
-- **Release:** `v1.0.1` (release utworzony ponownie, tag wskazuje **`0aecd33`** = `main`, czyli commit,
-  w którym `README.md` linkuje do `v1.0.1`; pierwsze wydanie stało na `d4facb6` sprzed tej poprawki).
-  Nota wymienia poprawki liczb i bramki (76 testów, run CI `42794822592`). Assety **obu** release'ów są
-  identyczne — w `v1.0.0` podmieniono oba PPTX na przegenerowane
+- **Release:** `v1.0.1` — release utworzony ponownie, tag wskazuje ten sam commit co `main` w chwili
+  wydania, czyli ten, w którym `README.md` linkuje do `v1.0.1` (pierwsze wydanie stało na commicie przed
+  tą poprawką). Nota release'a wymienia poprawki liczb i bramki (76 testów, zielony CI na tym commicie).
+  Assety **obu** release'ów są identyczne — w `v1.0.0` podmieniono oba PPTX na przegenerowane
   (SHA256 `1e1062db…` / `1bf6dcfe…`, porównane z plikami lokalnymi i przez API), a w jego notatkach jest
   blok „Assets replaced 2026-11-10" nad treścią z 2026-11-09. **Sam tag `v1.0.0` (`57755ab`) i jego
   historia są nietknięte.** Link w `README.md` wskazuje `v1.0.1`.
