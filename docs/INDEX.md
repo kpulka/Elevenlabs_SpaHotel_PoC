@@ -31,6 +31,22 @@ Zasady, które wynikają z tabeli:
 - **Baza wiedzy:** edytujesz `.md` w `baza_wiedzy_rag_bukowy_dwor/`, kopiujesz 1:1 do `.txt` i wdrażasz `deploy_kb_and_tools.py`. Nie ruszaj plików `.txt` bezpośrednio — są wgrywane na żywo. Uwaga: API **nie aktualizuje treści** dokumentu przez `PATCH` (przyjmie 200 i zignoruje plik) — zmianę treści robi się przez utworzenie nowego dokumentu, ponowne podpięcie listy do agenta i usunięcie starego.
 - **Wdrożony stan agenta** (procedure ID, grafy workflow, narzędzia) leży w `.planning/workflow/` — to nie dokumentacja, tylko artefakty wdrożenia.
 
+## Dokumenty dla rekrutera / klienta (EN)
+
+Trzy dokumenty pisane po angielsku, bo trafiają do odbiorcy zewnętrznego. Są **kanoniczne** dla swoich tematów
+(po polsku odpowiednika nie ma i nie planujemy — reszta repo zostaje dwujęzyczna tylko tam, gdzie już była).
+
+| dokument | temat | status |
+|---|---|---|
+| `business-case.md` | uzasadnienie biznesowe: problem, zakres „co automatyzujemy / czego nigdy", KPI, ilustracyjna ekonomia (założenia jawnie oznaczone), ryzyka, rekomendacja | **KANONICZNY** (EN) |
+| `deployment-playbook.md` | droga od PoC do produkcji: fazy z bramkami, checklista go-live, architektura docelowa, bezpieczeństwo i RODO, runbook awarii, model kosztów, governance | **KANONICZNY** (EN) |
+| `lessons-learned.md` | 8 realnych incydentów z tego projektu: diagnoza, poprawka, wniosek — każdy wskazuje plik w repo | **KANONICZNY** (EN) |
+
+Zasada, która wyszła z `lessons-learned.md` §8: **liczby muszą być spójne między artefaktami**. Kanon to
+`presentation/generate_deck.py` + `business-case.md` §6 (kurs 4,0 PLN/USD, $0,08/min, 3 × 500 PLN ≈ $375
+pokrywa plan $299). Zmieniasz cennik — zmieniasz w generatorze, w obu HTML-ach, w `deck_spec*.json`
+i w business case, potem regenerujesz PPTX.
+
 ## Jak czytać to repo w 10 minut
 
 1. **`docs/INDEX.md`** (ten plik) — 1 min: co to jest i który dokument jest wiążący.
