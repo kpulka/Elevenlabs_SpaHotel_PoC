@@ -67,11 +67,13 @@ oraz 14 slajdów w obu deckach. Uruchamiany jako job `docs` w CI — bez nowych 
 
 ## Domknięte 2026-11-10 (decyzja agenta, właściciel nie miał preferencji)
 
-- **Release:** `v1.0.1` utworzony na `d4facb6` z przegenerowanymi PPTX (SHA256 zgodne z lokalnymi plikami,
-  sprawdzone przez `gh release view`). Nota nowego release'a wymienia poprawki liczb i bramki (76 testów,
-  run CI `42729181662`). `v1.0.0` **nie został przepisany** — historia tagu nietknięta; w jego notatkach
-  dopisano na górze blok „superseded by v1.0.1", a oryginalna treść (z „68 tests") została pod nim.
-  Link w `README.md` wskazuje `v1.0.1`.
+- **Release:** `v1.0.1` (release utworzony ponownie, tag wskazuje **`0aecd33`** = `main`, czyli commit,
+  w którym `README.md` linkuje do `v1.0.1`; pierwsze wydanie stało na `d4facb6` sprzed tej poprawki).
+  Nota wymienia poprawki liczb i bramki (76 testów, run CI `42794822592`). Assety **obu** release'ów są
+  identyczne — w `v1.0.0` podmieniono oba PPTX na przegenerowane
+  (SHA256 `1e1062db…` / `1bf6dcfe…`, porównane z plikami lokalnymi i przez API), a w jego notatkach jest
+  blok „Assets replaced 2026-11-10" nad treścią z 2026-11-09. **Sam tag `v1.0.0` (`57755ab`) i jego
+  historia są nietknięte.** Link w `README.md` wskazuje `v1.0.1`.
 - **Lokalny ref:** `git branch -D claude/trusting-fermi-dy8rdu` (był `86ddeff`). Treść nietknięta —
   tag `archive/english-wip-2026-11-04` (annotated, na origin) wskazuje ten sam commit; sprawdzone
   `git rev-parse "archive/english-wip-2026-11-04^{commit}"` → `86ddeff`. Lokalnie zostaje tylko `main`.
