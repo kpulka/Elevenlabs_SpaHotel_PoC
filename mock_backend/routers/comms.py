@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
+import telegram
 from schemas import Handoff, WysylkaSMS
 from state import demo_log
-import telegram
 
 router = APIRouter(tags=["comms"])
 

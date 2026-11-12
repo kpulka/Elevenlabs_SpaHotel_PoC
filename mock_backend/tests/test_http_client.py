@@ -18,9 +18,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from tunnel import _http
-from tunnel import run_simulations as rs
-from tunnel import sync_agent_tools as sync
+from tunnel import _http, run_simulations as rs, sync_agent_tools as sync
 from tunnel._http import ApiClient, ApiError, resolve_api_key
 
 SECRET = "sk_test_CANARY_do_not_leak_0123456789"

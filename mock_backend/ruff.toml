@@ -1,0 +1,11 @@
+# Lint backendu mock_backend (ruff). Minimalnie: błędy składni/nieużywane nazwy (F),
+# pycodestyle (E) i sortowanie importów (I). Bez auto-fix w CI — zmiany robimy ręcznie.
+target-version = "py312"
+line-length = 120
+
+[lint]
+select = ["E", "F", "I"]
+
+[lint.isort]
+# Re-eksporty `X as X` w main.py zostają w jednym bloku `from state import (...)`.
+combine-as-imports = true

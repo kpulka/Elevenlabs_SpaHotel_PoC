@@ -8,7 +8,6 @@ atomowe (event loop nie przełączy zadania w środku metody).
 from __future__ import annotations
 
 import json
-import random
 from dataclasses import dataclass
 from datetime import date, timedelta
 from pathlib import Path

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+
 from catalog import wczytaj_uslugi
 from store import KatalogPokoi, SpaStore
 

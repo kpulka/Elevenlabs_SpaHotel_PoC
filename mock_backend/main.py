@@ -18,14 +18,16 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from routers import comms, rooms, spa
+
 # Re-eksporty dla zachowania pełnej wstecznej zgodności z modułami testów
+# (zapis `X as X` to jawny re-eksport, ruff nie zgłasza go jako nieużywany import)
 from state import (
-    DEMO_LOGS,
-    NAZWY_USLUG,
+    DEMO_LOGS as DEMO_LOGS,
+    NAZWY_USLUG as NAZWY_USLUG,
     POKOJE,
-    SPA_STORE,
+    SPA_STORE as SPA_STORE,
     USLUGI,
-    demo_log,
+    demo_log as demo_log,
 )
 
 APP_VERSION = "1.1.0"
