@@ -95,6 +95,23 @@ z wspólnym kalendarzem, reguły opłat, reschedule, nieistniejące numery
 potwierdzenia, ceny pokoi, blokada terminów, katalog/aliasy, cennik zabiegów,
 `/health`, kontrakt pól).
 
+### Kontrakt OpenAPI (snapshot)
+
+`tests/test_openapi_contract.py` porównuje `app.openapi()` z zatwierdzonym plikiem
+`tests/openapi.snapshot.json` (serializacja: posortowane klucze, `indent=2`, UTF-8,
+końcowy `\n`). Zmiana nazwy lub typu pola w `schemas.py` to zmiana kontraktu, na
+którym polegają narzędzia agenta ElevenLabs, więc test czerwienieje, dopóki nie
+zaktualizujesz snapshotu świadomie:
+
+```bash
+cd mock_backend
+UPDATE_OPENAPI_SNAPSHOT=1 python -m pytest -q tests/test_openapi_contract.py
+git diff tests/openapi.snapshot.json   # przejrzyj zmianę kontraktu
+```
+
+W PR, który zmienia kontrakt, opisz w opisie PR, które pola się zmieniły i czy
+agent ElevenLabs (narzędzia `sync_agent_tools`) wymaga ponownej synchronizacji.
+
 ---
 
 ## 📲 Telegram (opcjonalnie, efekt „live” na demo)
