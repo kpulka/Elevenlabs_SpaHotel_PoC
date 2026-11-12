@@ -37,6 +37,14 @@ USAGE = {
     "05_procedury_i_polityki": "prompt",
 }
 
+STEM_TO_SUFFIX = {
+    "01_informacje_ogolne_i_dojazd": "01_dojazd",
+    "02_katalog_zabiegow_spa_i_zdrowie": "02_zabiegi",
+    "03_pokoje_i_cennik": "03_pokoje",
+    "04_restauracja_i_diety": "04_diety",
+    "05_procedury_i_polityki": "05_procedury",
+}
+
 H = {"xi-api-key": API_KEY}
 
 
@@ -86,11 +94,10 @@ def main():
     doc_ids = {}
     for fname in files:
         stem = fname[:-4]  # bez .txt
-        name = "Bukowy_Dwor_" + stem.replace("informacje_ogolne_i_dojazd", "01_dojazd") \
-            .replace("katalog_zabiegow_spa_i_zdrowie", "02_zabiegi") \
-            .replace("pokoje_i_cennik", "03_pokoje") \
-            .replace("restauracja_i_diety", "04_diety") \
-            .replace("procedury_i_polityki", "05_procedury")
+        suffix = STEM_TO_SUFFIX.get(stem)
+        if not suffix:
+            continue
+        name = f"Bukowy_Dwor_{suffix}"
         if name in existing:
             doc_ids[name] = existing[name]
             print(f"  (istnieje) {name} -> {existing[name]}")
