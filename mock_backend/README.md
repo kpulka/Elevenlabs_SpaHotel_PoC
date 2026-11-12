@@ -283,7 +283,8 @@ mock_backend/
 │   ├── spa.py           # trasy SPA: check/book/cancel/reschedule_spa_appointment
 │   ├── rooms.py         # trasa dostępności pokoi: check_room_availability
 │   └── comms.py         # trasy komunikacyjne: send_sms_summary, transfer_to_simulated_handoff
-├── state.py             # wspólny stan (singletony: USLUGI, SPA_STORE, POKOJE, NAZWY_USLUG, DEMO_LOGS)
+├── config.py            # konfiguracja ze zmiennych środowiskowych (Settings: demo_logs, cors_origins, app_version)
+├── data.py              # dane demo (singletony: USLUGI, SPA_STORE, POKOJE, NAZWY_USLUG) i demo_log
 ├── schemas.py           # modele Pydantic + walidacja formatów (422)
 ├── services/spa.py     # reguły biznesowe SPA (bez FastAPI)
 ├── responses.py         # fabryka odpowiedzi/odmów (kontrakt z promptem agenta)

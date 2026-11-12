@@ -7,6 +7,7 @@ biznesowych; te są w ``services/spa.py``.
 
 from __future__ import annotations
 
+from data import NAZWY_USLUG, demo_log
 from schemas import AnulowanieSPA, PrzelozenieSPA, RezerwacjaSPA, ZapytanieSPA
 from services.spa import (
     Dostepnosc,
@@ -16,8 +17,9 @@ from services.spa import (
     Przeniesienie,
     RegulaOplaty,
     WynikAnulowania,
+    cennik,
+    poza_oknem,
 )
-from state import NAZWY_USLUG, cennik, demo_log, poza_oknem
 
 # (wersja polska, wersja angielska) — tekst reguły opłat trafia do odpowiedzi i logu demo.
 _REGULY_OPLAT = {

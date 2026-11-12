@@ -14,8 +14,8 @@ from pathlib import Path
 import pytest
 from helpers import dzien
 
+from data import USLUGI
 from services import spa
-from state import USLUGI
 from store import Rezerwacja
 
 # Stały punkt odniesienia (naiwny czas lokalny) — granice nie zależą od zegara.

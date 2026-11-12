@@ -5,18 +5,19 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
+import config
 import main
-from state import SPA_STORE
+from data import SPA_STORE
 
 
 @pytest.fixture()
 def client(monkeypatch) -> TestClient:
     """Klient HTTP z wyzerowanym stanem SPA i wyłączonymi logami demo."""
-    monkeypatch.setattr(main, "DEMO_LOGS", False)
-    main.SPA_STORE.reset()
+    monkeypatch.setattr(config.settings, "demo_logs", False)
+    SPA_STORE.reset()
     with TestClient(main.app) as test_client:
         yield test_client
-    main.SPA_STORE.reset()
+    SPA_STORE.reset()
 
 
 @pytest.fixture()

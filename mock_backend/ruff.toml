@@ -7,5 +7,4 @@ line-length = 120
 select = ["E", "F", "I"]
 
 [lint.isort]
-# Re-eksporty `X as X` w main.py zostają w jednym bloku `from state import (...)`.
 combine-as-imports = true

@@ -11,8 +11,8 @@ from helpers import (
     dzien,
 )
 
-import main
 import store
+from data import POKOJE
 
 # Blokada z data/rooms.json (przerwa świąteczno-noworoczna). Pobyt 28→30.12.2026
 # obejmuje obie zablokowane noce.
@@ -55,9 +55,9 @@ def test_price_math_for_n_nights(client):
 
 def test_room_prices_come_from_data_file(client):
     """Ceny pochodzą z data/rooms.json i muszą zgadzać się z frontendem."""
-    assert main.POKOJE.typy["jednoosobowy"].cena_za_noc == 350
-    assert main.POKOJE.typy["dwuosobowy"].cena_za_noc == 500
-    assert main.POKOJE.typy["apartament"].cena_za_noc == 750
+    assert POKOJE.typy["jednoosobowy"].cena_za_noc == 350
+    assert POKOJE.typy["dwuosobowy"].cena_za_noc == 500
+    assert POKOJE.typy["apartament"].cena_za_noc == 750
 
     body = client.post(
         ROOM, json={"room_type": "Apartament", "check_in": dzien(2), "check_out": dzien(3)}
@@ -103,7 +103,7 @@ def test_blocked_window_is_future_and_rejects_room(client):
 
 def test_blocked_window_dates_are_in_the_future():
     """Blokada w przeszłości = demo nigdy nie zadziała; wtedy przesuń okno w rooms.json."""
-    blokady = {data for daty in main.POKOJE.zablokowane.values() for data in daty}
+    blokady = {data for daty in POKOJE.zablokowane.values() for data in daty}
     assert blokady, "rooms.json nie ma żadnej blokady"
     najwczesniejsza = min(date.fromisoformat(wpis) for wpis in blokady)
     assert najwczesniejsza > date.today(), (
@@ -129,5 +129,5 @@ def test_blocked_description_is_generated_from_json(tmp_path):
 
 
 def test_blocked_description_has_no_hardcoded_dates():
-    assert main.POKOJE.opis_blokady() == "28-29.12.2026"
-    assert "30-31.08.2026" not in main.POKOJE.opis_blokady()
+    assert POKOJE.opis_blokady() == "28-29.12.2026"
+    assert "30-31.08.2026" not in POKOJE.opis_blokady()

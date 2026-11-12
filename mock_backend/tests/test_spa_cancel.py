@@ -10,7 +10,7 @@ from helpers import (
     rezerwuj,
 )
 
-import main
+from data import SPA_STORE
 
 
 def test_malformed_appointment_datetime_is_schema_error(client):
@@ -141,4 +141,4 @@ def test_cancel_unknown_reservation_does_not_touch_existing_booking(client):
 
     wolne = client.post(SPA, json={"service_name": "masaż klasyczny", "date": dzien(3)}).json()
     assert "14:00" not in wolne["slots"], "slot prawdziwej rezerwacji musi zostać zajęty"
-    assert main.SPA_STORE.rezerwacja(identyfikator) is not None
+    assert SPA_STORE.rezerwacja(identyfikator) is not None

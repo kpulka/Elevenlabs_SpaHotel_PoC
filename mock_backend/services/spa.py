@@ -12,8 +12,8 @@ from datetime import date, datetime
 from enum import Enum
 
 from catalog import Usluga, WynikDopasowania, dopasuj
-from state import SPA_STORE, USLUGI, wolne_sloty
-from store import Rezerwacja
+from data import SPA_STORE, USLUGI
+from store import Rezerwacja, SpaStore
 
 # Próg bezpłatnej anulacji: odwołanie ściśle ponad 2 h przed zabiegiem jest bezpłatne.
 PROG_BEZPLATNEJ_ANULACJI_H = 2
@@ -253,3 +253,20 @@ def przenies_rezerwacje(
             stara=stara,
         )
     return Przeniesienie(stara_numer=numer, nowa=nowa, usluga=usluga)
+
+
+def wolne_sloty(usluga: Usluga, data_iso: str, store: SpaStore = SPA_STORE) -> list[str]:
+    return store.sloty_dnia(usluga, data_iso)
+
+
+def cennik(usluga: Usluga) -> dict[str, int]:
+    """Cena i czas zabiegu wprost z katalogu — te same liczby mówi Anna na głos."""
+    return {"price_pln": usluga.cena_pln, "duration_min": usluga.czas_min}
+
+
+def poza_oknem(data_iso: str, store: SpaStore = SPA_STORE) -> str:
+    return (
+        f"Termin {data_iso} jest poza oknem rezerwacji "
+        f"({store.dzisiaj.isoformat()} – {store.ostatni_dzien.isoformat()})."
+    )
+

@@ -11,26 +11,16 @@ Uruchomienie:
 
 from __future__ import annotations
 
-import os
 import time
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from config import settings
+from data import POKOJE, USLUGI
 from routers import comms, rooms, spa
 
-# Re-eksporty dla zachowania pełnej wstecznej zgodności z modułami testów
-# (zapis `X as X` to jawny re-eksport, ruff nie zgłasza go jako nieużywany import)
-from state import (
-    DEMO_LOGS as DEMO_LOGS,
-    NAZWY_USLUG as NAZWY_USLUG,
-    POKOJE,
-    SPA_STORE as SPA_STORE,
-    USLUGI,
-    demo_log as demo_log,
-)
-
-APP_VERSION = "1.1.0"
+APP_VERSION = settings.app_version
 START_TIME = time.monotonic()
 
 app = FastAPI(
@@ -42,13 +32,10 @@ app = FastAPI(
 # CORS — domyślnie "*" (webhooki ElevenLabs nie używają ciasteczek). Jeśli podasz
 # konkretne originy w CORS_ORIGINS (po przecinku), włączamy credentials, bo
 # połączenie "*" + allow_credentials=True jest niezgodne ze specyfikacją CORS.
-CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", "*").split(",") if o.strip()] or ["*"]
-CORS_WILDCARD = "*" in CORS_ORIGINS
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=CORS_ORIGINS,
-    allow_credentials=not CORS_WILDCARD,
+    allow_origins=settings.cors_origins,
+    allow_credentials=not settings.cors_wildcard,
     allow_methods=["*"],
     allow_headers=["*"],
 )

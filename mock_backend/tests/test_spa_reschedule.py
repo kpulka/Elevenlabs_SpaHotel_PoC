@@ -9,7 +9,7 @@ from helpers import (
     rezerwuj,
 )
 
-import main
+from data import SPA_STORE
 
 
 def test_reschedule_moves_slot(client):
@@ -77,7 +77,7 @@ def test_reschedule_unknown_reservation_is_refused_without_creating_booking(clie
     assert body["found"] is False
     assert body["confirmation_id"] == "SPA-0000", "nie generujemy nowego numeru"
     assert "Nie znaleziono rezerwacji" in body["message"]
-    assert main.SPA_STORE.rezerwacja(body["confirmation_id"]) is None
+    assert SPA_STORE.rezerwacja(body["confirmation_id"]) is None
 
     wolne = client.post(SPA, json={"service_name": "masaż klasyczny", "date": dzien(4)}).json()
     assert "11:00" in wolne["slots"], "żaden slot nie może zostać zajęty przez odmowę"

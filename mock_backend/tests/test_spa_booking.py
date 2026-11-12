@@ -10,7 +10,7 @@ from helpers import (
     rezerwuj,
 )
 
-import main
+from data import USLUGI
 
 # ── walidacja formatu (HTTP 422) ─────────────────────────────────────────────
 
@@ -180,7 +180,7 @@ def test_availability_reports_price_and_duration(client):
 
 
 def test_every_catalogue_entry_has_price_and_duration():
-    for usluga in main.USLUGI:
+    for usluga in USLUGI:
         assert usluga.cena_pln > 0, f"{usluga.kod} bez ceny"
         assert usluga.czas_min > 0, f"{usluga.kod} bez czasu trwania"
         assert usluga.zrodlo_ceny == "baza_wiedzy", usluga.kod
@@ -188,7 +188,7 @@ def test_every_catalogue_entry_has_price_and_duration():
 
 def test_catalogue_prices_are_the_knowledge_base_values():
     """Ceny kanoniczne = baza wiedzy agenta (80/120/100/70/160/30); strona generuje je z backendu."""
-    cennik = {usluga.kod: (usluga.cena_pln, usluga.czas_min) for usluga in main.USLUGI}
+    cennik = {usluga.kod: (usluga.cena_pln, usluga.czas_min) for usluga in USLUGI}
     assert cennik["kapiel_siarczkowa"] == (80, 20)
     assert cennik["masaz_leczniczy"] == (120, 30)
     assert cennik["kapiel_borowinowa"] == (100, 25)
