@@ -7,6 +7,7 @@
     "build": "next build --webpack",
     "start": "next start",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
     "i18n:check": "node scripts/check-i18n.mjs",
     "data:sync": "node scripts/sync-data.mjs",
     "data:check": "node scripts/sync-data.mjs --check"
@@ -26,12 +27,16 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "jsdom": "^31.0.0",
     "postcss": "^8.5",
     "tailwindcss": "^4.3.3",
-    "typescript": "5.7.3"
+    "typescript": "5.7.3",
+    "vitest": "^5.1.0"
   },
   "pnpm": {
     "overrides": {
