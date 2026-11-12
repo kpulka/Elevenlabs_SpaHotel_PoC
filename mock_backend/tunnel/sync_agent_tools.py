@@ -38,20 +38,19 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import re
 import sys
-import time
-import urllib.error
 import urllib.parse
-import urllib.request
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+try:  # uruchomienie jako skrypt: sys.path[0] == katalog tunnel/
+    from _http import ENV_LOCAL, ApiClient, ApiError, resolve_api_key
+except ImportError:  # import jako pakiet: `from tunnel import sync_agent_tools`
+    from tunnel._http import ENV_LOCAL, ApiClient, ApiError, resolve_api_key
+
 DEFAULT_API_BASE = "https://api.elevenlabs.io"
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-ENV_LOCAL = PROJECT_ROOT / "frontend" / ".env.local"
 HTTP_TIMEOUT = 60.0
+HTTP_RETRIES = 1  # ponowienie tylko przy błędzie sieci (patrz _http.ApiClient)
 
 # Canonical tool name -> path on the mock backend (see mock_backend/main.py).
 # This map is the single source of truth for the demo: add a tool here once and
@@ -108,110 +107,46 @@ SCHEMA_ADDITIONS: Dict[str, Dict[str, Dict[str, Any]]] = {
 }
 
 
-class ApiError(RuntimeError):
-    """Raised when the API cannot be reached or returns an unusable payload."""
-
-
-class Client:
-    """Minimal ElevenLabs REST client (stdlib only)."""
-
-    def __init__(self, api_key: str, api_base: str = DEFAULT_API_BASE) -> None:
-        self._api_key = api_key
-        self.api_base = api_base.rstrip("/")
-
-    # -- transport ---------------------------------------------------------
-    def _raw(self, method: str, path: str, body: Optional[dict] = None) -> Tuple[int, str]:
-        url = f"{self.api_base}{path}"
-        data = json.dumps(body).encode("utf-8") if body is not None else None
-        req = urllib.request.Request(url, data=data, method=method)
-        req.add_header("xi-api-key", self._api_key)
-        req.add_header("Accept", "application/json")
-        if data is not None:
-            req.add_header("Content-Type", "application/json")
-        last_error = ""
-        for attempt in range(2):  # one retry, transient network only
-            try:
-                with urllib.request.urlopen(req, timeout=HTTP_TIMEOUT) as resp:
-                    return resp.status, resp.read().decode("utf-8", "replace")
-            except urllib.error.HTTPError as exc:  # real API answer -- no retry
-                return exc.code, exc.read().decode("utf-8", "replace")[:400]
-            except (urllib.error.URLError, TimeoutError, OSError) as exc:
-                last_error = str(exc)
-                if attempt == 0:
-                    time.sleep(1.5)
-        raise ApiError(f"{method} {path} nie doszło: {last_error}")
-
-    def _json(self, method: str, path: str, body: Optional[dict] = None) -> Any:
-        status, text = self._raw(method, path, body)
-        if status >= 400:
-            raise ApiError(f"{method} {path} -> HTTP {status}: {text.strip()[:300]}")
-        if not text.strip():
-            return {}
-        try:
-            return json.loads(text)
-        except json.JSONDecodeError as exc:
-            raise ApiError(f"{method} {path} -> nie-JSON: {text[:200]}") from exc
-
-    # -- endpoints ---------------------------------------------------------
-    def list_tools(self) -> List[dict]:
-        """All tools of the workspace, following pagination cursors."""
-        tools: List[dict] = []
-        cursor: Optional[str] = None
-        for _ in range(50):  # hard stop, never loop forever
-            path = "/v1/convai/tools"
-            if cursor:
-                path += "?cursor=" + urllib.parse.quote(cursor)
-            payload = self._json("GET", path)
-            if isinstance(payload, list):  # defensive: bare list
-                tools.extend(payload)
-                break
-            if not isinstance(payload, dict):
-                raise ApiError("GET /v1/convai/tools -> nieoczekiwany format odpowiedzi")
-            tools.extend(payload.get("tools") or [])
-            if not payload.get("has_more"):
-                break
-            cursor = payload.get("next_cursor")
-            if not cursor:
-                break
-        return tools
-
-    def get_tool(self, tool_id: str) -> dict:
-        payload = self._json("GET", f"/v1/convai/tools/{tool_id}")
+# ── endpoints (ApiClient z _http.py) ───────────────────────────────────────
+def list_tools(client: ApiClient) -> List[dict]:
+    """All tools of the workspace, following pagination cursors."""
+    tools: List[dict] = []
+    cursor: Optional[str] = None
+    for _ in range(50):  # hard stop, never loop forever
+        path = "/v1/convai/tools"
+        if cursor:
+            path += "?cursor=" + urllib.parse.quote(cursor)
+        payload = client.request_ok("GET", path)
+        if isinstance(payload, list):  # defensive: bare list
+            tools.extend(payload)
+            break
         if not isinstance(payload, dict):
-            raise ApiError(f"GET tool {tool_id} -> nieoczekiwany format")
-        return payload
+            raise ApiError("GET /v1/convai/tools -> nieoczekiwany format odpowiedzi")
+        tools.extend(payload.get("tools") or [])
+        if not payload.get("has_more"):
+            break
+        cursor = payload.get("next_cursor")
+        if not cursor:
+            break
+    return tools
 
-    def patch_tool(self, tool_id: str, tool_config: dict) -> Tuple[int, str]:
-        status, text = self._raw(
-            "PATCH", f"/v1/convai/tools/{tool_id}", {"tool_config": tool_config}
-        )
-        return status, text.strip()[:300]
+
+def get_tool(client: ApiClient, tool_id: str) -> dict:
+    payload = client.request_ok("GET", f"/v1/convai/tools/{tool_id}")
+    if not isinstance(payload, dict):
+        raise ApiError(f"GET tool {tool_id} -> nieoczekiwany format")
+    return payload
+
+
+def patch_tool(client: ApiClient, tool_id: str, tool_config: dict) -> Tuple[int, str]:
+    """Zwraca (status, skrócona treść); HTTP-owe błędy są po stronie wywołującego."""
+    status, text = client.request(
+        "PATCH", f"/v1/convai/tools/{tool_id}", {"tool_config": tool_config}
+    )
+    return status, client.redact(text.strip()[:300])
 
 
 # ── helpers ────────────────────────────────────────────────────────────────
-def load_api_key(cli_value: Optional[str]) -> Optional[str]:
-    """--api-key > $ELEVENLABS_API_KEY > frontend/.env.local. Never echoed."""
-    if cli_value and cli_value.strip():
-        return cli_value.strip()
-    env_value = (os.environ.get("ELEVENLABS_API_KEY") or "").strip()
-    if env_value:
-        return env_value
-    if ENV_LOCAL.is_file():
-        try:
-            content = ENV_LOCAL.read_text(encoding="utf-8", errors="replace")
-        except OSError:
-            return None
-        for line in content.splitlines():
-            if line.lstrip().startswith("#"):
-                continue
-            match = re.match(r"\s*(?:export\s+)?ELEVENLABS_API_KEY\s*=\s*(.*)$", line)
-            if match:
-                value = match.group(1).strip().strip('"').strip("'")
-                if value:
-                    return value
-    return None
-
-
 def tool_name(tool: dict) -> str:
     return str((tool.get("tool_config") or {}).get("name") or "")
 
@@ -276,8 +211,8 @@ def _assert_additive(before: Dict[str, Any], after: Dict[str, Any], label: str) 
 
 
 # ── modes ──────────────────────────────────────────────────────────────────
-def run_list(client: Client) -> int:
-    tools = client.list_tools()
+def run_list(client: ApiClient) -> int:
+    tools = list_tools(client)
     index = index_by_name(tools)
 
     rows: List[Tuple[str, ...]] = []
@@ -321,9 +256,9 @@ def run_list(client: Client) -> int:
     return 1 if missing else 0
 
 
-def run_sync(client: Client, base_url: str, dry_run: bool) -> int:
+def run_sync(client: ApiClient, base_url: str, dry_run: bool) -> int:
     base = normalize_base_url(base_url)
-    index = index_by_name(client.list_tools())
+    index = index_by_name(list_tools(client))
 
     print(f"Synchronizacja webhooków -> {base}" + (" [DRY-RUN: bez zapisu]" if dry_run else ""))
     failures = 0
@@ -356,7 +291,7 @@ def run_sync(client: Client, base_url: str, dry_run: bool) -> int:
         schema["url"] = target
         config["api_schema"] = schema
         try:
-            status, detail = client.patch_tool(tool_id, config)
+            status, detail = patch_tool(client, tool_id, config)
         except ApiError as exc:
             print(f"         [FAIL] {exc}")
             failures += 1
@@ -373,8 +308,8 @@ def run_sync(client: Client, base_url: str, dry_run: bool) -> int:
     return 1 if failures else 0
 
 
-def run_ensure_schema(client: Client, dry_run: bool) -> int:
-    index = index_by_name(client.list_tools())
+def run_ensure_schema(client: ApiClient, dry_run: bool) -> int:
+    index = index_by_name(list_tools(client))
     print(
         "Uzupełnianie brakujących opcjonalnych pól body"
         + (" [DRY-RUN: bez zapisu]" if dry_run else "")
@@ -391,7 +326,7 @@ def run_ensure_schema(client: Client, dry_run: bool) -> int:
 
         # Fresh read right before writing -- the list payload can be stale.
         try:
-            tool = client.get_tool(tool_id)
+            tool = get_tool(client, tool_id)
         except ApiError as exc:
             print(f"  [FAIL] {name}: {exc}")
             failures += 1
@@ -434,7 +369,7 @@ def run_ensure_schema(client: Client, dry_run: bool) -> int:
         body["properties"] = after
         api_schema_of(config)["request_body_schema"] = body
         try:
-            status, detail = client.patch_tool(tool_id, config)
+            status, detail = patch_tool(client, tool_id, config)
         except ApiError as exc:
             print(f"         [FAIL] {exc}")
             failures += 1
@@ -511,7 +446,7 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     args = build_parser().parse_args(argv)
 
-    api_key = load_api_key(args.api_key)
+    api_key = resolve_api_key(args.api_key)
     if not api_key:
         print(
             "BŁĄD: brak klucza API — ustaw ELEVENLABS_API_KEY w środowisku, "
@@ -520,7 +455,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         )
         return 2
 
-    client = Client(api_key, args.api_base)
+    client = ApiClient(args.api_base, api_key, timeout=HTTP_TIMEOUT, retries=HTTP_RETRIES)
 
     try:
         if args.list:

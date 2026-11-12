@@ -34,20 +34,22 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import sys
 import time
-import urllib.error
 import urllib.parse
-import urllib.request
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+try:  # uruchomienie jako skrypt: sys.path[0] == katalog tunnel/
+    from _http import ApiClient, resolve_api_key
+except ImportError:  # import jako pakiet: `from tunnel import run_simulations`
+    from tunnel._http import ApiClient, resolve_api_key
+
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-ENV_LOCAL = PROJECT_ROOT / "frontend" / ".env.local"
 TRANSCRIPTS = PROJECT_ROOT / ".planning" / "transcripts"
 API_BASE = "https://api.elevenlabs.io"
+CALL_TIMEOUT = 120  # sekundy na jedno wywołanie HTTP (symulacje bywają wolne)
 DEFAULT_AGENT = "agent_8401m0n03cggfgebhfh0cj96t7aj"
 DEFAULT_BRANCH = "agtbrch_9601m0n03dege4yvwseypec1hm81"
 DEFAULT_BACKEND = "http://127.0.0.1:8011"
@@ -63,46 +65,15 @@ def _utf8_stdout() -> None:
 
 
 def api_key(cli: Optional[str]) -> str:
-    if cli:
-        return cli
-    env = os.environ.get("ELEVENLABS_API_KEY")
-    if env:
-        return env.strip()
-    if ENV_LOCAL.exists():
-        for line in ENV_LOCAL.read_text(encoding="utf-8").splitlines():
-            if line.strip().startswith("ELEVENLABS_API_KEY="):
-                return line.split("=", 1)[1].strip().strip('"').strip("'")
-    raise SystemExit("brak klucza: --api-key, $ELEVENLABS_API_KEY albo frontend/.env.local")
+    key = resolve_api_key(cli)
+    if not key:
+        raise SystemExit("brak klucza: --api-key, $ELEVENLABS_API_KEY albo frontend/.env.local")
+    return key
 
 
-class Client:
-    def __init__(self, base: str, key: Optional[str] = None) -> None:
-        self.base = base.rstrip("/")
-        self.key = key
-
-    def call(self, method: str, path: str, body: Optional[dict] = None,
-             timeout: int = 120) -> Tuple[int, Any]:
-        data = json.dumps(body, ensure_ascii=False).encode("utf-8") if body is not None else None
-        req = urllib.request.Request(self.base + path, data=data, method=method)
-        if self.key:
-            req.add_header("xi-api-key", self.key)
-        if data is not None:
-            req.add_header("Content-Type", "application/json; charset=utf-8")
-        try:
-            with urllib.request.urlopen(req, timeout=timeout) as resp:
-                raw = resp.read().decode("utf-8")
-                return resp.status, (json.loads(raw) if raw.strip() else {})
-        except urllib.error.HTTPError as err:
-            raw = err.read().decode("utf-8", "replace")
-            try:
-                return err.code, json.loads(raw)
-            except json.JSONDecodeError:
-                return err.code, raw
-
-
-def whoami(client: Client, hard: bool = True) -> Tuple[bool, str]:
+def whoami(client: ApiClient, hard: bool = True) -> Tuple[bool, str]:
     """Return (credits_available, message); SystemExit(3) when hard and exhausted."""
-    status, sub = client.call("GET", "/v1/user/subscription")
+    status, sub = client.request_json("GET", "/v1/user/subscription")
     if status != 200 or not isinstance(sub, dict):
         raise SystemExit(f"nie mogę odczytać subskrypcji (HTTP {status}); sprawdź klucz")
     used = sub.get("character_count")
@@ -119,9 +90,9 @@ def whoami(client: Client, hard: bool = True) -> Tuple[bool, str]:
     return (not exhausted), text
 
 
-def find_slot(backend: Client, service: str, day: date,
+def find_slot(backend: ApiClient, service: str, day: date,
               within_hours: Optional[float] = None) -> Optional[str]:
-    status, resp = backend.call(
+    status, resp = backend.request_json(
         "POST", "/check_spa_availability", {"service_name": service, "date": day.isoformat()}
     )
     if status != 200 or not isinstance(resp, dict) or not resp.get("available"):
@@ -161,10 +132,10 @@ def tool_health(key: str, timeout: int = 20) -> List[Dict[str, Any]]:
     """
     sync = _sync_module()
 
-    client = sync.Client(key)
+    client = ApiClient(sync.DEFAULT_API_BASE, key, timeout=CALL_TIMEOUT)
     bases: Dict[str, List[str]] = {}
     seen: set = set()
-    for tool in client.list_tools():
+    for tool in sync.list_tools(client):
         name = sync.tool_name(tool)
         if name not in sync.TOOL_PATHS or name in seen:
             continue  # the workspace also holds unrelated tools (other projects)
@@ -181,20 +152,20 @@ def tool_health(key: str, timeout: int = 20) -> List[Dict[str, Any]]:
     report = []
     for base, names in bases.items():
         try:
-            status, _ = Client(base).call("GET", "/health", timeout=timeout)
+            status, _ = ApiClient(base, timeout=timeout).request_json("GET", "/health")
         except Exception as err:  # noqa: BLE001 - DNS/timeout means a dead host
             status = f"ERR {err}"
         report.append({"base": base, "tools": names, "status": status})
     return report
 
 
-def seed(backend: Client, days_ahead: int, service: str, slot: Optional[str],
+def seed(backend: ApiClient, days_ahead: int, service: str, slot: Optional[str],
          guest: str) -> Optional[Dict[str, Any]]:
     day = date.today() + timedelta(days=days_ahead)
     when = slot or find_slot(backend, service, day)
     if when is None:
         return None
-    status, resp = backend.call(
+    status, resp = backend.request_json(
         "POST", "/book_spa_appointment",
         {"service_name": service, "date": day.isoformat(), "time": when, "guest_name": guest},
     )
@@ -310,8 +281,8 @@ def scenario_payloads(seeds: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
     ]
 
 
-def cleanup_old_tests(client: Client) -> None:
-    status, listing = client.call("GET", "/v1/convai/agent-testing")
+def cleanup_old_tests(client: ApiClient) -> None:
+    status, listing = client.request_json("GET", "/v1/convai/agent-testing")
     if status != 200 or not isinstance(listing, dict):
         print(f"  nie mogę wylistować testów (HTTP {status}) — pomijam porządki")
         return
@@ -319,21 +290,21 @@ def cleanup_old_tests(client: Client) -> None:
     for item in items:
         if not str(item.get("name", "")).startswith(TEST_PREFIX):
             continue
-        code, _ = client.call("DELETE", f"/v1/convai/agent-testing/{item['id']}")
+        code, _ = client.request_json("DELETE", f"/v1/convai/agent-testing/{item['id']}")
         print(f"  usunięty stary test {item['name']} ({item['id']}): HTTP {code}")
 
 
-def run_tests(client: Client, agent: str, branch: str,
+def run_tests(client: ApiClient, agent: str, branch: str,
               payloads: List[Dict[str, Any]]) -> Dict[str, Any]:
     created = []
     for p in payloads:
-        status, resp = client.call("POST", "/v1/convai/agent-testing/create", p["body"])
+        status, resp = client.request_json("POST", "/v1/convai/agent-testing/create", p["body"])
         if status != 200 or not isinstance(resp, dict) or "id" not in resp:
             raise SystemExit(f"create test failed for {p['slug']}: HTTP {status} {str(resp)[:300]}")
         print(f"  test {p['slug']} -> {resp['id']}")
         created.append({"slug": p["slug"], "test_id": resp["id"]})
 
-    status, resp = client.call(
+    status, resp = client.request_json(
         "POST", f"/v1/convai/agents/{agent}/run-tests",
         {"name": f"K2-evidence-{date.today().isoformat()}",
          "tests": [{"test_id": c["test_id"]} for c in created],
@@ -344,12 +315,12 @@ def run_tests(client: Client, agent: str, branch: str,
     return resp
 
 
-def poll(client: Client, invocation: str) -> Dict[str, Any]:
+def poll(client: ApiClient, invocation: str) -> Dict[str, Any]:
     deadline = time.time() + POLL_TIMEOUT
     last = None
     resp: Dict[str, Any] = {}
     while time.time() < deadline:
-        status, resp = client.call("GET", f"/v1/convai/test-invocations/{invocation}")
+        status, resp = client.request_json("GET", f"/v1/convai/test-invocations/{invocation}")
         if status != 200 or not isinstance(resp, dict):
             raise SystemExit(f"poll failed: HTTP {status} {str(resp)[:300]}")
         runs = resp.get("test_runs") or []
@@ -427,15 +398,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     key = api_key(args.api_key)
-    el = Client(API_BASE, key)
-    backend = Client(args.backend)
+    el = ApiClient(API_BASE, key, timeout=CALL_TIMEOUT)
+    backend = ApiClient(args.backend, timeout=CALL_TIMEOUT)
 
     ok, credits = whoami(el, hard=not (args.dry_run or args.check))
     print(f"ElevenLabs: {credits}")
     if not ok and args.dry_run:
         print("(dry run: buduję payloady mimo braku kredytów, nic nie uruchamiam)")
 
-    status, health = backend.call("GET", "/health")
+    status, health = backend.request_json("GET", "/health")
     if status != 200:
         print(f"Backend {args.backend} nie odpowiada (HTTP {status}). Uruchom mock_backend.")
         return 2
@@ -465,7 +436,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             return 2
 
     if args.check:
-        status, _branch = el.call("GET", f"/v1/convai/agents/{args.agent_id}/branches/{args.branch_id}")
+        status, _branch = el.request_json("GET", f"/v1/convai/agents/{args.agent_id}/branches/{args.branch_id}")
         print(f"Branch {args.branch_id}: HTTP {status}")
         return 0 if ok else 3
 

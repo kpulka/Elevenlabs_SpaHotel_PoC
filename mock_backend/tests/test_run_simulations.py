@@ -19,7 +19,7 @@ class FakeClient:
         self.responses = responses or {}
         self.calls: list[tuple[str, str, object]] = []
 
-    def call(self, method: str, path: str, body=None, timeout: int = 120):
+    def request_json(self, method: str, path: str, body=None, timeout: int = 120):
         self.calls.append((method, path, body))
         return self.responses[path]
 
