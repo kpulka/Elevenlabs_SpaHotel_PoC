@@ -268,6 +268,8 @@ mock_backend/
 │   └── comms.py         # trasy komunikacyjne: send_sms_summary, transfer_to_simulated_handoff
 ├── state.py             # wspólny stan (singletony: USLUGI, SPA_STORE, POKOJE, NAZWY_USLUG, DEMO_LOGS)
 ├── schemas.py           # modele Pydantic + walidacja formatów (422)
+├── services/spa.py     # reguły biznesowe SPA (bez FastAPI)
+├── responses.py         # fabryka odpowiedzi/odmów (kontrakt z promptem agenta)
 ├── catalog.py           # katalog zabiegów, normalizacja, resolver+aliasy
 ├── store.py             # stan slotów/rezerwacji (in-memory) + katalog pokoi
 ├── telegram.py          # jeden wspólny helper wysyłki na Telegram
@@ -276,7 +278,11 @@ mock_backend/
 ├── pytest.ini           # pythonpath + testpaths
 ├── tests/
 │   ├── conftest.py      # fixture: czysty stan, cisza w konsoli
-│   └── test_api.py      # 68 testów API
+│   ├── helpers.py       # stałe URL i helpery wspólne dla testów
+│   ├── test_spa_*.py    # rezerwacja / anulowanie / przełożenie (HTTP)
+│   ├── test_spa_service.py # reguły SPA bez TestClient
+│   ├── test_rooms.py, test_comms.py, test_app.py
+│   └── test_http_client.py, test_run_simulations.py # narzędzia tunelu
 ├── data/
 │   ├── rooms.json       # typy pokoi, ceny, terminy zablokowane (jedyne źródło)
 │   └── spa_schedule.json# seed zabiegów/aliasów/godzin/cen (nie jest nadpisywany)

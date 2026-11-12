@@ -6,6 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 import main
+from state import SPA_STORE
 
 
 @pytest.fixture()
@@ -16,3 +17,11 @@ def client(monkeypatch) -> TestClient:
     with TestClient(main.app) as test_client:
         yield test_client
     main.SPA_STORE.reset()
+
+
+@pytest.fixture()
+def spa_stan():
+    """Czysty kalendarz SPA dla testów usług (bez klienta HTTP)."""
+    SPA_STORE.reset()
+    yield SPA_STORE
+    SPA_STORE.reset()
