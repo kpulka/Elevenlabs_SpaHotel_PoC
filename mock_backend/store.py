@@ -59,6 +59,7 @@ class SpaStore:
         self.horyzont_dni = horyzont_dni
         self._zajete: dict[str, set[str]] = {}
         self._rezerwacje: dict[str, Rezerwacja] = {}
+        self._next_id: int = 1000
 
     # ── okno czasowe ────────────────────────────────────────────────────────
     @property
@@ -119,17 +120,18 @@ class SpaStore:
 
     def nowy_numer(self) -> str:
         """Unikalny numer potwierdzenia w formacie SPA-XXXX."""
-        istniejace = self._rezerwacje.keys()
-        for _ in range(1000):
-            numer = f"SPA-{random.randint(1000, 9999)}"
-            if numer not in istniejace:
-                return numer
-        return f"SPA-{len(istniejace) + 1000}"
+        self._next_id += 1
+        numer = f"SPA-{self._next_id}"
+        while numer in self._rezerwacje:
+            self._next_id += 1
+            numer = f"SPA-{self._next_id}"
+        return numer
 
     def reset(self) -> None:
         """Czyści stan (używane w testach)."""
         self._zajete.clear()
         self._rezerwacje.clear()
+        self._next_id = 1000
 
 
 @dataclass(frozen=True)

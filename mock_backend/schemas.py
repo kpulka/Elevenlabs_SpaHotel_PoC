@@ -72,6 +72,20 @@ class _ModelZJezykiem(BaseModel):
         return _waliduj_jezyk(wartosc)
 
 
+class _ModelZPotwierdzeniem(_ModelZJezykiem):
+    """Bazowy model dla żądań wymagających identyfikatora potwierdzenia rezerwacji."""
+
+    confirmation_id: str = Field(..., min_length=1, max_length=40)
+
+    @field_validator("confirmation_id")
+    @classmethod
+    def _numer(cls, wartosc: str) -> str:
+        oczyszczona = wartosc.strip()
+        if not oczyszczona:
+            raise ValueError("confirmation_id nie może być pusty.")
+        return oczyszczona.upper()
+
+
 class ZapytanieSPA(BaseModel):
     """Żądanie sprawdzenia dostępności zabiegu SPA."""
 
@@ -112,7 +126,7 @@ class RezerwacjaSPA(ZapytanieSPA):
         return oczyszczona
 
 
-class AnulowanieSPA(_ModelZJezykiem):
+class AnulowanieSPA(_ModelZPotwierdzeniem):
     """Żądanie anulowania rezerwacji zabiegu SPA.
 
     Reguła (docs/elevenlabs_agent_procedures.md): odwołanie >2h przed terminem
@@ -121,18 +135,9 @@ class AnulowanieSPA(_ModelZJezykiem):
     wywołaniami agenta), ale bez niego backend nie zna godziny zabiegu.
     """
 
-    confirmation_id: str = Field(..., min_length=1, max_length=40)
     reason: Optional[str] = ""
     medical_release: Optional[bool] = False
     appointment_datetime: Optional[str] = None
-
-    @field_validator("confirmation_id")
-    @classmethod
-    def _numer(cls, wartosc: str) -> str:
-        oczyszczona = wartosc.strip()
-        if not oczyszczona:
-            raise ValueError("confirmation_id nie może być pusty.")
-        return oczyszczona.upper()
 
     @field_validator("appointment_datetime")
     @classmethod
@@ -140,22 +145,13 @@ class AnulowanieSPA(_ModelZJezykiem):
         return None if wartosc is None or not wartosc.strip() else _waliduj_date_czasu(wartosc)
 
 
-class PrzelozenieSPA(_ModelZJezykiem):
+class PrzelozenieSPA(_ModelZPotwierdzeniem):
     """Żądanie zmiany terminu zabiegu SPA (reschedule)."""
 
-    confirmation_id: str = Field(..., min_length=1, max_length=40)
     service_name: str = Field(..., min_length=1, max_length=120)
     new_date: str
     new_time: str
     guest_name: Optional[str] = ""
-
-    @field_validator("confirmation_id")
-    @classmethod
-    def _numer(cls, wartosc: str) -> str:
-        oczyszczona = wartosc.strip()
-        if not oczyszczona:
-            raise ValueError("confirmation_id nie może być pusty.")
-        return oczyszczona.upper()
 
     @field_validator("service_name")
     @classmethod
