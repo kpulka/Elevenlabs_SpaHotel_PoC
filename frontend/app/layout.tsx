@@ -4,7 +4,7 @@ import { Inter, Playfair_Display } from 'next/font/google'
 
 import { AnnaEmbedWidget } from '@/components/anna-embed-widget'
 import { LanguageProvider } from '@/context/language-context'
-import { OG_IMAGE, SITE_NAME, SITE_URL } from '@/lib/site'
+import { OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from '@/lib/site'
 import './globals.css'
 
 const inter = Inter({
@@ -19,19 +19,14 @@ const playfair = Playfair_Display({
   display: 'swap',
 })
 
-const siteDescription =
-  'Uzdrowisko Termalne Bukowy Dwór w Krynicy-Zdroju — pokoje, baseny termalne, zabiegi balneologiczne i restauracja z dietami leczniczymi. Spokój, leczenie i regeneracja w górskim otoczeniu.'
-
-const homeTitle = 'Bukowy Dwór — Uzdrowisko Termalne w Krynicy-Zdroju'
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: homeTitle,
+    default: SITE_TITLE,
     // Podstrony dostarczają własny tytuł (app/<route>/layout.tsx).
     template: '%s | Bukowy Dwór',
   },
-  description: siteDescription,
+  description: SITE_DESCRIPTION,
   applicationName: SITE_NAME,
   alternates: { canonical: '/' },
   openGraph: {
@@ -39,14 +34,14 @@ export const metadata: Metadata = {
     locale: 'pl_PL',
     siteName: SITE_NAME,
     url: '/',
-    title: homeTitle,
-    description: siteDescription,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     images: [OG_IMAGE],
   },
   twitter: {
     card: 'summary_large_image',
-    title: homeTitle,
-    description: siteDescription,
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
     images: [OG_IMAGE.url],
   },
   icons: {

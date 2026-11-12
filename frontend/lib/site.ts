@@ -12,6 +12,8 @@ export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bukowydwor
 
 export const SITE_NAME = 'Bukowy Dwór'
 
+export const SITE_TITLE = 'Bukowy Dwór — Uzdrowisko Termalne w Krynicy-Zdroju'
+
 export const SITE_DESCRIPTION =
   'Uzdrowisko Termalne Bukowy Dwór w Krynicy-Zdroju — pokoje bez barier, baseny termalne, zabiegi balneologiczne i restauracja z dietami leczniczymi.'
 

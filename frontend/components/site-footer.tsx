@@ -5,17 +5,12 @@ import Link from 'next/link'
 
 import { useLanguage } from '@/context/language-context'
 import { contactInfo } from '@/lib/hotel-data'
+import { getNavItems } from '@/lib/navigation'
 
 export function SiteFooter() {
   const { t } = useLanguage()
 
-  const quickLinks = [
-    { label: t.nav.rooms, href: '/pokoje' },
-    { label: t.nav.spa, href: '/spa' },
-    { label: t.nav.restaurant, href: '/restauracja' },
-    { label: t.nav.access, href: '/dojazd' },
-    { label: t.nav.contact, href: '/kontakt' },
-  ]
+  const quickLinks = getNavItems(t)
 
   return (
     <footer className="bg-navy text-white">

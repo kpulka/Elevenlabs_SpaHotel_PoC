@@ -8,18 +8,13 @@ import { HotelButton } from '@/components/hotel-button'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { useLanguage } from '@/context/language-context'
 import { contactInfo } from '@/lib/hotel-data'
+import { getNavItems } from '@/lib/navigation'
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
   const { t } = useLanguage()
 
-  const navItems = [
-    { label: t.nav.rooms, href: '/pokoje' },
-    { label: t.nav.spa, href: '/spa' },
-    { label: t.nav.restaurant, href: '/restauracja' },
-    { label: t.nav.access, href: '/dojazd' },
-    { label: t.nav.contact, href: '/kontakt' },
-  ]
+  const navItems = getNavItems(t)
 
   return (
     <header className="sticky top-0 z-50 bg-navy">
