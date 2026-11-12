@@ -26,6 +26,12 @@ export function ContactForm() {
   const [errors, setErrors] = useState<Partial<FormState>>({})
   const [submitted, setSubmitted] = useState(false)
 
+  const updateField =
+    (field: keyof FormState) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+      setForm((prev) => ({ ...prev, [field]: e.target.value }))
+    }
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const nextErrors: Partial<FormState> = {}
@@ -73,7 +79,7 @@ export function ContactForm() {
           type="text"
           autoComplete="name"
           value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          onChange={updateField('name')}
           aria-invalid={Boolean(errors.name)}
           aria-describedby={errors.name ? 'name-error' : undefined}
           className="min-h-[52px] rounded-lg border border-input bg-warm-white px-4 text-base text-charcoal outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
@@ -95,7 +101,7 @@ export function ContactForm() {
           type="email"
           autoComplete="email"
           value={form.email}
-          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          onChange={updateField('email')}
           aria-invalid={Boolean(errors.email)}
           aria-describedby={errors.email ? 'email-error' : undefined}
           className="min-h-[52px] rounded-lg border border-input bg-warm-white px-4 text-base text-charcoal outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
@@ -117,7 +123,7 @@ export function ContactForm() {
           type="tel"
           autoComplete="tel"
           value={form.phone}
-          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          onChange={updateField('phone')}
           className="min-h-[52px] rounded-lg border border-input bg-warm-white px-4 text-base text-charcoal outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
         />
       </div>
@@ -130,7 +136,7 @@ export function ContactForm() {
           id="topic"
           name="topic"
           value={form.topic}
-          onChange={(e) => setForm({ ...form, topic: e.target.value })}
+          onChange={updateField('topic')}
           className="min-h-[52px] rounded-lg border border-input bg-warm-white px-4 text-base text-charcoal outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
         >
           {t.contactPage.topicOptions.map((topic) => (
@@ -148,7 +154,7 @@ export function ContactForm() {
           name="message"
           rows={5}
           value={form.message}
-          onChange={(e) => setForm({ ...form, message: e.target.value })}
+          onChange={updateField('message')}
           aria-invalid={Boolean(errors.message)}
           aria-describedby={errors.message ? 'message-error' : undefined}
           className="rounded-lg border border-input bg-warm-white px-4 py-3 text-base text-charcoal outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
