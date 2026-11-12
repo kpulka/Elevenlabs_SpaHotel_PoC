@@ -19,6 +19,7 @@ Ten plik jest **jedynym punktem wejścia**. Każdy temat ma dokładnie jeden dok
 | `audyt_agenta_2026-08.md` | audyt realnej konfiguracji live (co działa, co poprawiono, rekomendacje) | **REFERENCYJNY** (stan z audytu 2026-08) |
 | `baza_wiedzy_rag_bukowy_dwor/` | 5 plików Markdown — human-readable baza wiedzy hotelu (źródło) | **KANONICZNY** |
 | `baza_wiedzy_rag_bukowy_dwor_txt/` | te same 5 plików jako `.txt` — artefakt wgrywany do ElevenLabs przez `deploy_kb_and_tools.py` | **ARTEFAKT WDROŻENIOWY** (nie edytować ręcznie) |
+| `refactoring-2026-11.md` | przegląd refaktoryzacji kodu (RF-01…RF-15): status realizacji, czego celowo nie ruszono i dlaczego | **REFERENCYJNY** (stan z 2026-11) |
 | `archive/` | wersje historyczne — patrz sekcja niżej | **ARCHIWUM** |
 
 Żaden plik w `docs/` nie jest otwartym szkicem — otwarte punkty wdrożenia (deploy frontendu, brak zapisów testów E2E) są śledzone w `.planning/README.md`, nie w dokumentacji.

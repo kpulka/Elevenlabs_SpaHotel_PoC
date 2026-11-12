@@ -261,7 +261,12 @@ wspólny dla wszystkich zabiegów**. Konsekwencje:
 
 ```
 mock_backend/
-├── main.py              # aplikacja FastAPI + wszystkie trasy (app = main:app)
+├── main.py              # aplikacja FastAPI: konfiguracja, CORS, /health, / + include_router (app = main:app)
+├── routers/
+│   ├── spa.py           # trasy SPA: check/book/cancel/reschedule_spa_appointment
+│   ├── rooms.py         # trasa dostępności pokoi: check_room_availability
+│   └── comms.py         # trasy komunikacyjne: send_sms_summary, transfer_to_simulated_handoff
+├── state.py             # wspólny stan (singletony: USLUGI, SPA_STORE, POKOJE, NAZWY_USLUG, DEMO_LOGS)
 ├── schemas.py           # modele Pydantic + walidacja formatów (422)
 ├── catalog.py           # katalog zabiegów, normalizacja, resolver+aliasy
 ├── store.py             # stan slotów/rezerwacji (in-memory) + katalog pokoi
