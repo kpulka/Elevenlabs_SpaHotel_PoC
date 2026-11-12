@@ -3,7 +3,7 @@
 import { Bath, Bus, Car, DoorOpen, Hand, MoveVertical } from 'lucide-react'
 
 import { useLanguage } from '@/context/language-context'
-import { getAccessibilityFeatures } from '@/lib/hotel-data'
+import { getAccessibilityFeatures } from '@/lib/hotel'
 
 const icons = {
   'door-open': DoorOpen,

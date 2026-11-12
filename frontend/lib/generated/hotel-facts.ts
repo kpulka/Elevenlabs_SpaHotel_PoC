@@ -6,7 +6,7 @@
 //
 // Backend jest jedynym źródłem prawdy dla identyfikatorów pokoi i ich cen za dobę
 // oraz dla listy zabiegów wraz z ceną (pricePln, zł) i czasem trwania (durationMin, min).
-// Copy PL/EN żyje w lib/hotel-data.ts — ten plik go nie zawiera.
+// Copy PL/EN żyje w lib/hotel/treatments.ts — ten plik go nie zawiera.
 //
 // Baseny (pole `_baseny` w spa_schedule.json) to udogodnienia strefy basenowej,
 // nie zabiegi do rezerwacji — dlatego nie mają tu wpisu i nie są rezerwowalne.

@@ -4,7 +4,7 @@ import { Globe, Mail, MapPin, Phone, Share2 } from 'lucide-react'
 import Link from 'next/link'
 
 import { useLanguage } from '@/context/language-context'
-import { contactInfo } from '@/lib/hotel-data'
+import { contactInfo } from '@/lib/hotel'
 import { getNavItems } from '@/lib/navigation'
 
 export function SiteFooter() {

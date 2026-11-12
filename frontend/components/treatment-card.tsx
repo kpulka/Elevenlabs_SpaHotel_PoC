@@ -3,7 +3,7 @@
 import Image from 'next/image'
 
 import { useLanguage } from '@/context/language-context'
-import type { Treatment } from '@/lib/hotel-data'
+import type { Treatment } from '@/lib/hotel'
 
 export function TreatmentCard({ treatment }: { treatment: Treatment }) {
   const { t } = useLanguage()

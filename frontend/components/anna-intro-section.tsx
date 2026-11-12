@@ -4,7 +4,7 @@ import { BedDouble, MapPinned, Mic, Waves } from 'lucide-react'
 import Image from 'next/image'
 
 import { useLanguage } from '@/context/language-context'
-import { contactInfo } from '@/lib/hotel-data'
+import { contactInfo } from '@/lib/hotel'
 
 export function AnnaIntroSection() {
   const { t } = useLanguage()

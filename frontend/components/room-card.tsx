@@ -5,7 +5,7 @@ import Image from 'next/image'
 
 import { HotelButton } from '@/components/hotel-button'
 import { useLanguage } from '@/context/language-context'
-import type { Room } from '@/lib/hotel-data'
+import type { Room } from '@/lib/hotel'
 
 export function RoomCard({ room }: { room: Room }) {
   const { t } = useLanguage()

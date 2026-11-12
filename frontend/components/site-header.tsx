@@ -7,7 +7,7 @@ import { useState } from 'react'
 import { HotelButton } from '@/components/hotel-button'
 import { LanguageSwitcher } from '@/components/language-switcher'
 import { useLanguage } from '@/context/language-context'
-import { contactInfo } from '@/lib/hotel-data'
+import { contactInfo } from '@/lib/hotel'
 import { getNavItems } from '@/lib/navigation'
 
 export function SiteHeader() {

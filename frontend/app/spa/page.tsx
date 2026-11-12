@@ -8,7 +8,7 @@ import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { TreatmentCard } from '@/components/treatment-card'
 import { useLanguage } from '@/context/language-context'
-import { getTreatments, type TreatmentCategory } from '@/lib/hotel-data'
+import { getTreatments, type TreatmentCategory } from '@/lib/hotel'
 
 export default function SpaPage() {
   const { language, t } = useLanguage()

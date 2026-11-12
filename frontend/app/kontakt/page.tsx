@@ -8,7 +8,7 @@ import { ContactForm } from '@/components/contact-form'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { useLanguage } from '@/context/language-context'
-import { contactInfo } from '@/lib/hotel-data'
+import { contactInfo } from '@/lib/hotel'
 
 export default function ContactPage() {
   const { t } = useLanguage()

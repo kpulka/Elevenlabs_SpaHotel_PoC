@@ -6,7 +6,7 @@ import { HotelButton } from '@/components/hotel-button'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { useLanguage } from '@/context/language-context'
-import { getDiets, getMealTimes } from '@/lib/hotel-data'
+import { getDiets, getMealTimes } from '@/lib/hotel'
 
 export default function RestaurantPage() {
   const { language, t } = useLanguage()

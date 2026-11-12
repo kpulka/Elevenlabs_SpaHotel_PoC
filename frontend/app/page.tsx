@@ -12,7 +12,7 @@ import { RoomCard } from '@/components/room-card'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { useLanguage } from '@/context/language-context'
-import { contactInfo, getRooms } from '@/lib/hotel-data'
+import { contactInfo, getRooms } from '@/lib/hotel'
 
 export default function HomePage() {
   const { language, t } = useLanguage()

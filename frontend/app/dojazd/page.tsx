@@ -8,7 +8,7 @@ import { HotelButton } from '@/components/hotel-button'
 import { SiteFooter } from '@/components/site-footer'
 import { SiteHeader } from '@/components/site-header'
 import { useLanguage } from '@/context/language-context'
-import { contactInfo } from '@/lib/hotel-data'
+import { contactInfo } from '@/lib/hotel'
 
 export default function DirectionsPage() {
   const { t } = useLanguage()

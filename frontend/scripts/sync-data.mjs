@@ -18,10 +18,10 @@ const here = dirname(fileURLToPath(import.meta.url))
 const frontendRoot = resolve(here, "..")
 const backendDataDir = resolve(frontendRoot, "..", "mock_backend", "data")
 const outPath = join(frontendRoot, "lib", "generated", "hotel-facts.ts")
-const treatmentCopyPath = join(frontendRoot, "lib", "hotel-data.ts")
+const treatmentCopyPath = join(frontendRoot, "lib", "hotel", "treatments.ts")
 
 /**
- * Każdy kod z spa_schedule.json musi mieć copy PL/EN w lib/hotel-data.ts.
+ * Każdy kod z spa_schedule.json musi mieć copy PL/EN w lib/hotel/treatments.ts.
  * Generator sprawdza to sam, zanim wyemituje plik: nowy zabieg w JSON bez wpisu
  * w `treatmentCopy` zatrzymuje build z nazwą brakującego id, zamiast po cichu
  * wygenerować kartę bez treści.
@@ -55,7 +55,7 @@ function requirePositiveNumber(value, label) {
   return value
 }
 
-/** Czy `lib/hotel-data.ts` deklaruje klucz `id` w literale `treatmentCopy`? */
+/** Czy `lib/hotel/treatments.ts` deklaruje klucz `id` w literale `treatmentCopy`? */
 function hasTreatmentCopy(source, id) {
   const escaped = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
   const pattern = new RegExp(`(^|[^\\w-])["'\`]?${escaped}["'\`]?\\s*:`, "m")
@@ -111,7 +111,7 @@ for (const wpis of zabiegi) {
   const id = idFromCode(code)
   if (!hasTreatmentCopy(hotelDataSource, id)) {
     fail(
-      `zabieg "${code}" (id "${id}") nie ma copy PL/EN w lib/hotel-data.ts — ` +
+      `zabieg "${code}" (id "${id}") nie ma copy PL/EN w lib/hotel/treatments.ts — ` +
         `dodaj wpis do treatmentCopy (kategoria, nazwa, opis), inaczej karta byłaby pusta`
     )
   }
@@ -146,7 +146,7 @@ lines.push("// Bramka driftu: pnpm data:check (krok CI).")
 lines.push("//")
 lines.push("// Backend jest jedynym źródłem prawdy dla identyfikatorów pokoi i ich cen za dobę")
 lines.push("// oraz dla listy zabiegów wraz z ceną (pricePln, zł) i czasem trwania (durationMin, min).")
-lines.push("// Copy PL/EN żyje w lib/hotel-data.ts — ten plik go nie zawiera.")
+lines.push("// Copy PL/EN żyje w lib/hotel/treatments.ts — ten plik go nie zawiera.")
 lines.push("//")
 lines.push("// Baseny (pole `_baseny` w spa_schedule.json) to udogodnienia strefy basenowej,")
 lines.push("// nie zabiegi do rezerwacji — dlatego nie mają tu wpisu i nie są rezerwowalne.")
