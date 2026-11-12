@@ -75,6 +75,10 @@ jobs:
       - name: Figures agree across artifacts
         run: python presentation/verify_deck.py
 
+      # Every docs/*.md is listed in docs/INDEX.md and every .md the index points to exists.
+      - name: docs/INDEX.md matches docs/
+        run: python docs/verify_index.py
+
   frontend:
     name: frontend (typecheck + build)
     runs-on: ubuntu-latest
