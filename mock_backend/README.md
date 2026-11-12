@@ -285,9 +285,10 @@ mock_backend/
 │   └── comms.py         # trasy komunikacyjne: send_sms_summary, transfer_to_simulated_handoff
 ├── config.py            # konfiguracja ze zmiennych środowiskowych (Settings: demo_logs, cors_origins, app_version)
 ├── data.py              # dane demo (singletony: USLUGI, SPA_STORE, POKOJE, NAZWY_USLUG) i demo_log
+├── i18n.py              # obsługa języka odpowiedzi (pick, lang_of, is_en)
 ├── schemas.py           # modele Pydantic + walidacja formatów (422)
 ├── services/spa.py     # reguły biznesowe SPA (bez FastAPI)
-├── responses.py         # fabryka odpowiedzi/odmów (kontrakt z promptem agenta)
+├── responses/           # pakiet odpowiedzi/odmów (kontrakt z promptem agenta): availability, booking, cancel, reschedule, _common
 ├── catalog.py           # katalog zabiegów, normalizacja, resolver+aliasy
 ├── store.py             # stan slotów/rezerwacji (in-memory) + katalog pokoi
 ├── telegram.py          # jeden wspólny helper wysyłki na Telegram

@@ -1,0 +1,571 @@
+{
+  "dostepnosc_sukces": {
+    "available": true,
+    "slots": [
+      "10:00",
+      "12:00"
+    ],
+    "service_name": "kąpiel siarczkowa Ukojenie Stawów",
+    "date": "2026-11-20",
+    "available_services": [
+      "kąpiel siarczkowa Ukojenie Stawów",
+      "masaż leczniczy pleców",
+      "kąpiel borowinowa",
+      "jonoforeza",
+      "masaż klasyczny",
+      "gimnastyka lecznicza (grupowa)"
+    ],
+    "message": "Zabieg 'kąpiel siarczkowa Ukojenie Stawów' dostępny w dniu 2026-11-20. Wolne godziny: 10:00, 12:00. Cena 80 PLN, czas trwania 20 min.",
+    "price_pln": 80,
+    "duration_min": 20
+  },
+  "dostepnosc_brak_slotow": {
+    "available": false,
+    "slots": [],
+    "service_name": "kąpiel siarczkowa Ukojenie Stawów",
+    "date": "2026-11-20",
+    "available_services": [
+      "kąpiel siarczkowa Ukojenie Stawów",
+      "masaż leczniczy pleców",
+      "kąpiel borowinowa",
+      "jonoforeza",
+      "masaż klasyczny",
+      "gimnastyka lecznicza (grupowa)"
+    ],
+    "message": "Brak wolnych terminów dla 'kąpiel siarczkowa Ukojenie Stawów' w dniu 2026-11-20.",
+    "price_pln": 80,
+    "duration_min": 20
+  },
+  "dostepnosc_przeszlosc": {
+    "available": false,
+    "slots": [],
+    "service_name": "kąpiel siarczkowa Ukojenie Stawów",
+    "date": "2026-11-01",
+    "available_services": [
+      "kąpiel siarczkowa Ukojenie Stawów",
+      "masaż leczniczy pleców",
+      "kąpiel borowinowa",
+      "jonoforeza",
+      "masaż klasyczny",
+      "gimnastyka lecznicza (grupowa)"
+    ],
+    "message": "Data 2026-11-01 jest w przeszłości — nie można sprawdzić terminu.",
+    "price_pln": 80,
+    "duration_min": 20
+  },
+  "dostepnosc_poza_oknem": {
+    "available": false,
+    "slots": [],
+    "service_name": "kąpiel siarczkowa Ukojenie Stawów",
+    "date": "2026-12-30",
+    "available_services": [
+      "kąpiel siarczkowa Ukojenie Stawów",
+      "masaż leczniczy pleców",
+      "kąpiel borowinowa",
+      "jonoforeza",
+      "masaż klasyczny",
+      "gimnastyka lecznicza (grupowa)"
+    ],
+    "message": "Termin 2026-12-30 jest poza oknem rezerwacji (2026-11-12 – 2026-11-25).",
+    "price_pln": 80,
+    "duration_min": 20
+  },
+  "dostepnosc_nieznany": {
+    "available": false,
+    "slots": [],
+    "service_name": "lot balonem",
+    "date": "2026-11-20",
+    "available_services": [
+      "kąpiel siarczkowa Ukojenie Stawów",
+      "masaż leczniczy pleców",
+      "kąpiel borowinowa",
+      "jonoforeza",
+      "masaż klasyczny",
+      "gimnastyka lecznicza (grupowa)"
+    ],
+    "message": "Zabieg 'lot balonem' nie jest oferowany w naszym SPA."
+  },
+  "dostepnosc_niejednoznaczny": {
+    "available": false,
+    "slots": [],
+    "service_name": "masaż",
+    "date": "2026-11-20",
+    "ambiguous": [
+      "Masaż klasyczny",
+      "Masaż leczniczy"
+    ],
+    "available_services": [
+      "kąpiel siarczkowa Ukojenie Stawów",
+      "masaż leczniczy pleców",
+      "kąpiel borowinowa",
+      "jonoforeza",
+      "masaż klasyczny",
+      "gimnastyka lecznicza (grupowa)"
+    ],
+    "message": "'masaż' może oznaczać kilka zabiegów: Masaż klasyczny, Masaż leczniczy. Dopytaj gościa, który z nich wybiera."
+  },
+  "rezerwacja_sukces": {
+    "success": true,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa Ukojenie Stawów",
+    "date": "2026-11-20",
+    "time": "10:00",
+    "guest_name": "Jan Kowalski",
+    "message": "Rezerwacja potwierdzona. Numer: SPA-1234."
+  },
+  "rezerwacja_odmowa_niejednoznaczny": {
+    "success": false,
+    "confirmation_id": null,
+    "service_name": "kąpiel siarczkowa",
+    "date": "2026-11-20",
+    "time": "10:00",
+    "guest_name": "Jan Kowalski",
+    "message": "'kąpiel siarczkowa' może oznaczać kilka zabiegów: Masaż klasyczny, Masaż leczniczy. Dopytaj gościa, który z nich wybiera.",
+    "ambiguous": [
+      "Masaż klasyczny",
+      "Masaż leczniczy"
+    ],
+    "available_services": [
+      "kąpiel siarczkowa Ukojenie Stawów",
+      "masaż leczniczy pleców",
+      "kąpiel borowinowa",
+      "jonoforeza",
+      "masaż klasyczny",
+      "gimnastyka lecznicza (grupowa)"
+    ]
+  },
+  "rezerwacja_odmowa_nieznany": {
+    "success": false,
+    "confirmation_id": null,
+    "service_name": "kąpiel siarczkowa",
+    "date": "2026-11-20",
+    "time": "10:00",
+    "guest_name": "Jan Kowalski",
+    "message": "Zabieg 'kąpiel siarczkowa' nie jest oferowany w naszym SPA.",
+    "available_services": [
+      "kąpiel siarczkowa Ukojenie Stawów",
+      "masaż leczniczy pleców",
+      "kąpiel borowinowa",
+      "jonoforeza",
+      "masaż klasyczny",
+      "gimnastyka lecznicza (grupowa)"
+    ]
+  },
+  "rezerwacja_odmowa_przeszlosc": {
+    "success": false,
+    "confirmation_id": null,
+    "service_name": "kąpiel siarczkowa",
+    "date": "2026-11-20",
+    "time": "10:00",
+    "guest_name": "Jan Kowalski",
+    "message": "Data 2026-11-20 jest w przeszłości — nie można zarezerwować terminu."
+  },
+  "rezerwacja_odmowa_poza_oknem": {
+    "success": false,
+    "confirmation_id": null,
+    "service_name": "kąpiel siarczkowa",
+    "date": "2026-11-20",
+    "time": "10:00",
+    "guest_name": "Jan Kowalski",
+    "message": "Termin 2026-11-20 jest poza oknem rezerwacji (2026-11-12 – 2026-11-25)."
+  },
+  "rezerwacja_odmowa_poza_grafikiem": {
+    "success": false,
+    "confirmation_id": null,
+    "service_name": "kąpiel siarczkowa",
+    "date": "2026-11-20",
+    "time": "10:00",
+    "guest_name": "Jan Kowalski",
+    "message": "Godzina 10:00 nie jest w grafiku zabiegu 'kąpiel siarczkowa Ukojenie Stawów'.",
+    "slots": [
+      "10:00",
+      "12:00"
+    ]
+  },
+  "rezerwacja_odmowa_zajety": {
+    "success": false,
+    "confirmation_id": null,
+    "service_name": "kąpiel siarczkowa",
+    "date": "2026-11-20",
+    "time": "10:00",
+    "guest_name": "Jan Kowalski",
+    "message": "Termin 2026-11-20 10:00 jest już zajęty. Wolne godziny: 12:00, 14:00.",
+    "slots": [
+      "12:00",
+      "14:00"
+    ]
+  },
+  "rezerwacja_odmowa_wyscig": {
+    "success": false,
+    "confirmation_id": null,
+    "service_name": "kąpiel siarczkowa",
+    "date": "2026-11-20",
+    "time": "10:00",
+    "guest_name": "Jan Kowalski",
+    "message": "Termin 2026-11-20 10:00 został właśnie zarezerwowany. Wolne godziny: 12:00, 14:00.",
+    "slots": [
+      "12:00",
+      "14:00"
+    ]
+  },
+  "anulowanie_pl_nie_znaleziono": {
+    "success": false,
+    "confirmation_id": "SPA-0000",
+    "cancelled": false,
+    "fee": 0.0,
+    "medical_release": false,
+    "free_of_charge": true,
+    "fee_rule": "Nie znaleziono rezerwacji — nie naliczono opłaty (0%).",
+    "found": false,
+    "message": "Nie znaleziono rezerwacji o numerze SPA-0000. Poproś gościa o ponowne sprawdzenie numeru potwierdzenia.",
+    "note": "Rezerwacja nie została anulowana."
+  },
+  "anulowanie_pl_medyczna": {
+    "success": true,
+    "confirmation_id": "SPA-1234",
+    "cancelled": true,
+    "fee": 0.0,
+    "medical_release": false,
+    "free_of_charge": true,
+    "fee_rule": "Zwolnienie medyczne — anulacja bezpłatna (0%).",
+    "found": true,
+    "message": "Rezerwacja anulowana.",
+    "note": "Bezpłatna."
+  },
+  "anulowanie_pl_brak_godziny": {
+    "success": true,
+    "confirmation_id": "SPA-1234",
+    "cancelled": true,
+    "fee": 0.5,
+    "medical_release": false,
+    "free_of_charge": false,
+    "fee_rule": "Brak godziny zabiegu (appointment_datetime) — przyjęto opłatę 50%.",
+    "found": true,
+    "message": "Rezerwacja anulowana.",
+    "note": "Obowiązuje opłata 50% ceny zabiegu."
+  },
+  "anulowanie_pl_ponad_2h": {
+    "success": true,
+    "confirmation_id": "SPA-1234",
+    "cancelled": true,
+    "fee": 0.0,
+    "medical_release": false,
+    "free_of_charge": true,
+    "fee_rule": "Anulacja ponad 2h przed zabiegiem — bezpłatna (0%).",
+    "found": true,
+    "message": "Rezerwacja anulowana.",
+    "note": "Bezpłatna."
+  },
+  "anulowanie_pl_ponizej_2h": {
+    "success": true,
+    "confirmation_id": "SPA-1234",
+    "cancelled": true,
+    "fee": 0.5,
+    "medical_release": false,
+    "free_of_charge": false,
+    "fee_rule": "Anulacja poniżej 2h przed zabiegiem — obowiązuje opłata 50%.",
+    "found": true,
+    "message": "Rezerwacja anulowana.",
+    "note": "Obowiązuje opłata 50% ceny zabiegu."
+  },
+  "anulowanie_en_nie_znaleziono": {
+    "success": false,
+    "confirmation_id": "SPA-0000",
+    "cancelled": false,
+    "fee": 0.0,
+    "medical_release": false,
+    "free_of_charge": true,
+    "fee_rule": "Reservation not found — no fee charged (0%).",
+    "found": false,
+    "message": "No reservation found with number SPA-0000. Ask the guest to re-check the confirmation number.",
+    "note": "Reservation was not cancelled."
+  },
+  "anulowanie_en_medyczna": {
+    "success": true,
+    "confirmation_id": "SPA-1234",
+    "cancelled": true,
+    "fee": 0.0,
+    "medical_release": false,
+    "free_of_charge": true,
+    "fee_rule": "Medical release — free of charge (0%).",
+    "found": true,
+    "message": "Reservation cancelled.",
+    "note": "Free of charge."
+  },
+  "anulowanie_en_brak_godziny": {
+    "success": true,
+    "confirmation_id": "SPA-1234",
+    "cancelled": true,
+    "fee": 0.5,
+    "medical_release": false,
+    "free_of_charge": false,
+    "fee_rule": "Appointment time unknown (no appointment_datetime) — 50% fee applied.",
+    "found": true,
+    "message": "Reservation cancelled.",
+    "note": "Cancellation fee applies (50% of the service price)."
+  },
+  "anulowanie_en_ponad_2h": {
+    "success": true,
+    "confirmation_id": "SPA-1234",
+    "cancelled": true,
+    "fee": 0.0,
+    "medical_release": false,
+    "free_of_charge": true,
+    "fee_rule": "Cancelled more than 2h before the appointment — free of charge (0%).",
+    "found": true,
+    "message": "Reservation cancelled.",
+    "note": "Free of charge."
+  },
+  "anulowanie_en_ponizej_2h": {
+    "success": true,
+    "confirmation_id": "SPA-1234",
+    "cancelled": true,
+    "fee": 0.5,
+    "medical_release": false,
+    "free_of_charge": false,
+    "fee_rule": "Cancelled less than 2h before the appointment — 50% fee applies.",
+    "found": true,
+    "message": "Reservation cancelled.",
+    "note": "Cancellation fee applies (50% of the service price)."
+  },
+  "przelozenie_pl_sukces": {
+    "success": true,
+    "confirmation_id": "SPA-5678",
+    "previous_confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa Ukojenie Stawów",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Termin zabiegu zmieniony.",
+    "note": "Zmiana terminu jest bezpłatna."
+  },
+  "przelozenie_pl_odmowa_nie_znaleziono": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": false,
+    "message": "Nie znaleziono rezerwacji o numerze SPA-1234. Poproś gościa o sprawdzenie numeru albo zarezerwuj nowy termin.",
+    "note": "Termin nie został zmieniony.",
+    "available_services": [
+      "kąpiel siarczkowa Ukojenie Stawów",
+      "masaż leczniczy pleców",
+      "kąpiel borowinowa",
+      "jonoforeza",
+      "masaż klasyczny",
+      "gimnastyka lecznicza (grupowa)"
+    ]
+  },
+  "przelozenie_pl_odmowa_niejednoznaczny": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "'kąpiel siarczkowa' może oznaczać kilka zabiegów: Masaż klasyczny, Masaż leczniczy.",
+    "note": "Termin nie został zmieniony.",
+    "ambiguous": [
+      "Masaż klasyczny",
+      "Masaż leczniczy"
+    ]
+  },
+  "przelozenie_pl_odmowa_nieznany": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Zabieg 'kąpiel siarczkowa' nie jest oferowany w naszym SPA.",
+    "note": "Termin nie został zmieniony."
+  },
+  "przelozenie_pl_odmowa_przeszlosc": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Data 2026-11-21 jest w przeszłości.",
+    "note": "Termin nie został zmieniony."
+  },
+  "przelozenie_pl_odmowa_poza_oknem": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Termin 2026-11-21 jest poza oknem rezerwacji (2026-11-12 – 2026-11-25).",
+    "note": "Termin nie został zmieniony."
+  },
+  "przelozenie_pl_odmowa_poza_grafikiem": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Godzina 12:00 nie jest w grafiku zabiegu 'kąpiel siarczkowa Ukojenie Stawów'.",
+    "note": "Termin nie został zmieniony."
+  },
+  "przelozenie_pl_odmowa_zajety": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Termin 2026-11-21 12:00 jest zajęty. Wolne godziny: 10:00, 14:00.",
+    "note": "Termin nie został zmieniony.",
+    "slots": [
+      "10:00",
+      "14:00"
+    ]
+  },
+  "przelozenie_pl_odmowa_wyscig": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Termin 2026-11-21 12:00 został właśnie zarezerwowany.",
+    "note": "Termin nie został zmieniony.",
+    "slots": [
+      "10:00",
+      "14:00"
+    ]
+  },
+  "przelozenie_en_sukces": {
+    "success": true,
+    "confirmation_id": "SPA-5678",
+    "previous_confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa Ukojenie Stawów",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Appointment rescheduled.",
+    "note": "Rescheduling is free of charge."
+  },
+  "przelozenie_en_odmowa_nie_znaleziono": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": false,
+    "message": "No reservation found with number SPA-1234. Ask the guest to re-check the number, or book a new appointment.",
+    "note": "Appointment was not changed.",
+    "available_services": [
+      "kąpiel siarczkowa Ukojenie Stawów",
+      "masaż leczniczy pleców",
+      "kąpiel borowinowa",
+      "jonoforeza",
+      "masaż klasyczny",
+      "gimnastyka lecznicza (grupowa)"
+    ]
+  },
+  "przelozenie_en_odmowa_niejednoznaczny": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "'kąpiel siarczkowa' może oznaczać kilka zabiegów: Masaż klasyczny, Masaż leczniczy.",
+    "note": "Appointment was not changed.",
+    "ambiguous": [
+      "Masaż klasyczny",
+      "Masaż leczniczy"
+    ]
+  },
+  "przelozenie_en_odmowa_nieznany": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Zabieg 'kąpiel siarczkowa' nie jest oferowany w naszym SPA.",
+    "note": "Appointment was not changed."
+  },
+  "przelozenie_en_odmowa_przeszlosc": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Data 2026-11-21 jest w przeszłości.",
+    "note": "Appointment was not changed."
+  },
+  "przelozenie_en_odmowa_poza_oknem": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Termin 2026-11-21 jest poza oknem rezerwacji (2026-11-12 – 2026-11-25).",
+    "note": "Appointment was not changed."
+  },
+  "przelozenie_en_odmowa_poza_grafikiem": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Godzina 12:00 nie jest w grafiku zabiegu 'kąpiel siarczkowa Ukojenie Stawów'.",
+    "note": "Appointment was not changed."
+  },
+  "przelozenie_en_odmowa_zajety": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Termin 2026-11-21 12:00 jest zajęty. Wolne godziny: 10:00, 14:00.",
+    "note": "Appointment was not changed.",
+    "slots": [
+      "10:00",
+      "14:00"
+    ]
+  },
+  "przelozenie_en_odmowa_wyscig": {
+    "success": false,
+    "confirmation_id": "SPA-1234",
+    "service_name": "kąpiel siarczkowa",
+    "new_date": "2026-11-21",
+    "new_time": "12:00",
+    "guest_name": "Jan Kowalski",
+    "found": true,
+    "message": "Termin 2026-11-21 12:00 został właśnie zarezerwowany.",
+    "note": "Appointment was not changed.",
+    "slots": [
+      "10:00",
+      "14:00"
+    ]
+  }
+}

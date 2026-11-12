@@ -6,6 +6,7 @@ from fastapi import APIRouter
 
 import telegram
 from data import demo_log
+from i18n import lang_of, pick
 from schemas import Handoff, WysylkaSMS
 
 router = APIRouter(tags=["comms"])
@@ -39,12 +40,12 @@ def _tekst_handoffu(request: Handoff, dzial: str) -> str:
 @router.post("/send_sms_summary")
 async def send_sms_summary(request: WysylkaSMS):
     """Symuluje wysyłkę SMS: drukuje treść (demo) i opcjonalnie wysyła na Telegram."""
-    is_en = request.language == "en"
+    lang = lang_of(request)
     demo_log(
         "📱 [SMS] WYSYŁKA PODSUMOWANIA (demo log)",
         f"   Odbiorca : {request.phone_number}",
         f"   Nr ref.  : {request.confirmation_id or '-'}",
-        f"   Język    : {'EN' if is_en else 'PL'}",
+        f"   Język    : {pick(lang, 'PL', 'EN')}",
         "   📩 TREŚĆ SMS:",
         f"   {request.summary_text}",
     )
@@ -53,15 +54,17 @@ async def send_sms_summary(request: WysylkaSMS):
         await telegram.wyslij_wiadomosc(_tekst_sms_na_telegram(request), etykieta="SMS")
     else:
         print(
-            "   ℹ️  Telegram not configured — SMS printed to console only."
-            if is_en
-            else "   ℹ️  Telegram nie skonfigurowany — SMS tylko w konsoli "
-            "(ustaw TELEGRAM_BOT_TOKEN i TELEGRAM_CHAT_ID)."
+            pick(
+                lang,
+                "   ℹ️  Telegram nie skonfigurowany — SMS tylko w konsoli "
+                "(ustaw TELEGRAM_BOT_TOKEN i TELEGRAM_CHAT_ID).",
+                "   ℹ️  Telegram not configured — SMS printed to console only.",
+            )
         )
 
     return {
         "success": True,
-        "message": "Message sent." if is_en else "Wiadomość wysłana.",
+        "message": pick(lang, "Wiadomość wysłana.", "Message sent."),
         "delivered_to": request.phone_number,
         "language": request.language,
     }
@@ -75,36 +78,42 @@ async def send_sms_summary(request: WysylkaSMS):
 async def transfer_to_simulated_handoff(request: Handoff):
     """Symuluje przekazanie rozmowy do żywego pracownika (PoC, bez telefonii)."""
     dzial = DZIALY.get((request.department or "").strip().lower(), request.department or "Recepcja")
-    is_en = request.language == "en"
+    lang = lang_of(request)
     demo_log(
         "🛎️  [HANDOFF] PRZEKAZANIE DO CZŁOWIEKA (demo log)",
         f"   Dział : {dzial}",
         f"   Gość  : {request.guest_name or '-'}",
         f"   Powód : {request.reason or '-'}",
-        f"   Język : {'EN' if is_en else 'PL'}",
+        f"   Język : {pick(lang, 'PL', 'EN')}",
     )
 
     if telegram.skonfigurowany():
         await telegram.wyslij_wiadomosc(_tekst_handoffu(request, dzial), etykieta="Alert handoff")
     else:
         print(
-            "   ℹ️  Telegram not configured — handoff logged to console only."
-            if is_en
-            else "   ℹ️  Telegram nie skonfigurowany — handoff tylko w konsoli "
-            "(ustaw TELEGRAM_BOT_TOKEN i TELEGRAM_CHAT_ID)."
+            pick(
+                lang,
+                "   ℹ️  Telegram nie skonfigurowany — handoff tylko w konsoli "
+                "(ustaw TELEGRAM_BOT_TOKEN i TELEGRAM_CHAT_ID).",
+                "   ℹ️  Telegram not configured — handoff logged to console only.",
+            )
         )
 
     return {
         "success": True,
         "simulated": True,
-        "message": "Handoff to a human simulated (PoC — no telephony)."
-        if is_en
-        else "Przekazanie do człowieka zasymulowane (PoC — brak telefonii).",
+        "message": pick(
+            lang,
+            "Przekazanie do człowieka zasymulowane (PoC — brak telefonii).",
+            "Handoff to a human simulated (PoC — no telephony).",
+        ),
         "department": dzial,
         "reason": request.reason,
         "guest_name": request.guest_name,
         "language": request.language,
-        "note": "On production: wire transfer_to_number (SIP) or notify live reception staff."
-        if is_en
-        else "Na produkcji: podpiąć transfer_to_number (SIP) lub powiadomienie do recepcji.",
+        "note": pick(
+            lang,
+            "Na produkcji: podpiąć transfer_to_number (SIP) lub powiadomienie do recepcji.",
+            "On production: wire transfer_to_number (SIP) or notify live reception staff.",
+        ),
     }
