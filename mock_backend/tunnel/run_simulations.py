@@ -15,6 +15,9 @@ Dates are computed at run time, never hardcoded: the mock backend computes the f
 turns into a 0% case a week later. Test scenarios therefore embed the booking id and
 datetime that this script has just created in the in-memory store.
 
+The scenario texts and their assertions are data in ``tunnel/scenarios.py``; this module
+only seeds the PMS, talks to the APIs and writes the results.
+
 Modes
 -----
   (default)          full run: credits check, seed, create tests, run, poll, save
@@ -43,11 +46,15 @@ from typing import Any, Dict, List, Optional, Tuple
 
 try:  # uruchomienie jako skrypt: sys.path[0] == katalog tunnel/
     from _http import ApiClient, resolve_api_key
+    from scenarios import TEST_PREFIX, dry_run_seeds, scenario_payloads
+    from tool_schemas import TOOL_PATHS, api_schema_of, tool_name
+    from transcripts import save, transcript_text  # noqa: F401 - transcript_text: re-eksport dla testów
 except ImportError:  # import jako pakiet: `from tunnel import run_simulations`
     from tunnel._http import ApiClient, resolve_api_key
+    from tunnel.scenarios import TEST_PREFIX, dry_run_seeds, scenario_payloads
+    from tunnel.tool_schemas import TOOL_PATHS, api_schema_of, tool_name
+    from tunnel.transcripts import save, transcript_text  # noqa: F401
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-TRANSCRIPTS = PROJECT_ROOT / ".planning" / "transcripts"
 API_BASE = "https://api.elevenlabs.io"
 CALL_TIMEOUT = 120  # sekundy na jedno wywołanie HTTP (symulacje bywają wolne)
 DEFAULT_AGENT = "agent_8401m0n03cggfgebhfh0cj96t7aj"
@@ -55,7 +62,6 @@ DEFAULT_BRANCH = "agtbrch_9601m0n03dege4yvwseypec1hm81"
 DEFAULT_BACKEND = "http://127.0.0.1:8011"
 POLL_SECONDS = 15
 POLL_TIMEOUT = 900
-TEST_PREFIX = "K2-"
 
 
 def _utf8_stdout() -> None:
@@ -136,17 +142,17 @@ def tool_health(key: str, timeout: int = 20) -> List[Dict[str, Any]]:
     bases: Dict[str, List[str]] = {}
     seen: set = set()
     for tool in sync.list_tools(client):
-        name = sync.tool_name(tool)
-        if name not in sync.TOOL_PATHS or name in seen:
+        name = tool_name(tool)
+        if name not in TOOL_PATHS or name in seen:
             continue  # the workspace also holds unrelated tools (other projects)
         seen.add(name)
         config = tool.get("tool_config") or {}
-        url = str(sync.api_schema_of(config).get("url") or "")
+        url = str(api_schema_of(config).get("url") or "")
         if not url:
             raise SystemExit(f"narzędzie {name} nie ma URL-a webhooka")
         parts = urllib.parse.urlsplit(url)
         bases.setdefault(f"{parts.scheme}://{parts.netloc}", []).append(name)
-    missing = sorted(set(sync.TOOL_PATHS) - seen)
+    missing = sorted(set(TOOL_PATHS) - seen)
     if missing:
         raise SystemExit("brakujące narzędzia agenta: " + ", ".join(missing))
     report = []
@@ -173,112 +179,6 @@ def seed(backend: ApiClient, days_ahead: int, service: str, slot: Optional[str],
         return None
     return {"id": resp["confirmation_id"], "date": day.isoformat(), "time": when,
             "service": resp.get("service_name", service), "guest": guest}
-
-
-def scenario_payloads(seeds: Dict[str, Dict[str, Any]]) -> List[Dict[str, Any]]:
-    book_seed = seeds["book"]
-    cancel_free = seeds["cancel_free"]
-    cancel_fee = seeds["cancel_fee"]
-    book_day = date.fromisoformat(book_seed["date"])
-
-    return [
-        {
-            "slug": "01-rezerwacja-masaz-ambiguous",
-            "body": {
-                "type": "simulation",
-                "name": TEST_PREFIX + "01-rezerwacja-masaz-ambiguous",
-                "simulation_scenario": (
-                    "Jesteś gościem uzdrowiska Bukowy Dwór w Krynicy-Zdroju i dzwonisz, żeby zarezerwować "
-                    f"masaż na {book_day.strftime('%d.%m.%Y')} na godzinę {book_seed['time']}. Na początku "
-                    "mówisz tylko, że chcesz zarezerwować 'masaż', i nie precyzujesz rodzaju, dopóki agent "
-                    "sam o to nie zapyta. Gdy agent wymieni kandydatów, wybierasz 'masaż leczniczy pleców'. "
-                    "Na pytanie o imię i nazwisko podajesz 'Piotr Zieliński'. Na pytanie o numer telefonu "
-                    "podajesz '+48 600 100 200'. Mówisz po polsku, krótko i naturalnie, jak osoba w średnim "
-                    "wieku. Nie znasz cen ani godzin — pytasz o nie agenta. Na końcu dziękujesz."
-                ),
-                "simulation_max_turns": 16,
-                "success_conditions": [
-                    "Agent zapytał gościa, który masaż ma na myśli, zanim podał termin lub cenę.",
-                    "Agent podał cenę 120 zł i czas trwania 30 minut z odpowiedzi check_spa_availability.",
-                    "Agent zarezerwował zabieg przez book_spa_appointment i podał numer SPA-XXXX.",
-                    "Agent nie wymyślił ceny, godziny ani dostępności — wszystkie liczby z narzędzi.",
-                ],
-                "dynamic_variables": {"user_language": "pl"},
-                "tool_mock_config": {"mocking_strategy": "none"},
-                "simulation_environment": "production",
-            },
-            "expect": {
-                "tool": "book_spa_appointment",
-                "text": ["120", "SPA-"],
-                "forbid": ["129", "150 zł"],
-            },
-        },
-        {
-            "slug": "02-anulowanie-ponad-2h",
-            "body": {
-                "type": "simulation",
-                "name": TEST_PREFIX + "02-anulowanie-ponad-2h",
-                "simulation_scenario": (
-                    "Jesteś gościem uzdrowiska Bukowy Dwór. Dzwonisz, żeby odwołać rezerwację zabiegu o "
-                    f"numerze {cancel_free['id']} ({cancel_free['service']}). Zabieg jest "
-                    f"{date.fromisoformat(cancel_free['date']).strftime('%d.%m.%Y')} o godzinie "
-                    f"{cancel_free['time']}. Powód odwołania: zmiana planów wyjazdu, powód NIE jest medyczny. "
-                    "Mówisz po polsku, krótko. Numer rezerwacji i termin podajesz, gdy agent o nie zapyta."
-                ),
-                "simulation_max_turns": 8,
-                "success_conditions": [
-                    (
-                        f"Agent przekazał appointment_datetime {cancel_free['date']}T{cancel_free['time']} "
-                        "w wywołaniu cancel_spa_appointment."
-                    ),
-                    "Agent przekazał medical_release jako false.",
-                    "Agent powtórzył gościowi fee_rule: ponad 2 godziny przed zabiegiem — bezpłatnie (0%).",
-                    "Agent nie potwierdził anulowania bez wywołania narzędzia.",
-                ],
-                "dynamic_variables": {"user_language": "pl"},
-                "tool_mock_config": {"mocking_strategy": "none"},
-                "simulation_environment": "production",
-            },
-            "expect": {
-                "tool": "cancel_spa_appointment",
-                "text": ["0%", cancel_free["id"]],
-                "forbid": ["50%"],
-            },
-        },
-        {
-            "slug": "03-anulowanie-ponizej-2h",
-            "body": {
-                "type": "simulation",
-                "name": TEST_PREFIX + "03-anulowanie-ponizej-2h",
-                "simulation_scenario": (
-                    "Jesteś gościem uzdrowiska Bukowy Dwór. Dzwonisz, żeby odwołać rezerwację zabiegu o "
-                    f"numerze {cancel_fee['id']} ({cancel_fee['service']}). Zabieg jest dzisiaj, "
-                    f"{date.fromisoformat(cancel_fee['date']).strftime('%d.%m.%Y')}, o godzinie "
-                    f"{cancel_fee['time']} — czyli w ciągu najbliższych dwóch godzin. Powód: zmiana planów, "
-                    "NIE medyczny, czujesz się dobrze. Mówisz po polsku, krótko. Numer i godzinę podajesz, "
-                    "gdy agent o nie zapyta."
-                ),
-                "simulation_max_turns": 8,
-                "success_conditions": [
-                    (
-                        f"Agent przekazał appointment_datetime {cancel_fee['date']}T{cancel_fee['time']} "
-                        "w wywołaniu cancel_spa_appointment."
-                    ),
-                    "Agent przekazał medical_release jako false.",
-                    "Agent poinformował gościa o opłacie 50% zgodnie z fee_rule z backendu.",
-                    "Agent nie wymyślił kwoty — powtórzył regułę i wartość fee z narzędzia.",
-                ],
-                "dynamic_variables": {"user_language": "pl"},
-                "tool_mock_config": {"mocking_strategy": "none"},
-                "simulation_environment": "production",
-            },
-            "expect": {
-                "tool": "cancel_spa_appointment",
-                "text": ["50%", cancel_fee["id"]],
-                "forbid": ["bezpłatn"],
-            },
-        },
-    ]
 
 
 def cleanup_old_tests(client: ApiClient) -> None:
@@ -334,56 +234,8 @@ def poll(client: ApiClient, invocation: str) -> Dict[str, Any]:
     raise SystemExit(4)
 
 
-def transcript_text(run: Dict[str, Any]) -> str:
-    chunks: List[str] = []
-    for item in run.get("agent_responses") or run.get("messages") or []:
-        if isinstance(item, dict):
-            chunks.append(json.dumps(item, ensure_ascii=False))
-        else:
-            chunks.append(str(item))
-    return "\n".join(chunks)
-
-
-def save(resp: Dict[str, Any], payloads: List[Dict[str, Any]], seeds: Dict[str, Dict[str, Any]]) -> int:
-    TRANSCRIPTS.mkdir(parents=True, exist_ok=True)
-    expect = {p["body"]["name"]: p["expect"] for p in payloads}
-    rows = []
-    failures = 0
-    for run in resp.get("test_runs") or []:
-        name = run.get("test_name", "unknown")
-        slug = next((p["slug"] for p in payloads if p["body"]["name"] == name), name)
-        path = TRANSCRIPTS / f"k2-{slug}.json"
-        path.write_text(json.dumps(run, ensure_ascii=False, indent=2), encoding="utf-8")
-
-        text = transcript_text(run)
-        checks = expect.get(name, {})
-        missing = [m for m in checks.get("text", []) if m not in text]
-        forbidden = [f for f in checks.get("forbid", []) if f in text]
-        verdict = run.get("status")
-        if verdict != "passed" or missing or forbidden:
-            failures += 1
-        rows.append({
-            "name": name, "status": verdict, "file": str(path.relative_to(PROJECT_ROOT)),
-            "missing": missing, "forbidden_hits": forbidden,
-            "conditions": sum(1 for c in (run.get("success_conditions") or [])
-                              if (c.get("result") or c.get("passed")) is True),
-        })
-
-    summary = [f"# K2 — dowód symulacji ({date.today().isoformat()})", "",
-               f"Inwokacja: `{resp.get('id')}` · seed: `{json.dumps(seeds, ensure_ascii=False)}`", "",
-               "| test | status | warunki OK | brak w transkrypcie | zakazane frazy | plik |",
-               "|---|---|---|---|---|---|"]
-    for r in rows:
-        summary.append(f"| {r['name']} | {r['status']} | {r['conditions']} | "
-                       f"{', '.join(r['missing']) or '—'} | {', '.join(r['forbidden_hits']) or '—'} | "
-                       f"`{r['file']}` |")
-    (TRANSCRIPTS / "SUMMARY.md").write_text("\n".join(summary) + "\n", encoding="utf-8")
-    print(f"zapisano {len(rows)} transkryptów + SUMMARY.md w {TRANSCRIPTS}")
-    return failures
-
-
-def main(argv: Optional[List[str]] = None) -> int:
-    _utf8_stdout()
+# ── CLI: parsowanie, sprawdzenia wstępne, tryby ───────────────────────────
+def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="K2 evidence: live simulations + transcripts.")
     parser.add_argument("--agent-id", default=DEFAULT_AGENT)
     parser.add_argument("--branch-id", default=DEFAULT_BRANCH)
@@ -395,68 +247,46 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--skip-scenario3", action="store_true", help="pomiń scenariusz <2 h")
     parser.add_argument("--skip-tools-check", action="store_true",
                         help="nie sprawdzaj, czy hosty webhooków agenta odpowiadają")
-    args = parser.parse_args(argv)
+    return parser.parse_args(argv)
 
-    key = api_key(args.api_key)
-    el = ApiClient(API_BASE, key, timeout=CALL_TIMEOUT)
-    backend = ApiClient(args.backend, timeout=CALL_TIMEOUT)
 
-    ok, credits = whoami(el, hard=not (args.dry_run or args.check))
-    print(f"ElevenLabs: {credits}")
-    if not ok and args.dry_run:
-        print("(dry run: buduję payloady mimo braku kredytów, nic nie uruchamiam)")
-
-    status, health = backend.request_json("GET", "/health")
-    if status != 200:
-        print(f"Backend {args.backend} nie odpowiada (HTTP {status}). Uruchom mock_backend.")
+def _check_tools(key: str) -> Optional[int]:
+    """Kod wyjścia 2 gdy narzędzi brak albo hosty webhooków nie odpowiadają; None gdy OK."""
+    try:
+        report = tool_health(key)
+    except Exception as err:  # noqa: BLE001 - surface any API/network failure as config error
+        print(f"nie mogę sprawdzić narzędzi agenta: {err}")
         return 2
-    print(f"Backend: {json.dumps(health, ensure_ascii=False)}")
+    if not report:
+        print("agent nie ma narzędzi z URL-em webhooka — uruchom sync_agent_tools.py")
+        return 2
+    dead = []
+    for entry in report:
+        host_status = entry["status"]
+        host_ok = isinstance(host_status, int) and 200 <= host_status < 300
+        print(f"  webhooki @ {entry['base']}: {host_status} "
+              f"({len(entry['tools'])} narzędzi: {', '.join(entry['tools'])})")
+        if not host_ok:
+            dead.append(entry["base"])
+    if dead:
+        print("Martwy host webhooków: " + ", ".join(dead))
+        print("Uruchom tunel i przepnij narzędzia: "
+              "python mock_backend/tunnel/sync_agent_tools.py --base-url https://<tunel>")
+        return 2
+    return None
 
-    if not args.skip_tools_check:
-        try:
-            report = tool_health(key)
-        except Exception as err:  # noqa: BLE001 - surface any API/network failure as config error
-            print(f"nie mogę sprawdzić narzędzi agenta: {err}")
-            return 2
-        if not report:
-            print("agent nie ma narzędzi z URL-em webhooka — uruchom sync_agent_tools.py")
-            return 2
-        dead = []
-        for entry in report:
-            host_status = entry["status"]
-            host_ok = isinstance(host_status, int) and 200 <= host_status < 300
-            print(f"  webhooki @ {entry['base']}: {host_status} "
-                  f"({len(entry['tools'])} narzędzi: {', '.join(entry['tools'])})")
-            if not host_ok:
-                dead.append(entry["base"])
-        if dead:
-            print("Martwy host webhooków: " + ", ".join(dead))
-            print("Uruchom tunel i przepnij narzędzia: "
-                  "python mock_backend/tunnel/sync_agent_tools.py --base-url https://<tunel>")
-            return 2
 
-    if args.check:
-        status, _branch = el.request_json("GET", f"/v1/convai/agents/{args.agent_id}/branches/{args.branch_id}")
-        print(f"Branch {args.branch_id}: HTTP {status}")
-        return 0 if ok else 3
+def _print_dry_run(args: argparse.Namespace) -> int:
+    payloads = scenario_payloads(dry_run_seeds(date.today()))
+    if args.skip_scenario3:
+        payloads = [p for p in payloads if not p["slug"].startswith("03")]
+    print("\n--- dry run: payloady (bez seed, bez POST) ---")
+    print(json.dumps([p["body"] for p in payloads], ensure_ascii=False, indent=2))
+    print("--- koniec; nic nie utworzono, nic nie uruchomiono ---")
+    return 0
 
-    if args.dry_run:
-        seeds = {
-            "book": {"id": "SPA-0001", "date": (date.today() + timedelta(days=1)).isoformat(),
-                     "time": "11:00", "service": "masaż leczniczy pleców", "guest": "Piotr Zieliński"},
-            "cancel_free": {"id": "SPA-0002", "date": (date.today() + timedelta(days=2)).isoformat(),
-                            "time": "10:00", "service": "masaż leczniczy pleców", "guest": "Jan Kowalski"},
-            "cancel_fee": {"id": "SPA-0003", "date": date.today().isoformat(),
-                           "time": "16:00", "service": "kąpiel siarczkowa", "guest": "Maria Nowak"},
-        }
-        payloads = scenario_payloads(seeds)
-        if args.skip_scenario3:
-            payloads = [p for p in payloads if not p["slug"].startswith("03")]
-        print("\n--- dry run: payloady (bez seed, bez POST) ---")
-        print(json.dumps([p["body"] for p in payloads], ensure_ascii=False, indent=2))
-        print("--- koniec; nic nie utworzono, nic nie uruchomiono ---")
-        return 0
 
+def _run_simulations(el: ApiClient, backend: ApiClient, args: argparse.Namespace) -> int:
     if args.skip_scenario3:
         fee_slot = None
     else:
@@ -494,6 +324,42 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 1
     print("wszystkie symulacje przeszły")
     return 0
+
+
+def dispatch(args: argparse.Namespace) -> int:
+    key = api_key(args.api_key)
+    el = ApiClient(API_BASE, key, timeout=CALL_TIMEOUT)
+    backend = ApiClient(args.backend, timeout=CALL_TIMEOUT)
+
+    ok, credits = whoami(el, hard=not (args.dry_run or args.check))
+    print(f"ElevenLabs: {credits}")
+    if not ok and args.dry_run:
+        print("(dry run: buduję payloady mimo braku kredytów, nic nie uruchamiam)")
+
+    status, health = backend.request_json("GET", "/health")
+    if status != 200:
+        print(f"Backend {args.backend} nie odpowiada (HTTP {status}). Uruchom mock_backend.")
+        return 2
+    print(f"Backend: {json.dumps(health, ensure_ascii=False)}")
+
+    if not args.skip_tools_check:
+        code = _check_tools(key)
+        if code is not None:
+            return code
+
+    if args.check:
+        status, _branch = el.request_json("GET", f"/v1/convai/agents/{args.agent_id}/branches/{args.branch_id}")
+        print(f"Branch {args.branch_id}: HTTP {status}")
+        return 0 if ok else 3
+
+    if args.dry_run:
+        return _print_dry_run(args)
+    return _run_simulations(el, backend, args)
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    _utf8_stdout()
+    return dispatch(parse_args(argv))
 
 
 if __name__ == "__main__":

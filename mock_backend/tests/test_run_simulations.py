@@ -97,3 +97,10 @@ def test_transcript_text_flattens_agent_responses():
     text = rs.transcript_text(run)
     assert "50%" in text and "SPA-0003" in text
     assert json.loads(text.splitlines()[0])["role"] == "agent"
+
+
+def test_scenario_placeholders_are_all_filled():
+    for payload in rs.scenario_payloads(SEEDS):
+        texts = [payload["body"]["simulation_scenario"], *payload["body"]["success_conditions"],
+                 *payload["expect"]["text"], *payload["expect"]["forbid"]]
+        assert not [t for t in texts if "{" in t or "}" in t], payload["slug"]

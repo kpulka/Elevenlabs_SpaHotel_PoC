@@ -11,7 +11,8 @@ host and the affected procedures fail silently mid-call.
 
 This script rewrites those URLs. It resolves tools **by name** (never by a
 hardcoded tool id, so re-created tools keep working) and covers *all* seven spa
-tools, not just the five the old inline heredocs knew about.
+tools, not just the five the old inline heredocs knew about. The tool names, paths
+and body fields are data in ``tunnel/tool_schemas.py``.
 
 Modes
 -----
@@ -41,70 +42,18 @@ import json
 import re
 import sys
 import urllib.parse
-from typing import Any, Dict, List, Optional, Tuple
+from typing import List, Optional, Tuple
 
 try:  # uruchomienie jako skrypt: sys.path[0] == katalog tunnel/
+    import tool_schemas as ts
     from _http import ENV_LOCAL, ApiClient, ApiError, resolve_api_key
 except ImportError:  # import jako pakiet: `from tunnel import sync_agent_tools`
+    from tunnel import tool_schemas as ts
     from tunnel._http import ENV_LOCAL, ApiClient, ApiError, resolve_api_key
 
 DEFAULT_API_BASE = "https://api.elevenlabs.io"
 HTTP_TIMEOUT = 60.0
 HTTP_RETRIES = 1  # ponowienie tylko przy błędzie sieci (patrz _http.ApiClient)
-
-# Canonical tool name -> path on the mock backend (see mock_backend/main.py).
-# This map is the single source of truth for the demo: add a tool here once and
-# both tunnel scripts pick it up.
-TOOL_PATHS: Dict[str, str] = {
-    "check_spa_availability": "/check_spa_availability",
-    "book_spa_appointment": "/book_spa_appointment",
-    "check_room_availability": "/check_room_availability",
-    "send_sms_summary": "/send_sms_summary",
-    "transfer_to_simulated_handoff": "/transfer_to_simulated_handoff",
-    "cancel_spa_appointment": "/cancel_spa_appointment",
-    "reschedule_spa_appointment": "/reschedule_spa_appointment",
-}
-
-
-def _string_property(description: str, enum: Optional[List[str]] = None) -> Dict[str, Any]:
-    """Build a request-body property in the exact shape the API returns."""
-    return {
-        "type": "string",
-        "description": description,
-        "enum": enum,
-        "is_system_provided": False,
-        "dynamic_variable": "",
-        "allowed_values": None,
-        "allowed_values_dynamic_variable": "",
-        "constant_value": "",
-        "is_omitted": False,
-    }
-
-
-# Optional body properties the agent should send but currently does not.
-# Strictly additive: --ensure-schema only ever *adds* these keys and never
-# touches ``required``, never renames and never removes an existing property.
-SCHEMA_ADDITIONS: Dict[str, Dict[str, Dict[str, Any]]] = {
-    "cancel_spa_appointment": {
-        "appointment_datetime": _string_property(
-            "Scheduled treatment date and time, ISO 8601 with time "
-            "(e.g. 2026-11-09T18:30). Needed to apply the cancellation fee "
-            "rule: more than 2 hours before the appointment is free.",
-        ),
-    },
-    "send_sms_summary": {
-        "language": _string_property(
-            "Guest's language code (pl/en) so the SMS/Telegram summary uses the right language.",
-            enum=["pl", "en"],
-        ),
-    },
-    "transfer_to_simulated_handoff": {
-        "language": _string_property(
-            "Guest's language code (pl/en) so the handoff message uses the right language.",
-            enum=["pl", "en"],
-        ),
-    },
-}
 
 
 # ── endpoints (ApiClient z _http.py) ───────────────────────────────────────
@@ -147,39 +96,6 @@ def patch_tool(client: ApiClient, tool_id: str, tool_config: dict) -> Tuple[int,
 
 
 # ── helpers ────────────────────────────────────────────────────────────────
-def tool_name(tool: dict) -> str:
-    return str((tool.get("tool_config") or {}).get("name") or "")
-
-
-def tool_config_of(tool: dict) -> dict:
-    return tool.get("tool_config") or {}
-
-
-def api_schema_of(tool_config: dict) -> dict:
-    schema = tool_config.get("api_schema")
-    return schema if isinstance(schema, dict) else {}
-
-
-def body_schema_of(tool_config: dict) -> Optional[dict]:
-    body = api_schema_of(tool_config).get("request_body_schema")
-    return body if isinstance(body, dict) else None
-
-
-def body_fields(tool_config: dict) -> List[str]:
-    body = body_schema_of(tool_config) or {}
-    return list((body.get("properties") or {}).keys())
-
-
-def index_by_name(tools: List[dict]) -> Dict[str, dict]:
-    """name -> tool (first occurrence wins)."""
-    index: Dict[str, dict] = {}
-    for tool in tools:
-        name = tool_name(tool)
-        if name and name not in index:
-            index[name] = tool
-    return index
-
-
 def normalize_base_url(base_url: str) -> str:
     cleaned = base_url.strip().rstrip("/")
     if not cleaned:
@@ -201,7 +117,7 @@ def _print_table(rows: List[Tuple[str, ...]], headers: Tuple[str, ...]) -> None:
         print("  ".join(cell.ljust(widths[i]) for i, cell in enumerate(row)))
 
 
-def _assert_additive(before: Dict[str, Any], after: Dict[str, Any], label: str) -> None:
+def _assert_additive(before: dict, after: dict, label: str) -> None:
     """Guard: refuse to send a schema that drops or rewrites anything."""
     for key, value in before.items():
         if key not in after:
@@ -213,38 +129,30 @@ def _assert_additive(before: Dict[str, Any], after: Dict[str, Any], label: str) 
 # ── modes ──────────────────────────────────────────────────────────────────
 def run_list(client: ApiClient) -> int:
     tools = list_tools(client)
-    index = index_by_name(tools)
+    index = ts.index_by_name(tools)
 
     rows: List[Tuple[str, ...]] = []
-    for name in TOOL_PATHS:
+    for name in ts.TOOL_PATHS:
         tool = index.get(name)
         if tool is None:
             rows.append((name, "-", "(brak narzędzia w workspace)", "-"))
             continue
-        config = tool_config_of(tool)
+        config = ts.tool_config_of(tool)
         rows.append(
             (
                 name,
                 str(tool.get("id") or "?"),
-                str(api_schema_of(config).get("url") or "(brak URL)"),
-                ",".join(body_fields(config)) or "(brak body)",
+                str(ts.api_schema_of(config).get("url") or "(brak URL)"),
+                ",".join(ts.body_fields(config)) or "(brak body)",
             )
         )
     _print_table(rows, ("NARZĘDZIE", "ID", "URL", "POLA BODY"))
 
-    missing = [name for name in TOOL_PATHS if name not in index]
-    extra_schema: List[str] = []
-    for name, additions in SCHEMA_ADDITIONS.items():
-        tool = index.get(name)
-        if tool is None:
-            continue
-        fields = set(body_fields(tool_config_of(tool)))
-        gaps = [prop for prop in additions if prop not in fields]
-        if gaps:
-            extra_schema.append(f"{name}: {', '.join(gaps)}")
+    missing = [name for name in ts.TOOL_PATHS if name not in index]
+    extra_schema = ts.additions_gaps(index)
 
     print()
-    print(f"Narzędzi w workspace: {len(tools)}; oczekiwanych spa: {len(TOOL_PATHS)}")
+    print(f"Narzędzi w workspace: {len(tools)}; oczekiwanych spa: {len(ts.TOOL_PATHS)}")
     if missing:
         print("BRAKUJE: " + ", ".join(missing))
     else:
@@ -258,14 +166,14 @@ def run_list(client: ApiClient) -> int:
 
 def run_sync(client: ApiClient, base_url: str, dry_run: bool) -> int:
     base = normalize_base_url(base_url)
-    index = index_by_name(list_tools(client))
+    index = ts.index_by_name(list_tools(client))
 
     print(f"Synchronizacja webhooków -> {base}" + (" [DRY-RUN: bez zapisu]" if dry_run else ""))
     failures = 0
     changed = 0
 
-    for name in TOOL_PATHS:
-        target = f"{base}{TOOL_PATHS[name]}"
+    for name in ts.TOOL_PATHS:
+        target = f"{base}{ts.TOOL_PATHS[name]}"
         tool = index.get(name)
         if tool is None:
             print(f"  [FAIL] {name}: nie znaleziono narzędzia o tej nazwie")
@@ -273,8 +181,8 @@ def run_sync(client: ApiClient, base_url: str, dry_run: bool) -> int:
             continue
 
         tool_id = str(tool.get("id") or "")
-        config = tool_config_of(tool)
-        schema = api_schema_of(config)
+        config = ts.tool_config_of(tool)
+        schema = ts.api_schema_of(config)
         current = str(schema.get("url") or "")
 
         if current == target:
@@ -309,7 +217,7 @@ def run_sync(client: ApiClient, base_url: str, dry_run: bool) -> int:
 
 
 def run_ensure_schema(client: ApiClient, dry_run: bool) -> int:
-    index = index_by_name(list_tools(client))
+    index = ts.index_by_name(list_tools(client))
     print(
         "Uzupełnianie brakujących opcjonalnych pól body"
         + (" [DRY-RUN: bez zapisu]" if dry_run else "")
@@ -317,7 +225,7 @@ def run_ensure_schema(client: ApiClient, dry_run: bool) -> int:
     failures = 0
     changed = 0
 
-    for name, additions in SCHEMA_ADDITIONS.items():
+    for name, additions in ts.SCHEMA_ADDITIONS.items():
         tool = index.get(name)
         if tool is None:
             print(f"  [SKIP] {name}: brak narzędzia w workspace")
@@ -332,8 +240,8 @@ def run_ensure_schema(client: ApiClient, dry_run: bool) -> int:
             failures += 1
             continue
 
-        config = tool_config_of(tool)
-        body = body_schema_of(config)
+        config = ts.tool_config_of(tool)
+        body = ts.body_schema_of(config)
         if body is None:
             print(f"  [SKIP] {name}: brak request_body_schema (nie dotykam)")
             continue
@@ -367,7 +275,7 @@ def run_ensure_schema(client: ApiClient, dry_run: bool) -> int:
             continue
 
         body["properties"] = after
-        api_schema_of(config)["request_body_schema"] = body
+        ts.api_schema_of(config)["request_body_schema"] = body
         try:
             status, detail = patch_tool(client, tool_id, config)
         except ApiError as exc:
@@ -437,15 +345,11 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def main(argv: Optional[List[str]] = None) -> int:
-    try:  # emoji/diacritics must never crash a logon script
-        sys.stdout.reconfigure(errors="replace")  # type: ignore[attr-defined]
-        sys.stderr.reconfigure(errors="replace")  # type: ignore[attr-defined]
-    except (AttributeError, ValueError):
-        pass
+def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
+    return build_parser().parse_args(argv)
 
-    args = build_parser().parse_args(argv)
 
+def dispatch(args: argparse.Namespace) -> int:
     api_key = resolve_api_key(args.api_key)
     if not api_key:
         print(
@@ -478,6 +382,15 @@ def main(argv: Optional[List[str]] = None) -> int:
     except ApiError as exc:
         print(f"BŁĄD API: {exc}", file=sys.stderr)
         return 1
+
+
+def main(argv: Optional[List[str]] = None) -> int:
+    try:  # emoji/diacritics must never crash a logon script
+        sys.stdout.reconfigure(errors="replace")  # type: ignore[attr-defined]
+        sys.stderr.reconfigure(errors="replace")  # type: ignore[attr-defined]
+    except (AttributeError, ValueError):
+        pass
+    return dispatch(parse_args(argv))
 
 
 if __name__ == "__main__":
