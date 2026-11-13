@@ -7,6 +7,7 @@ Jedyny stan zmieniany tutaj to kalendarz w ``SPA_STORE`` (zajmij / zwolnij).
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
@@ -98,18 +99,20 @@ def _w_przeszlosci(data_iso: str) -> bool:
     return date.fromisoformat(data_iso) < SPA_STORE.dzisiaj
 
 
-def _nazwy(uslugi) -> tuple[str, ...]:
+def _nazwy(uslugi: Iterable[Usluga]) -> tuple[str, ...]:
     return tuple(usluga.nazwa for usluga in uslugi)
 
 
 def sprawdz_dostepnosc(zapytanie: str, data_iso: str) -> Dostepnosc:
     wynik = znajdz_zabieg(zapytanie)
-    if not wynik.dopasowano:
+    # `usluga is None` zawęża typ dla mypy; `dopasowano` implikuje `usluga is not None`,
+    # więc warunek jest równoważny samemu `not wynik.dopasowano`.
+    usluga = wynik.usluga
+    if usluga is None or not wynik.dopasowano:
         if wynik.status == "niejednoznaczne":
             return Dostepnosc(None, wynik.status, Powod.NIEJEDNOZNACZNY, kandydaci=_nazwy(wynik.kandydaci))
         return Dostepnosc(None, wynik.status, Powod.NIEZNANY)
 
-    usluga = wynik.usluga
     if _w_przeszlosci(data_iso):
         return Dostepnosc(usluga, wynik.status, Powod.PRZESZLOSC)
     if not SPA_STORE.w_oknie(data_iso):
@@ -127,12 +130,12 @@ def sprawdz_dostepnosc(zapytanie: str, data_iso: str) -> Dostepnosc:
 
 def zarezerwuj(zapytanie: str, data_iso: str, godzina: str, gosc: str) -> Odmowa | Potwierdzenie:
     wynik = znajdz_zabieg(zapytanie)
-    if not wynik.dopasowano:
+    usluga = wynik.usluga  # zawężenie typu: patrz sprawdz_dostepnosc
+    if usluga is None or not wynik.dopasowano:
         if wynik.status == "niejednoznaczne":
             return Odmowa(Powod.NIEJEDNOZNACZNY, kandydaci=_nazwy(wynik.kandydaci))
         return Odmowa(Powod.NIEZNANY)
 
-    usluga = wynik.usluga
     if _w_przeszlosci(data_iso):
         return Odmowa(Powod.PRZESZLOSC, usluga)
     if not SPA_STORE.w_oknie(data_iso):
@@ -210,7 +213,7 @@ def przenies_rezerwacje(
     zapytanie: str,
     nowa_data: str,
     nowa_godzina: str,
-    gosc: str,
+    gosc: str | None,  # None (brak w zapytaniu) -> zostaje gość z poprzedniej rezerwacji
 ) -> Odmowa | Przeniesienie:
     """Stary slot wraca do puli, nowy zostaje zajęty. Przy błędzie zapisu stary slot jest przywracany."""
     stara = SPA_STORE.rezerwacja(numer)
@@ -218,12 +221,12 @@ def przenies_rezerwacje(
         return Odmowa(Powod.NIE_ZNALEZIONO)
 
     wynik = znajdz_zabieg(zapytanie)
-    if not wynik.dopasowano:
+    usluga = wynik.usluga  # zawężenie typu: patrz sprawdz_dostepnosc
+    if usluga is None or not wynik.dopasowano:
         if wynik.status == "niejednoznaczne":
             return Odmowa(Powod.NIEJEDNOZNACZNY, kandydaci=_nazwy(wynik.kandydaci), stara=stara)
         return Odmowa(Powod.NIEZNANY, stara=stara)
 
-    usluga = wynik.usluga
     if _w_przeszlosci(nowa_data):
         return Odmowa(Powod.PRZESZLOSC, usluga, stara=stara)
     if not SPA_STORE.w_oknie(nowa_data):

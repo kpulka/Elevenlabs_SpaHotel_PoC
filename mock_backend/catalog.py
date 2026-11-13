@@ -131,11 +131,11 @@ def dopasuj(uslugi: Sequence[Usluga], zapytanie: str) -> WynikDopasowania:
         for usluga in uslugi
         if any(zapytanie_norm == normalizuj(alias) for alias in usluga.aliasy)
     ]
-    aliasowe = _unikalne(aliasowe)
-    if len(aliasowe) == 1:
-        return WynikDopasowania(status="dopasowano", usluga=aliasowe[0])
-    if len(aliasowe) > 1:
-        return WynikDopasowania(status="niejednoznaczne", kandydaci=aliasowe)
+    unikalne_aliasy = _unikalne(aliasowe)
+    if len(unikalne_aliasy) == 1:
+        return WynikDopasowania(status="dopasowano", usluga=unikalne_aliasy[0])
+    if len(unikalne_aliasy) > 1:
+        return WynikDopasowania(status="niejednoznaczne", kandydaci=unikalne_aliasy)
 
     podciagi = _unikalne(
         usluga

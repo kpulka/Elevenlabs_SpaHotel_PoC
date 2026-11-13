@@ -221,9 +221,11 @@ def _zakresy_dat(daty: Sequence[str]) -> list[str]:
     """Skleja kolejne dni w zakresy: ['2026-12-28','2026-12-29'] → ['28-29.12.2026']."""
     dni = sorted(date.fromisoformat(wpis) for wpis in daty)
     zakresy: list[str] = []
-    poczatek = poprzedni = None
+    # poczatek i poprzedni zawsze ustawiane razem; testy na obu tylko zawężają typ.
+    poczatek: date | None = None
+    poprzedni: date | None = None
     for dzien in dni:
-        if poczatek is None:
+        if poczatek is None or poprzedni is None:
             poczatek = poprzedni = dzien
             continue
         if (dzien - poprzedni).days == 1:
@@ -231,7 +233,7 @@ def _zakresy_dat(daty: Sequence[str]) -> list[str]:
             continue
         zakresy.append(_formatuj_zakres(poczatek, poprzedni))
         poczatek = poprzedni = dzien
-    if poczatek is not None:
+    if poczatek is not None and poprzedni is not None:
         zakresy.append(_formatuj_zakres(poczatek, poprzedni))
     return zakresy
 

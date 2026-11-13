@@ -38,6 +38,7 @@ from the autostart-on-logon script.
 from __future__ import annotations
 
 import argparse
+import io
 import json
 import re
 import sys
@@ -386,9 +387,12 @@ def dispatch(args: argparse.Namespace) -> int:
 
 def main(argv: Optional[List[str]] = None) -> int:
     try:  # emoji/diacritics must never crash a logon script
-        sys.stdout.reconfigure(errors="replace")  # type: ignore[attr-defined]
-        sys.stderr.reconfigure(errors="replace")  # type: ignore[attr-defined]
-    except (AttributeError, ValueError):
+        # isinstance zamiast `type: ignore`: typeshed daje sys.stdout typ TextIO, a reconfigure jest
+        # tylko na TextIOWrapper (to CPython daje w konsoli i w pipe).
+        for stream in (sys.stdout, sys.stderr):
+            if isinstance(stream, io.TextIOWrapper):
+                stream.reconfigure(errors="replace")
+    except ValueError:
         pass
     return dispatch(parse_args(argv))
 

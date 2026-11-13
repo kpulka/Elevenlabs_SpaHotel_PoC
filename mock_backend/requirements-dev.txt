@@ -2,3 +2,5 @@
 -r requirements.txt
 
 pytest==9.0.3
+# Bramka typów (mock_backend/mypy.ini). Wersja przypięta jak ruff w CI.
+mypy==2.4.1

@@ -125,8 +125,10 @@ def _sync_module() -> Any:
 
         path = Path(__file__).with_name("sync_agent_tools.py")
         spec = importlib.util.spec_from_file_location("anna_sync_agent_tools", path)
+        if spec is None or spec.loader is None:  # dla pliku .py zawsze jest; zawęża typ dla mypy
+            raise ImportError(f"nie mogę załadować {path}")
         module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)  # type: ignore[union-attr]
+        spec.loader.exec_module(module)
         return module
 
 
@@ -157,6 +159,7 @@ def tool_health(key: str, timeout: int = 20) -> List[Dict[str, Any]]:
         raise SystemExit("brakujące narzędzia agenta: " + ", ".join(missing))
     report = []
     for base, names in bases.items():
+        status: int | str  # kod HTTP albo tekst błędu (gałąź except)
         try:
             status, _ = ApiClient(base, timeout=timeout).request_json("GET", "/health")
         except Exception as err:  # noqa: BLE001 - DNS/timeout means a dead host
@@ -297,7 +300,8 @@ def _run_simulations(el: ApiClient, backend: ApiClient, args: argparse.Namespace
             return 2
         print(f"Scenariusz <2 h: dzisiejszy slot {fee_slot}")
 
-    seeds = {
+    # Wartości są Optional tylko do pętli niżej, która kończy się przy pierwszym None.
+    seeds: dict[str, Any] = {
         "book": seed(backend, 1, "masaż leczniczy pleców", None, "Piotr Zieliński"),
         "cancel_free": seed(backend, 2, "masaż leczniczy pleców", None, "Jan Kowalski"),
         "cancel_fee": seed(backend, 0, "kąpiel siarczkowa", fee_slot, "Maria Nowak") if fee_slot else None,
