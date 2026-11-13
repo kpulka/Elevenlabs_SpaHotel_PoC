@@ -6,6 +6,7 @@ import { useState } from 'react'
 
 import { HotelButton } from '@/components/hotel-button'
 import { LanguageSwitcher } from '@/components/language-switcher'
+import { Container } from '@/components/section'
 import { useLanguage } from '@/context/language-context'
 import { contactInfo } from '@/lib/hotel'
 import { getNavItems } from '@/lib/navigation'
@@ -18,7 +19,7 @@ export function SiteHeader() {
 
   return (
     <header className="sticky top-0 z-50 bg-navy">
-      <div className="mx-auto flex max-w-[1280px] items-center justify-between gap-4 px-4 py-3 md:px-8">
+      <Container className="flex items-center justify-between gap-4 py-3">
         <Link href="/" className="flex items-center gap-2" onClick={() => setOpen(false)}>
           <span className="font-serif text-2xl font-bold tracking-wide text-white">
             Bukowy Dwór
@@ -74,7 +75,7 @@ export function SiteHeader() {
             {open ? <X className="size-6" aria-hidden="true" /> : <Menu className="size-6" aria-hidden="true" />}
           </button>
         </div>
-      </div>
+      </Container>
 
       {open && (
         <div

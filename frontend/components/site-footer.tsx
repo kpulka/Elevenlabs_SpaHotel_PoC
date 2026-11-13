@@ -3,6 +3,7 @@
 import { Globe, Mail, MapPin, Phone, Share2 } from 'lucide-react'
 import Link from 'next/link'
 
+import { Container } from '@/components/section'
 import { useLanguage } from '@/context/language-context'
 import { contactInfo } from '@/lib/hotel'
 import { getNavItems } from '@/lib/navigation'
@@ -14,7 +15,7 @@ export function SiteFooter() {
 
   return (
     <footer className="bg-navy text-white">
-      <div className="mx-auto grid max-w-[1280px] gap-10 px-4 py-16 md:grid-cols-2 md:px-8 lg:grid-cols-4">
+      <Container className="grid gap-10 py-16 md:grid-cols-2 lg:grid-cols-4">
         <div>
           <span className="font-serif text-2xl font-bold">Bukowy Dwór</span>
           <p className="mt-4 max-w-xs text-base leading-relaxed text-white/80">
@@ -94,10 +95,10 @@ export function SiteFooter() {
             {t.footer.annaBadge}
           </div>
         </div>
-      </div>
+      </Container>
 
       <div className="border-t border-white/10">
-        <div className="mx-auto flex max-w-[1280px] flex-col gap-2 px-4 py-6 text-sm text-white/60 md:flex-row md:items-center md:justify-between md:px-8">
+        <Container className="flex flex-col gap-2 py-6 text-sm text-white/60 md:flex-row md:items-center md:justify-between">
           <p>&copy; 2026 Bukowy Dwór. {t.footer.rights}</p>
           <div className="flex gap-4">
             <Link href="#" className="outline-none hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
@@ -107,7 +108,7 @@ export function SiteFooter() {
               GDPR / RODO
             </Link>
           </div>
-        </div>
+        </Container>
       </div>
     </footer>
   )

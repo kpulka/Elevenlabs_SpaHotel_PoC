@@ -1,6 +1,8 @@
 'use client'
 
 import { Mic } from 'lucide-react'
+
+import { Container } from '@/components/section'
 import { useLanguage } from '@/context/language-context'
 
 export function AnnaInlineBanner() {
@@ -11,7 +13,7 @@ export function AnnaInlineBanner() {
       aria-label={t.anna.bannerTitle}
       className="border-y border-gold/30 bg-warm-white py-6"
     >
-      <div className="mx-auto flex max-w-[1280px] flex-col items-center justify-between gap-4 px-4 sm:flex-row md:px-8">
+      <Container className="flex flex-col items-center justify-between gap-4 sm:flex-row">
         <div className="flex items-center gap-4 text-center sm:text-left">
           <span className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gold/20 text-navy">
             <Mic className="size-6 text-gold" aria-hidden="true" />
@@ -33,7 +35,7 @@ export function AnnaInlineBanner() {
           <Mic className="size-4 text-gold" aria-hidden="true" />
           {t.anna.bannerButton}
         </button>
-      </div>
+      </Container>
     </aside>
   )
 }
