@@ -130,6 +130,11 @@ jobs:
         working-directory: frontend
         run: pnpm typecheck
 
+      # ESLint z eslint-config-next, tylko błędy (skrypt lint używa --quiet).
+      - name: Lint (ESLint)
+        working-directory: frontend
+        run: pnpm lint
+
       - name: Unit tests (Vitest)
         working-directory: frontend
         run: pnpm test
