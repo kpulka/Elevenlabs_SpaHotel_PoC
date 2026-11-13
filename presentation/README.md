@@ -6,19 +6,33 @@ Osobny deliverable: prezentacja case study „Wirtualny Recepcjonista AI — Buk
 - Online: [kpulka.github.io/Elevenlabs_SpaHotel_PoC](https://kpulka.github.io/Elevenlabs_SpaHotel_PoC/) — strona-wejście `index.html` z linkami do obu decków (GitHub Pages z tego katalogu, `.github/workflows/pages.yml`).
 - `prezentacja.html` — wersja PL decku w przeglądarce, bez zależności (to pokazujesz na rozmowie). EN: `presentation_en.html`.
 - `Bukowy_Dwor_Case_Study.pptx` / `Bukowy_Dwor_Case_Study_EN.pptx` — te same slajdy do edycji w PowerPoint/Google Slides.
-- `deck_spec.json` / `deck_spec_en.json` — specyfikacja slajdów (layout, teksty, notatki prelegenta). To źródło treści, nie do prezentowania.
-- `verify_deck.py` — bramka liczb: arytmetyka planów, kanoniczne i wycofane figury we wszystkich artefaktach, 14 slajdów w obu PPTX. Bez zależności (PPTX czytany jako zip); uruchamiany w CI jako job `docs`.
+- `content_pl.json` / `content_en.json` — **kanon treści decku** (teksty, tabele, notatki prelegenta; 69 kluczy, identyczne struktury w obu językach). To z nich generator buduje PPTX.
+- `slides/` — układ: kolory, funkcje slajdów `slide_01_title` … `slide_14_qa`, lista `SLIDES` w kolejności.
+- `deck_spec.json` / `deck_spec_en.json` — **historyczne, nieużywane przez generator**. Zostają, bo `verify_deck.py` je sprawdza (liczby). Nie są źródłem treści (patrz rozjazdy niżej).
+- `verify_deck.py` — bramka liczb: arytmetyka planów, kanoniczne i wycofane figury we wszystkich artefaktach, 14 slajdów w obu PPTX, parytet kluczy `content_pl/en.json`. Bez zależności (PPTX czytany jako zip); uruchamiany w CI jako job `docs`.
 
-**`generate_deck.py`** — generuje **oba** decki PPTX (PL i EN) z jednego wspólnego layoutu przez `python-pptx`. Teksty per język siedzą w słowniku `TEXTS`, grafiki skrypt bierze z `assets/`, slajdy są 16:9 w palecie navy/gold/cream. Uruchomienie:
+**`generate_deck.py`** — generuje **oba** decki PPTX (PL i EN) z jednego wspólnego układu przez `python-pptx`. Treść czyta z `content_pl.json` / `content_en.json`, układ (kolory, slajdy) jest w `slides/`, grafiki z `assets/`. Slajdy są 16:9 w palecie navy/gold/cream. Uruchomienie:
 
 ```
 pip install python-pptx
 python presentation/generate_deck.py             # PL  → Bukowy_Dwor_Case_Study.pptx
 python presentation/generate_deck.py --lang en   # EN  → Bukowy_Dwor_Case_Study_EN.pptx
 python presentation/generate_deck.py --lang all  # oba
+python presentation/generate_deck.py --lang all --out-dir DIR   # poza repo, np. do porównania
 ```
 
-Uwaga: oba HTML-e (`prezentacja.html`, `presentation_en.html`) nie mają generatora w repo — utrzymywane ręcznie, niezależnie od `TEXTS` w `generate_deck.py`. Kanonem treści decku jest `TEXTS`; HTML-e są osobną powierzchnią i trzeba je uzgadniać ręcznie (wcześniej `presentation_en.html` uchodził za źródło EN, choć generator go nie czyta — stąd cichy rozjazd liczb). Różnice wyłapuje `verify_deck.py`.
+**Źródło vs widok (świadoma decyzja):**
+- Źródłem treści PPTX są `content_*.json` (kanon). Zmiana tekstu slajdu = edycja JSON-a, potem regeneracja.
+- `prezentacja.html` i `presentation_en.html` to **ręczne widoki** — nie ma dla nich generatora. Trzeba je uzgadniać z JSON-em ręcznie; spójność liczb pilnuje `verify_deck.py`.
+- `deck_spec*.json` to **historyczna, inna wersja treści**, nieużywana przez generator. Nie edytować jako źródła.
+
+**Rozjazdy z audytu (M5, 2026-11-13)** — `deck_spec*.json` vs `content_*.json`: z 131 stringów PL tylko 8 pasuje dosłownie (EN: 8 z 130). Najważniejsze różnice merytoryczne, których `content_*.json` nie ma:
+- PL: podtytuł „Chętnie pogłębię swój token" (błąd językowy na slajdzie Pytania); „dostępny 8h/dobę".
+- EN: „Sub-500ms" (kanon: ~430 ms); „Frankfurt / Dublin"; „15-min TTL"; „RFC 7433"; „Opera Cloud / Mews" (kanon: Opera/KWHotel); „Quick Reply Chips (PL, EN, DE, UK, ES)" (kanon: 6 opcji, DE/EN/UA).
+- Kolejność: w `deck_spec*.json` demo jest przed kanałami (slajdy 8/9); w PPTX jest odwrotnie.
+- Layouty i ścieżki obrazów w JSON-ie (`D:/Projects/...`) nie mają odpowiednika w generatorze.
+
+Różnice tez (np. Frankfurt, TTL, RFC) wymagają decyzji właściciela treści, zanim trafią do kanonu.
 
 > **Stan liczb (2026-11-10):** decki, HTML-e, `deck_spec*.json` i `docs/business-case.md` mają jedną wspólną arytmetykę — $22 / 275 min i $299 / 3 738 min, czyli **$0,08/min**; $22 ≈ 3,5 h pracy recepcjonisty (25 PLN/h); 3 rezerwacje pokoju w nocy (3 × 500 PLN ≈ $375) pokrywają plan Scale ($299). Kurs 4,0 PLN/USD jest zapisany w notatkach prelegenta. Poprzednia wersja miała `~$0.027/min` (299 ÷ 3 738 = 0,08), „2 × 500 PLN pokrywa Scale" (pokrywało $250, nie $299) oraz „5 rezerwacji × $400–800 = $2 000–4 000 w 60 dni", na co repo nie ma danych. Przyczyna rozjazdu: HTML-e są utrzymywane ręcznie, a `presentation_en.html` był źródłem treści EN dla generatora.
 >

@@ -17,6 +17,8 @@ What it checks
 2. Every "presentation surface" (both PPTX decks, both HTML decks, both spec files, the
    business case) carries the canonical figures and none of the retracted ones.
 3. Both PPTX files still have 14 slides.
+4. Content parity: ``content_pl.json`` and ``content_en.json`` (the source of the generator)
+   have the same keys, the same value types and the same list lengths.
 
 Standard library only (a .pptx is a zip), so CI needs no python-pptx. Slides are read by
 concatenating the ``<a:t>`` runs of each paragraph, which survives text split across runs.
@@ -31,11 +33,16 @@ Run:
 
 from __future__ import annotations
 
+import json
 import re
 import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+CONTENT = {
+    "pl": ROOT / "presentation" / "content_pl.json",
+    "en": ROOT / "presentation" / "content_en.json",
+}
 
 SLIDE_COUNT = 14
 CREATOR_COST, CREATOR_MINUTES = 22.0, 275.0
@@ -99,6 +106,30 @@ def pptx_text(path: Path) -> tuple[str, int]:
     return "\n".join(chunks), slides
 
 
+def shape_of(value) -> object:
+    """Structure of a content value: type per key, list length per list (not the text)."""
+    if isinstance(value, dict):
+        return {k: shape_of(v) for k, v in value.items()}
+    if isinstance(value, list):
+        return ("list", len(value), [shape_of(v) for v in value])
+    return type(value).__name__
+
+
+def content_parity_failures() -> list[str]:
+    docs = {lang: json.loads(path.read_text(encoding="utf-8-sig")) for lang, path in CONTENT.items()}
+    pl, en = docs["pl"], docs["en"]
+    failures: list[str] = []
+    only_pl = sorted(set(pl) - set(en))
+    only_en = sorted(set(en) - set(pl))
+    if only_pl or only_en:
+        failures.append(f"content: klucze tylko w PL {only_pl}, tylko w EN {only_en}")
+    for key in sorted(set(pl) & set(en)):
+        if shape_of(pl[key]) != shape_of(en[key]):
+            failures.append(f"content: {key!r} ma inny kształt (typ / długość listy) w PL i EN")
+    print(f"  content pl/en  {len(pl)} / {len(en)} kluczy")
+    return failures
+
+
 def surface_text(key: str, path: Path) -> tuple[str, int | None]:
     if path.suffix == ".pptx":
         return pptx_text(path)
@@ -140,6 +171,9 @@ def main() -> int:
             if needle in text:
                 failures.append(f"{key}: wciąż zawiera wycofaną liczbę {needle!r}")
         print(f"  {key:14} {len(text):6} znaków" + (f", {slides} slajdów" if slides else ""))
+
+    # 3. The generator's content source: PL and EN must describe the same deck.
+    failures.extend(content_parity_failures())
 
     print(f"\nkurs: {CREATOR_COST:.0f}/{CREATOR_MINUTES:.0f} = {rate_creator:.3f} "
           f"| {SCALE_COST:.0f}/{SCALE_MINUTES:.0f} = {rate_scale:.3f} -> ${published_rate:.2f}/min")

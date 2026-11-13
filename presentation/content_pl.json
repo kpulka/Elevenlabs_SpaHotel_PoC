@@ -1,0 +1,232 @@
+{
+  "file": "Bukowy_Dwor_Case_Study.pptx",
+  "s1_title": "Wirtualny Recepcjonista AI",
+  "s1_sub": "Uzdrowisko Termalne „Bukowy Dwór” × ElevenLabs",
+  "s1_tagline": "\nWdrożenie natywnego agenta konwersacyjnego dla wymagającej grupy seniorów 60+ w sieci resortów SPA.",
+  "s1_badge": "Etap V1 & V2: Case Study, Product Design & System Architecture | 2026",
+  "s1_notes": "Zacznij od 30 sekund kontekstu biznesowego: dlaczego uzdrowisko i dlaczego seniorzy, zanim wejdziesz w technikę.",
+  "s2_title": "Senior czeka. Recepcja nie odbiera.",
+  "s2_cat": "WYZWANIE BIZNESOWE",
+  "s2_cards": [
+    [
+      "60–70% Gości to Seniorzy",
+      "Grupa 60+ preferuje tradycyjny kontakt telefoniczny ponad aplikacje i formularze webowe.",
+      "📞"
+    ],
+    [
+      "Szczyt Ruchu = Utracone Połączenia",
+      "Kumulacja telefonów w godzinach 8:00–10:00 i 16:00–18:00 generuje zajęte linie i frustrację.",
+      "⏰"
+    ],
+    [
+      "Utracony Przychód ze SPA",
+      "Niedoczekany telefon to brak rezerwacji zabiegu (80–160 PLN) lub pokoju (350–750 PLN).",
+      "💰"
+    ],
+    [
+      "Brak Proaktywności Recepcji",
+      "Personel jest przeciążony meldowaniem i nie wykonuje telefonów outbound przed przyjazdem.",
+      "👥"
+    ]
+  ],
+  "s2_notes": "To slajd o problemie biznesowym. Zanim powiesz jak to rozwiązałeś — zapytaj rekrutera, jakie mają pytania do problemu.",
+  "s3_title": "Kto dzwoni? Pani Zofia, 72 lata.",
+  "s3_cat": "USER PERSONA & EMPATHY",
+  "s3_points": [
+    [
+      "Profil i Mowa:",
+      "Mówi spokojnie, robi naturalne pauzy w środku zdania, zastanawia się nad odpowiedziami."
+    ],
+    [
+      "Bariery Pamięciowe:",
+      "Nie pamięta nazw medycznych zabiegów — pyta o „ten masaż co pomaga na lędźwie”."
+    ],
+    [
+      "Niska Tolerancja na Błędy:",
+      "Gdy bot wchodzi w słowo lub nie rozumie 2 razy — senior natychmiast odkłada słuchawkę."
+    ],
+    [
+      "Potrzeba Potwierdzenia:",
+      "Oczekuje przejrzystego SMS-a z podsumowaniem, często z prośbą o wysyłkę do córki."
+    ],
+    [
+      "Wniosek Projektowy:",
+      "Każdy parametr techniczny (timeout 3s, tempo 0.85x, parafrazowanie) wynika wprost z tej persony."
+    ]
+  ],
+  "s3_notes": "Podkreśl: to nie jest abstrakcyjna persona. To prototyp pacjenta sanatoryjnego w Polsce.",
+  "s4_title": "Natywna pętla konwersacyjna ElevenLabs",
+  "s4_cat": "SYSTEM ARCHITECTURE (HIGH LEVEL)",
+  "s4_panel_title": "Pojedynczy silnik vs Kaskada",
+  "s4_panel_body": "\n• Zintegrowana pętla: STT + LLM + TTS w jednym kanale WebRTC/SIP\n\n• Czas reakcji: ~430 ms zamiast >2.0s w klasycznym kaskadowym backendzie\n\n• Strict Grounding: Odpowiedzi wyłącznie w oparciu o 5 plików RAG\n\n• Tool Calling: Natywne webhooki do systemu hotelowego PMS\n\n• Deterministic Handoff: Przełączanie na recepcję w razie wątpliwości",
+  "s4_notes": "Dlaczego natywny ElevenLabs? Eliminacja latencji. Kaskada 3 osobnych serwisów gubi seniora przez 2-sekundową ciszę.",
+  "s5_title": "3 kluczowe decyzje architektoniczne",
+  "s5_cat": "STRATEGIC TRADE-OFFS",
+  "s5_decisions": [
+    [
+      "1. Natywny Agent (vs Custom LLM)",
+      "Kaskadowy pipeline (STT -> zewnętrzny LLM -> TTS) generuje ponad 2s opóźnienia. Natywna pętla ElevenLabs schodzi do ~430ms. Dla seniora każda sekunda ciszy to utrata zaufania."
+    ],
+    [
+      "2. Eleven v3 (vs Flash 75ms)",
+      "Flash jest ultra-szybki, ale brzmi technicznie. Eleven v3 Conversational (280ms) oferuje ciepło, intonację i empatię. Dla gościa 70+ naturalność głosu jest ważniejsza niż 100ms."
+    ],
+    [
+      "3. UX Parametry: 3.0s & Patient",
+      "Domyślny timeout 1.2s powoduje wchodzenie w słowo, gdy senior bierze oddech. Ustawienie turn_timeout: 3.0s, turn_eagerness: Patient i speed: 0.85x eliminuje stres."
+    ]
+  ],
+  "s5_notes": "Podkreśl, że jesteś świadom kosztu i trade-offów: wiesz kiedy wybrać Flash, a dlaczego w sanatorium wygrywa v3.",
+  "s6_title": "Baza Wiedzy (RAG) i Strict Grounding",
+  "s6_cat": "KNOWLEDGE BASE & ZERO HALUCYNACJI",
+  "s6_left_title": "Struktura 5 Plików Markdown",
+  "s6_left_body": "\n• 01_dojazd.md — parking, meleks, brak barier\n• 02_katalog_spa.md — 7 zabiegów i baseny\n• 03_pokoje_i_cennik.md — 3 typy pokoi\n• 04_restauracja.md — diety cukrzycowa, lekkostrawna\n• 05_procedury.md — regulamin i bezpieczeństwo\n\nPodział trybów RAG:\n• Prompt Mode (w kontekście): cennik + procedury\n• Auto Mode (semantic search): opisy i dojazd",
+  "s6_right_title": "Protokół Medyczny i Bezpieczeństwo",
+  "s6_right_body": "\n• Strict Grounding:\nBrak informacji w bazie = natychmiastowe przekazanie do recepcji. Zakaz zgadywania cen i terminów.\n\n• Wywiad Balneologiczny:\nPrzed zapisem na kąpiel siarczkową lub borowinową agent pyta o przeciwwskazania sercowo-naczyniowe.\n\n• Natychmiastowa Eskalacja:\nSymptomy awaryjne (ból w klatce, duszność) uruchamiają transfer do dyżurki medycznej.",
+  "s6_notes": "W sanatorium błąd w cenie to problem handlowy, ale halucynacja o zabiegu to zagrożenie zdrowotne.",
+  "s7_title": "Anna nie tylko rozmawia — działa w systemie PMS",
+  "s7_cat": "TOOL CALLING & INTEGRACJA",
+  "s7_headers": [
+    "Narzędzie (Function)",
+    "Rola Biznesowa / Przepływ",
+    "Typ Integracji"
+  ],
+  "s7_rows": [
+    [
+      "check_spa_availability",
+      "Weryfikacja wolnych slotów na zabiegi w kalendarzu",
+      "POST Webhook (FastAPI/PMS)"
+    ],
+    [
+      "book_spa_appointment",
+      "Zapis gościa na zabieg, wygenerowanie ID (np. SPA-4821)",
+      "POST Webhook (FastAPI/PMS)"
+    ],
+    [
+      "cancel_spa_appointment",
+      "Anulowanie zabiegu (bezpłatnie >2 h, 50% <2 h, 0% przy zwolnieniu medycznym)",
+      "POST Webhook (FastAPI/PMS)"
+    ],
+    [
+      "reschedule_spa_appointment",
+      "Zmiana terminu zabiegu (bezpłatna, nowy kod SPA)",
+      "POST Webhook (FastAPI/PMS)"
+    ],
+    [
+      "check_room_availability",
+      "Sprawdzenie terminów pokoi i kalkulacja ceny pobytu",
+      "POST Webhook (FastAPI/PMS)"
+    ],
+    [
+      "send_sms_summary",
+      "Wysyłka SMS / Telegram z numerem rezerwacji i wskazówkami",
+      "POST Webhook (Bramka SMS)"
+    ],
+    [
+      "transfer_to_simulated_handoff",
+      "Przekazanie do recepcji / dyżurki (log + alert Telegram)",
+      "POST Webhook (handoff symulowany — brak SIP)"
+    ]
+  ],
+  "s7_notes": "Zwróć uwagę, że handoff do człowieka jest w PoC symulowany webhookiem (log + alert Telegram), bo nie ma telefonii/SIP — docelowo zastąpi go natywne SIP REFER.",
+  "s8_title": "Dwa kanały, jeden zunifikowany asystent",
+  "s8_cat": "OMNICHANNEL DEPLOYMENT",
+  "s8_ch1_title": "Kanał 1: Tradycyjna Telefonia (SIP Trunk) — ścieżka docelowa",
+  "s8_ch1_body": "• Ten sam agent i prompt po podpięciu SIP Trunk (Faza II — telefonii nie ma w PoC)\n• Bezpośredni numer do recepcji hotelu\n• Dostępność 24/7 bez oczekiwania w kolejce\n• Turn timeout 3.0s, parafrazowanie ustaleń, wysyłka SMS po zakończeniu\n",
+  "s8_ch2_title": "Kanał 2: Interaktywny Widget Webowy na Stronie Hotelu",
+  "s8_ch2_body": "• Quick Reply Chips: Szybki wybór języka (6 opcji) i tematów rozmowy\n• Live Transkrypcja: Wizualne śledzenie rozmowy w czasie rzeczywistym\n• Karta Sukcesu: Natychmiastowe potwierdzenie rezerwacji z opcją wysyłki do opiekuna\n• Signed URL: 15-minutowy bezpieczny token WebSocket bez ekspozycji API key",
+  "s8_notes": "W PoC agent działa wyłącznie jako widget webowy; kanał telefoniczny przez SIP Trunk to ścieżka docelowa — ta sama konfiguracja agenta.",
+  "s9_title": "Demo: 3 ścieżki walidacji",
+  "s9_cat": "LIVE SCENARIOS",
+  "s9_scenarios": [
+    [
+      "Ścieżka A: Rezerwacja Zabiegu SPA (Happy Path)",
+      "Gość pyta o masaż leczniczy -> Anna sprawdza kalendarz -> proponuje 14:30 -> parafrazuje dane -> potwierdza rezerwację SPA-4821 -> wysyła SMS."
+    ],
+    [
+      "Ścieżka B: Zapytanie Informacyjne z RAG",
+      "Pytanie o godziny posiłków dietetycznych i dojazd meleksem -> precyzyjna odpowiedź z bazy wiedzy bez halucynacji."
+    ],
+    [
+      "Ścieżka C: Eskalacja Medyczna / Przeciwwskazanie",
+      "Gość zgłasza dolegliwości kardiologiczne przy kąpieli siarczkowej -> Anna natychmiast przełącza na dyżurkę medyczną."
+    ]
+  ],
+  "s9_notes": "Miej przygotowany fallback: jeśli internet padnie, pokaż logi z FastAPI lub nagrania audio.",
+  "s10_title": "Enterprise Ready: RODO i ochrona danych medycznych",
+  "s10_cat": "SECURITY & COMPLIANCE",
+  "s10_items": [
+    [
+      "Zero Retention Mode (ZRM):",
+      "Audio i transkrypcje przetwarzane wyłącznie w pamięci RAM — brak zapisu na dyskach ElevenLabs."
+    ],
+    [
+      "Data Redaction:",
+      "Automatyczne maskowanie danych osobowych (PII) i medycznych w logach."
+    ],
+    [
+      "Data Residency EU:",
+      "Przetwarzanie danych na terenie Unii Europejskiej, pełna zgodność z RODO / DPA."
+    ],
+    [
+      "Signed URLs:",
+      "Bezpieczne tokeny jednorazowe eliminujące wyciek klucza API do przeglądarki."
+    ]
+  ],
+  "s10_notes": "Dla zarządu sieci hoteli compliance medyczne to warunek sine qua non.",
+  "s11_title": "Jeden agent, dziesięć hoteli — skalowanie sieciowe",
+  "s11_cat": "MULTI-TENANT ARCHITECTURE",
+  "s11_panel_title": "Architektura Multi-Hotel",
+  "s11_panel_body": "• 1 Centralny Agent: Zamiast 10 osobnych botów utrzymujemy jeden rdzeń system promptu.\n\n• Dynamic Variables: Przy inicjacji połączenia wstrzykujemy parametry:\n  - hotel_name, location\n  - reception_phone\n  - pms_hotel_id\n\n• Sygnalizacja SIP UUI: Przekazywanie ID hotelu w nagłówkach centrali PBX.\n\n• Skalowalność: Dodanie 11. obiektu to 5 minut konfiguracji zmiennych.",
+  "s11_notes": "Pokaż, jak myślisz jako Deployment Strategist: optymalizacja kosztów utrzymania i zarządzania agentami.",
+  "s12_title": "Koszty wdrożenia i twardy zwrot z inwestycji (ROI)",
+  "s12_cat": "BUSINESS CASE & FINANCIALS",
+  "s12_headers": [
+    "Parametr",
+    "Faza Pilotażu / PoC (Creator)",
+    "Faza Skalowania (Scale)"
+  ],
+  "s12_rows": [
+    [
+      "Koszt platformy",
+      "$22 / miesiąc",
+      "$299 / miesiąc"
+    ],
+    [
+      "Minuty w pakiecie",
+      "275 minut rozmów",
+      "3 738 minut rozmów (≈ 0,08 USD/min)"
+    ],
+    [
+      "Jednoczesne połączenia (Concurrency)",
+      "10 kanałów",
+      "30 kanałów (+Burst do 90)"
+    ]
+  ],
+  "s12_roi_title": "Kalkulacja ROI (Return on Investment):",
+  "s12_roi_body": "• Koszt 275 min AI ($22 ≈ 88 PLN) odpowiada 3,5 godzinom pracy recepcjonisty (~25 PLN/h).\n• Ochrona Przychodów: 3 rezerwacje pokoju w nocy (3 × 500 PLN = 1 500 PLN ≈ $375) pokrywają miesięczny abonament Scale ($299).\n• Wartość dla Personelu: Zero wypalenia zawodowego i możliwość skupienia się na gościach obecnych fizycznie w obiekcie.",
+  "s12_notes": "Nie pozycjonujemy AI jako redukcji personelu. To ochrona przed utraconym przychodem w nocy i w szczytach. Kurs w kalkulacji: 4,0 PLN/USD; cennik platformy według stanu z 2026-11.",
+  "s13_title": "Roadmapa wdrożenia: od PoC do proaktywnego AI",
+  "s13_cat": "IMPLEMENTATION TIMELINE",
+  "s13_phases": [
+    [
+      "Faza I: PoC & Walidacja (Obecnie)",
+      "• Baza wiedzy RAG (5 plików)\n• Mock backend (FastAPI, 7 narzędzi webhook, :8011)\n• Widget webowy z Quick Reply Chips\n• Testy czasu reakcji i promptu",
+      "sage"
+    ],
+    [
+      "Faza II: Integracja Produkcyjna (Miesiąc 1-2)",
+      "• Bezpośrednie API do PMS (Opera/KWHotel)\n• Bramka Twilio SMS (potwierdzenia)\n• Wpięcie w centralę telefoniczną SIP PBX\n• Wielojęzyczność (DE, EN, UA)",
+      "gold"
+    ],
+    [
+      "Faza III: Proaktywny Outbound AI (Miesiąc 3+)",
+      "• Automatyczne telefony przed przyjazdem\n• Potwierdzanie transportu meleksem\n• Spersonalizowane rekomendacje zabiegów\n• Zaawansowana analityka intencji i CSAT",
+      "navy"
+    ]
+  ],
+  "s13_notes": "Faza III to przejście od reaktywnej infolinii do proaktywnego generatora przychodów.",
+  "s14_title": "Dziękuję za uwagę.",
+  "s14_sub": "\nCzas na dyskusję, pytania i sesję System Design (V2).",
+  "s14_notes": "Otwórz dyskusję i przejdź do warsztatu projektowego."
+}
