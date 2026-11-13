@@ -26,8 +26,9 @@ TUNNEL_DIR = Path(__file__).resolve().parents[1] / "tunnel"
 
 
 # ── lokalny serwer HTTP w wątku ────────────────────────────────────────────
-@pytest.fixture()
-def server():
+@pytest.fixture(scope="module")
+def _local_httpd():
+    # Jeden serwer na moduł (start/stop ~raz, nie 20x). Stan (trasy, log) czyści fixture `server`.
     routes: dict[str, dict] = {}
     seen: list[dict] = []
 
@@ -67,7 +68,8 @@ def server():
             pass
 
     httpd = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
-    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    # poll_interval: domyślne 0.5 s oznaczało, że każdy shutdown() czekał pół sekundy.
+    thread = threading.Thread(target=httpd.serve_forever, kwargs={"poll_interval": 0.01}, daemon=True)
     thread.start()
     try:
         yield SimpleNamespace(
@@ -76,6 +78,13 @@ def server():
     finally:
         httpd.shutdown()
         httpd.server_close()
+
+
+@pytest.fixture()
+def server(_local_httpd):
+    _local_httpd.routes.clear()
+    _local_httpd.seen.clear()
+    return _local_httpd
 
 
 def route(srv, path: str, status: int, body: str, kind: str = "application/json",
@@ -156,8 +165,8 @@ def test_2xx_non_json_request_ok_raises(server):
 
 # ── timeout i błędy transportu ─────────────────────────────────────────────
 def test_timeout_raises_api_error_in_every_mode(server):
-    route(server, "/v1/slow", 200, "{}", delay=1.0)
-    client = ApiClient(server.base, key=SECRET, timeout=0.2)
+    route(server, "/v1/slow", 200, "{}", delay=0.5)
+    client = ApiClient(server.base, key=SECRET, timeout=0.1)
     with pytest.raises(ApiError, match="nie doszło"):
         client.request("GET", "/v1/slow")
     with pytest.raises(ApiError, match="nie doszło"):
@@ -167,19 +176,19 @@ def test_timeout_raises_api_error_in_every_mode(server):
 
 
 def test_per_call_timeout_overrides_default(server):
-    route(server, "/v1/slow", 200, "{}", delay=1.0)
+    route(server, "/v1/slow", 200, "{}", delay=0.5)
     client = ApiClient(server.base, timeout=60.0)
     with pytest.raises(ApiError):
-        client.request("GET", "/v1/slow", timeout=0.2)
+        client.request("GET", "/v1/slow", timeout=0.1)
 
 
 def test_transport_error_retried_only_when_asked(monkeypatch):
     monkeypatch.setattr(_http, "RETRY_DELAY_SECONDS", 0)
     base = closed_port_base()
     with pytest.raises(ApiError, match="nie doszło"):
-        ApiClient(base, timeout=0.5).request("GET", "/v1/x")
+        ApiClient(base, timeout=0.1).request("GET", "/v1/x")
     with pytest.raises(ApiError, match="nie doszło"):
-        ApiClient(base, timeout=0.5, retries=1).request("GET", "/v1/x")
+        ApiClient(base, timeout=0.1, retries=1).request("GET", "/v1/x")
 
 
 def test_http_error_is_never_retried(server, monkeypatch):
@@ -200,7 +209,7 @@ def test_key_echoed_by_server_is_masked_in_api_error(server):
 
 
 def test_key_not_in_transport_error_message():
-    client = ApiClient(closed_port_base(), key=SECRET, timeout=0.5)
+    client = ApiClient(closed_port_base(), key=SECRET, timeout=0.1)
     with pytest.raises(ApiError) as exc:
         client.request("GET", "/v1/x")
     assert SECRET not in str(exc.value) and SECRET not in repr(exc.value)

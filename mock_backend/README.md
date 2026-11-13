@@ -87,6 +87,7 @@ Wymagany Python: **3.13+** (testowane na 3.13/3.14; obraz kontenera to `python:3
 ```bash
 cd mock_backend
 python -m pytest -q
+python -m pytest -q --durations=5   # pięć najwolniejszych testów (regresja szybkości)
 ```
 
 Testy używają `fastapi.testclient`, nie wymagają sieci ani danych Telegrama
