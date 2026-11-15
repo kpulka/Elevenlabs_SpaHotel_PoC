@@ -13,3 +13,10 @@ __v0_jsx-dev-runtime.ts
 node_modules
 .next/
 .DS_Store
+# TypeScript incremental build info (tsconfig "incremental": true)
+tsconfig.tsbuildinfo
+
+# Playwright outputs
+/test-results/
+/playwright-report/
+/playwright/.cache/

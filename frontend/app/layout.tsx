@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Inter, Playfair_Display } from 'next/font/google'
 
 import { AnnaEmbedWidget } from '@/components/anna-embed-widget'
+import { SkipLink } from '@/components/skip-link'
 import { LanguageProvider } from '@/context/language-context'
 import { OG_IMAGE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from '@/lib/site'
 import './globals.css'
@@ -23,7 +24,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
     default: SITE_TITLE,
-    // Podstrony dostarczają własny tytuł (app/<route>/layout.tsx).
+    // Subpages provide their own title (app/<route>/layout.tsx).
     template: '%s | Bukowy Dwór',
   },
   description: SITE_DESCRIPTION,
@@ -80,12 +81,7 @@ export default function RootLayout({
     <html lang="pl" className={`${inter.variable} ${playfair.variable}`}>
       <body className="bg-background antialiased">
         <LanguageProvider>
-          <a
-            href="#main-content"
-            className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[2000] focus:rounded-md focus:bg-navy focus:px-5 focus:py-3 focus:text-base focus:font-medium focus:text-white focus:outline-2 focus:outline-offset-2 focus:outline-gold"
-          >
-            Przejdź do treści
-          </a>
+          <SkipLink />
           {children}
           <AnnaEmbedWidget />
           {process.env.NODE_ENV === 'production' && <Analytics />}

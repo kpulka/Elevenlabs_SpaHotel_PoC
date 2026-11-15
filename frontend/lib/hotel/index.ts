@@ -1,4 +1,4 @@
-// Barrel: importy `@/lib/hotel` z stron i komponentów.
+// Barrel: `@/lib/hotel` imports from pages and components.
 export * from "./rooms"
 export * from "./treatments"
 export * from "./dining"

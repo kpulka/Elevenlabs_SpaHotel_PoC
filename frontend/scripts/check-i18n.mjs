@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 /**
- * Bramka parytetu tłumaczeń PL/EN.
+ * PL/EN translation parity gate.
  *
  *   node scripts/check-i18n.mjs
  *
- * Parsuje `lib/translations.ts` kompilatorem TypeScript (bez transpilacji,
- * bez nowych zależności) i porównuje zbiory kluczy obu słowników rekurencyjnie.
- * Kompilator pilnuje parytetu typów (`en: Dictionary`), a ta bramka wyłapuje to,
- * co typy przepuszczą: podmienione lub zduplikowane klucze w trakcie merge'y.
+ * Parses `lib/translations.ts` with the TypeScript compiler (no transpilation,
+ * no new dependencies) and recursively compares the key sets of both dictionaries.
+ * The compiler guards type parity (`en: Dictionary`); this gate catches what
+ * types let through: keys swapped or duplicated during merges.
  *
- * Kod wyjścia 1 = jakakolwiek różnica.
+ * Exit code 1 = any difference.
  */
 
 import { readFileSync } from "node:fs"
-import { dirname, join, resolve } from "node:path"
+import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import { createRequire } from "node:module"
 
@@ -32,7 +32,7 @@ const sourceFile = ts.createSourceFile(
   ts.ScriptKind.TS
 )
 
-/** Wyciąga drzewo kluczy z literału obiektowego, np. { home: { a: "x" } } -> { "home.a": "string" }. */
+/** Extracts the key tree from an object literal, e.g. { home: { a: "x" } } -> { "home.a": "string" }. */
 function collect(node, prefix, out) {
   if (!ts.isObjectLiteralExpression(node)) {
     out.set(prefix, describe(node))
@@ -45,7 +45,7 @@ function collect(node, prefix, out) {
       else if (ts.isStringLiteralLike(property.name)) name = property.name.text
     }
     if (name === null) {
-      out.set(`${prefix}.<nieobsługiwany wpis>`, "unsupported")
+      out.set(`${prefix}.<unsupported entry>`, "unsupported")
       continue
     }
     const path = prefix ? `${prefix}.${name}` : name
@@ -64,7 +64,7 @@ function describe(node) {
   return ts.SyntaxKind[node.kind]
 }
 
-/** Znajduje `const <name> = { ... }` na najwyższym poziomie pliku. */
+/** Finds `const <name> = { ... }` at the top level of the file. */
 function findDictionaryObject(name) {
   let found = null
   for (const statement of sourceFile.statements) {
@@ -84,8 +84,8 @@ const problems = []
 const plNode = findDictionaryObject("pl")
 const enNode = findDictionaryObject("en")
 
-if (!plNode) problems.push("nie znaleziono literału `const pl = {...}` w lib/translations.ts")
-if (!enNode) problems.push("nie znaleziono literału `const en: Dictionary = {...}` w lib/translations.ts")
+if (!plNode) problems.push("literal `const pl = {...}` not found in lib/translations.ts")
+if (!enNode) problems.push("literal `const en: Dictionary = {...}` not found in lib/translations.ts")
 
 if (plNode && enNode) {
   const plKeys = new Map()
@@ -118,17 +118,17 @@ if (plNode && enNode) {
   }
 
   if (problems.length === 0 && plKeys.size > 0) {
-    console.log(`[i18n:check] OK — ${plKeys.size} kluczy w obu językach (pl / en).`)
+    console.log(`[i18n:check] OK — ${plKeys.size} keys in both languages (pl / en).`)
   }
 }
 
 if (problems.length > 0) {
   for (const problem of problems) console.error(`[i18n:check] ${problem}`)
-  console.error(`[i18n:check] ${problems.length} problem(ów) — słowniki PL i EN nie są zgodne.`)
+  console.error(`[i18n:check] ${problems.length} problem(s) — the PL and EN dictionaries do not match.`)
   process.exit(1)
 }
 
 if (problems.length === 0 && (!plNode || !enNode)) {
-  console.error("[i18n:check] nie udało się sparsować słowników.")
+  console.error("[i18n:check] failed to parse the dictionaries.")
   process.exit(1)
 }

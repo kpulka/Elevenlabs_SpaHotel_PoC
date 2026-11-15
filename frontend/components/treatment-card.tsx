@@ -23,7 +23,7 @@ export function TreatmentCard({ treatment }: { treatment: Treatment }) {
       <div className="flex flex-1 flex-col gap-3 p-6">
         <div className="flex items-start justify-between gap-4">
           <h3 className="font-serif text-xl font-semibold text-navy">{treatment.name}</h3>
-          {/* Cena pochodzi z mock_backend/data/spa_schedule.json (pricePln) — nigdy z literału w JSX. */}
+          {/* The price comes from mock_backend/data/spa_schedule.json (pricePln), never from a JSX literal. */}
           <p className="shrink-0 font-serif text-xl font-bold text-navy">
             {treatment.includedInStay
               ? t.spaPage.priceIncluded

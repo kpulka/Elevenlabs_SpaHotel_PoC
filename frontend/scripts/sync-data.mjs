@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * Generator faktów hotelowych: backend (mock_backend/data/*.json) -> frontend.
+ * Hotel facts generator: backend (mock_backend/data/*.json) -> frontend.
  *
- *   node scripts/sync-data.mjs           # przegeneruj lib/generated/hotel-facts.ts
- *   node scripts/sync-data.mjs --check   # wyjdź kodem 1, jeśli plik jest nieaktualny
+ *   node scripts/sync-data.mjs           # regenerate lib/generated/hotel-facts.ts
+ *   node scripts/sync-data.mjs --check   # exit with code 1 if the file is stale
  *
- * Backend jest źródłem prawdy dla: identyfikatorów i cen pokoi, listy zabiegów
- * w katalogu głosowym oraz ich cen (price_pln) i czasów trwania (duration_min).
- * Frontend merge'uje te fakty z dwujęzycznym copy po `id`.
+ * The backend is the source of truth for: room ids and prices, the list of treatments
+ * in the voice catalogue, and their prices (price_pln) and durations (duration_min).
+ * The frontend merges these facts with the bilingual copy by `id`.
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs"
@@ -21,41 +21,41 @@ const outPath = join(frontendRoot, "lib", "generated", "hotel-facts.ts")
 const treatmentCopyPath = join(frontendRoot, "lib", "hotel", "treatments.ts")
 
 /**
- * Każdy kod z spa_schedule.json musi mieć copy PL/EN w lib/hotel/treatments.ts.
- * Generator sprawdza to sam, zanim wyemituje plik: nowy zabieg w JSON bez wpisu
- * w `treatmentCopy` zatrzymuje build z nazwą brakującego id, zamiast po cichu
- * wygenerować kartę bez treści.
+ * Every code in spa_schedule.json must have PL/EN copy in lib/hotel/treatments.ts.
+ * The generator checks this itself before emitting the file: a new treatment in the JSON
+ * without a `treatmentCopy` entry stops the build and names the missing id, instead of
+ * silently generating a card with no content.
  */
 
-/** Kod backendu ("kapiel_siarczkowa") -> id używane na stronie ("kapiel-siarczkowa"). */
+/** Backend code ("kapiel_siarczkowa") -> id used on the site ("kapiel-siarczkowa"). */
 function idFromCode(code) {
   return code.replace(/_/g, "-")
 }
 
 function fail(message) {
-  console.error(`[data:sync] BŁĄD: ${message}`)
+  console.error(`[data:sync] ERROR: ${message}`)
   process.exit(1)
 }
 
 function readJson(name) {
   const path = join(backendDataDir, name)
-  if (!existsSync(path)) fail(`nie znaleziono ${path}`)
+  if (!existsSync(path)) fail(`${path} not found`)
   try {
     return JSON.parse(readFileSync(path, "utf8"))
   } catch (error) {
-    fail(`${path} nie jest poprawnym JSON-em: ${error.message}`)
+    fail(`${path} is not valid JSON: ${error.message}`)
   }
 }
 
-/** Liczba skończona > 0 albo błąd — ceny i czasy muszą pochodzić z JSON-a, nie z kodu. */
+/** A finite number > 0 or an error: prices and durations must come from the JSON, not from code. */
 function requirePositiveNumber(value, label) {
   if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
-    fail(`${label} musi być dodatnią liczbą (jest: ${JSON.stringify(value)})`)
+    fail(`${label} must be a positive number (got: ${JSON.stringify(value)})`)
   }
   return value
 }
 
-/** Czy `lib/hotel/treatments.ts` deklaruje klucz `id` w literale `treatmentCopy`? */
+/** Does `lib/hotel/treatments.ts` declare the key `id` in the `treatmentCopy` literal? */
 function hasTreatmentCopy(source, id) {
   const escaped = id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
   const pattern = new RegExp(`(^|[^\\w-])["'\`]?${escaped}["'\`]?\\s*:`, "m")
@@ -66,22 +66,22 @@ const roomsJson = readJson("rooms.json")
 const spaJson = readJson("spa_schedule.json")
 
 if (!existsSync(treatmentCopyPath)) {
-  fail(`nie znaleziono ${treatmentCopyPath} — nie da się sprawdzić kompletności copy`)
+  fail(`${treatmentCopyPath} not found — cannot verify that the copy is complete`)
 }
 const hotelDataSource = readFileSync(treatmentCopyPath, "utf8")
 
-// --- pokoje -----------------------------------------------------------------
+// --- rooms ------------------------------------------------------------------
 const typy = roomsJson.typy_pokoi
 if (!typy || typeof typy !== "object" || Object.keys(typy).length === 0) {
-  fail("rooms.json: brak obiektu typy_pokoi z wpisami")
+  fail("rooms.json: missing typy_pokoi object with entries")
 }
 
 const rooms = Object.entries(typy).map(([id, wpis]) => {
   if (typeof wpis?.cena_za_noc !== "number" || !Number.isFinite(wpis.cena_za_noc)) {
-    fail(`rooms.json: typ_pokoi "${id}" nie ma liczbowej cena_za_noc`)
+    fail(`rooms.json: typy_pokoi "${id}" has no numeric cena_za_noc`)
   }
   if (typeof wpis.waluta !== "string" || wpis.waluta.length === 0) {
-    fail(`rooms.json: typ_pokoi "${id}" nie ma pola waluta`)
+    fail(`rooms.json: typy_pokoi "${id}" has no waluta field`)
   }
   return {
     id,
@@ -91,10 +91,10 @@ const rooms = Object.entries(typy).map(([id, wpis]) => {
   }
 })
 
-// --- zabiegi ----------------------------------------------------------------
+// --- treatments -------------------------------------------------------------
 const zabiegi = spaJson.zabiegi
 if (!Array.isArray(zabiegi) || zabiegi.length === 0) {
-  fail("spa_schedule.json: brak niepustej tablicy zabiegi")
+  fail("spa_schedule.json: missing non-empty zabiegi array")
 }
 
 const seenCodes = new Set()
@@ -103,16 +103,16 @@ const siteTreatments = []
 for (const wpis of zabiegi) {
   const code = wpis?.kod
   if (typeof code !== "string" || code.length === 0) {
-    fail("spa_schedule.json: wpis zabiegu bez pola kod")
+    fail("spa_schedule.json: treatment entry without a kod field")
   }
-  if (seenCodes.has(code)) fail(`spa_schedule.json: zduplikowany kod "${code}"`)
+  if (seenCodes.has(code)) fail(`spa_schedule.json: duplicate kod "${code}"`)
   seenCodes.add(code)
 
   const id = idFromCode(code)
   if (!hasTreatmentCopy(hotelDataSource, id)) {
     fail(
-      `zabieg "${code}" (id "${id}") nie ma copy PL/EN w lib/hotel/treatments.ts — ` +
-        `dodaj wpis do treatmentCopy (kategoria, nazwa, opis), inaczej karta byłaby pusta`
+      `treatment "${code}" (id "${id}") has no PL/EN copy in lib/hotel/treatments.ts — ` +
+        `add an entry to treatmentCopy (category, name, description), otherwise the card would be empty`
     )
   }
 
@@ -131,25 +131,25 @@ for (const wpis of zabiegi) {
 const ids = siteTreatments.map((t) => t.id)
 const duplicateIds = ids.filter((id, index) => ids.indexOf(id) !== index)
 if (duplicateIds.length > 0) {
-  fail(`kolizja id po zamianie "_" na "-": ${[...new Set(duplicateIds)].join(", ")}`)
+  fail(`id collision after replacing "_" with "-": ${[...new Set(duplicateIds)].join(", ")}`)
 }
 
-// --- emisja -----------------------------------------------------------------
+// --- emit -------------------------------------------------------------------
 const quote = (value) => JSON.stringify(value)
 const lines = []
 
 lines.push("// @generated — run pnpm data:sync")
 lines.push("//")
-lines.push("// ŹRÓDŁO (tylko do odczytu): mock_backend/data/rooms.json, mock_backend/data/spa_schedule.json")
-lines.push("// Plik generowany przez scripts/sync-data.mjs. NIE edytuj ręcznie.")
-lines.push("// Bramka driftu: pnpm data:check (krok CI).")
+lines.push("// SOURCE (read-only): mock_backend/data/rooms.json, mock_backend/data/spa_schedule.json")
+lines.push("// Generated by scripts/sync-data.mjs. Do NOT edit by hand.")
+lines.push("// Drift gate: pnpm data:check (CI step).")
 lines.push("//")
-lines.push("// Backend jest jedynym źródłem prawdy dla identyfikatorów pokoi i ich cen za dobę")
-lines.push("// oraz dla listy zabiegów wraz z ceną (pricePln, zł) i czasem trwania (durationMin, min).")
-lines.push("// Copy PL/EN żyje w lib/hotel/treatments.ts — ten plik go nie zawiera.")
+lines.push("// The backend is the single source of truth for room ids and their nightly prices,")
+lines.push("// and for the list of treatments with price (pricePln, PLN) and duration (durationMin, min).")
+lines.push("// The PL/EN copy lives in lib/hotel/rooms.ts and lib/hotel/treatments.ts, not in this file.")
 lines.push("//")
-lines.push("// Baseny (pole `_baseny` w spa_schedule.json) to udogodnienia strefy basenowej,")
-lines.push("// nie zabiegi do rezerwacji — dlatego nie mają tu wpisu i nie są rezerwowalne.")
+lines.push("// The pools (`_baseny` field in spa_schedule.json) are pool-area amenities,")
+lines.push("// not bookable treatments, so they have no entry here and cannot be booked.")
 lines.push("")
 lines.push("export const ROOM_FACTS = [")
 for (const room of rooms) {
@@ -161,7 +161,7 @@ for (const room of rooms) {
 }
 lines.push("] as const")
 lines.push("")
-lines.push("/** Zabiegi z katalogu backendu, które mają copy PL/EN na stronie. */")
+lines.push("/** Treatments from the backend catalogue that have PL/EN copy on the site. */")
 lines.push("export const SITE_TREATMENTS = [")
 for (const treatment of siteTreatments) {
   lines.push(
@@ -177,7 +177,7 @@ const content = lines.join("\n")
 
 if (process.argv.includes("--check")) {
   if (!existsSync(outPath)) {
-    fail(`brak ${outPath} — uruchom pnpm data:sync`)
+    fail(`${outPath} is missing — run pnpm data:sync`)
   }
   const current = readFileSync(outPath, "utf8")
   if (current !== content) {
@@ -185,16 +185,16 @@ if (process.argv.includes("--check")) {
     const expectedLines = content.split("\n")
     const index = expectedLines.findIndex((line, i) => line !== currentLines[i])
     console.error(
-      `[data:check] ${outPath} jest nieaktualny względem mock_backend/data/*.json`
+      `[data:check] ${outPath} is out of date with mock_backend/data/*.json`
     )
-    console.error(`  pierwsza różnica w linii ${index + 1}:`)
-    console.error(`    jest:      ${JSON.stringify(currentLines[index] ?? "<brak>")}`)
-    console.error(`    powinno:   ${JSON.stringify(expectedLines[index] ?? "<brak>")}`)
-    console.error("  poprawka: pnpm data:sync")
+    console.error(`  first difference at line ${index + 1}:`)
+    console.error(`    actual:    ${JSON.stringify(currentLines[index] ?? "<missing>")}`)
+    console.error(`    expected:  ${JSON.stringify(expectedLines[index] ?? "<missing>")}`)
+    console.error("  fix: pnpm data:sync")
     process.exit(1)
   }
   console.log(
-    `[data:check] OK — ${rooms.length} pokoi, ${siteTreatments.length} zabiegów z ceną i czasem.`
+    `[data:check] OK — ${rooms.length} rooms, ${siteTreatments.length} treatments with price and duration.`
   )
   process.exit(0)
 }
@@ -202,5 +202,5 @@ if (process.argv.includes("--check")) {
 mkdirSync(dirname(outPath), { recursive: true })
 writeFileSync(outPath, content)
 console.log(
-  `[data:sync] zapisano ${outPath} — ${rooms.length} pokoi, ${siteTreatments.length} zabiegów z ceną i czasem.`
+  `[data:sync] wrote ${outPath} — ${rooms.length} rooms, ${siteTreatments.length} treatments with price and duration.`
 )

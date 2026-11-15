@@ -27,7 +27,7 @@ export default function SpaPage() {
       <SiteHeader />
       <main id="main-content">
         <PageHero
-          image="/images/spa-pool.png"
+          image="/images/spa-pool.webp"
           alt={t.images.spaHeroAlt}
           tag={t.spaPage.tag}
           title={t.spaPage.title}
@@ -52,7 +52,7 @@ export default function SpaPage() {
         <Section tone="cream" containerClassName="grid gap-10 md:grid-cols-2 md:items-center">
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
             <Image
-              src="/images/treatment-room.png"
+              src="/images/treatment-room.webp"
               alt={t.images.treatmentRoomAlt}
               fill
               className="object-cover"

@@ -35,7 +35,7 @@ export function AnnaIntroSection() {
               aria-hidden="true"
             />
             <Image
-              src="/images/anna-avatar.png"
+              src="/images/anna-avatar.webp"
               alt={t.anna.introTitle}
               width={220}
               height={220}

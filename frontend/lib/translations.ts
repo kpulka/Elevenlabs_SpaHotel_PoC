@@ -20,6 +20,8 @@ const pl = {
     closeMenu: "Zamknij menu",
     mainMenu: "Menu główne",
     mobileMenu: "Menu mobilne",
+    switchToPolish: "Przełącz na język polski",
+    switchToEnglish: "Przełącz na język angielski",
   },
   footer: {
     tagline: "Uzdrowisko Termalne w Krynicy-Zdroju. Regeneracja, leczenie i cisza w sercu Beskidu Sądeckiego.",
@@ -40,6 +42,7 @@ const pl = {
     hintTitle: "Potrzebuje Pani/Pan pomocy?",
     hintText: "Wystarczy kliknąć przycisk poniżej — Anna pomoże zarezerwować zabieg lub pokój.",
     closeHint: "Zamknij podpowiedź",
+    consentNotice: "Klikając, rozpoczynasz rozmowę głosową z Anną, przetwarzaną przez ElevenLabs, i zgadzasz się na użycie mikrofonu.",
     bannerTitle: "Chcesz zarezerwować zabieg lub sprawdzić przeciwwskazania?",
     bannerText: "Anna, nasza wirtualna recepcjonistka, pomoże dobrać odpowiednią kąpiel termalną lub masaż i sprawdzi wolne terminy.",
     bannerButton: "Zapytaj Annę o zabiegi",
@@ -188,7 +191,109 @@ const pl = {
       email: "Podaj prawidłowy adres e-mail.",
       message: "Napisz krótką treść zapytania.",
     },
-    demoNote: "Wersja demonstracyjna: formularz nie wysyła wiadomości i nie zapisuje danych — w razie pilnej rezerwacji zadzwoń do recepcji.",
+    demoNote: "Wersja demonstracyjna: wiadomość trafia do punktu przyjęcia, który jej nigdzie nie przekazuje i nie zapisuje. W razie pilnej rezerwacji zadzwoń do recepcji.",
+    sending: "Wysyłanie…",
+    submitError: "Nie udało się wysłać wiadomości. Spróbuj ponownie później lub zadzwoń do recepcji.",
+    rateLimited: "Zbyt wiele prób. Spróbuj ponownie za chwilę.",
+  },
+  skipLink: "Przejdź do treści",
+  errorPage: {
+    title: "Coś poszło nie tak",
+    text: "Wystąpił nieoczekiwany błąd. Spróbuj ponownie lub wróć na stronę główną.",
+    retry: "Spróbuj ponownie",
+    home: "Strona główna",
+  },
+  notFoundPage: {
+    title: "Nie znaleziono strony",
+    text: "Adres, który otwierasz, nie istnieje lub został przeniesiony.",
+    home: "Wróć na stronę główną",
+  },
+  privacyPage: {
+    tag: "Informacja o przetwarzaniu danych",
+    title: "Polityka prywatności",
+    subtitle: "Jak przetwarzamy dane osobowe w rozmowie głosowej z Anną, w formularzu kontaktowym i na stronie.",
+    demoNotice: "Wersja demonstracyjna (case study). Uzdrowisko Bukowy Dwór, jego dane kontaktowe i wszystkie dane w tej aplikacji są fikcyjne; nie zachodzi tu rzeczywiste przetwarzanie danych gości. Pola oznaczone jako „do określenia przez administratora” wymagają decyzji właściciela prawdziwego wdrożenia.",
+    controller: {
+      title: "1. Administrator danych",
+      body: [
+        "Administratorem danych osobowych jest Uzdrowisko Bukowy Dwór w Krynicy-Zdroju (podmiot fikcyjny, opis demonstracyjny).",
+        "Dane kontaktowe administratora znajdziesz w sekcji 10. Inspektor ochrony danych: do określenia przez administratora.",
+      ],
+    },
+    voice: {
+      title: "2. Rozmowa głosowa z Anną",
+      body: [
+        "Po kliknięciu przycisku „Porozmawiaj z Anną” rozpoczyna się rozmowa głosowa z asystentką AI. Rozmowę prowadzi platforma ElevenLabs, która działa jako podmiot przetwarzający dane w imieniu administratora. Treść rozmowy, w tym dane podane w jej trakcie (np. imię, termin pobytu, wybrane zabiegi, informacje o zdrowiu), jest przekazywana do tej platformy.",
+        "Przed rozmową nasz serwer wystawia krótkotrwały, podpisany adres sesji (signed URL). Żądanie zawiera adres IP i nagłówek Origin, które służą wyłącznie do ograniczenia liczby żądań; nie są zapisywane w logach aplikacji.",
+      ],
+    },
+    microphone: {
+      title: "3. Mikrofon",
+      body: [
+        "Mikrofon nie włącza się automatycznie. Przeglądarka pyta o zgodę dopiero wtedy, gdy sam rozpoczniesz rozmowę kliknięciem. Dźwięk jest przekazywany do ElevenLabs wyłącznie w trakcie tej rozmowy.",
+        "Zgodę na mikrofon możesz cofnąć w ustawieniach przeglądarki lub systemu w każdej chwili. Zamiast rozmowy możesz zadzwonić do recepcji lub skorzystać z formularza.",
+      ],
+    },
+    purposes: {
+      title: "4. Cele i podstawy prawne",
+      body: [
+        "Cele: odpowiedź na pytania o pobyt, dobór pokoju i zabiegów, sprawdzenie dostępności terminu oraz przekazanie zgłoszenia do recepcji.",
+        "Podstawa prawna: art. 6 ust. 1 lit. b RODO (działania przed zawarciem umowy na żądanie osoby) — do potwierdzenia przez administratora. Dane o zdrowiu (np. przeciwwskazania do zabiegów) są danymi szczególnej kategorii (art. 9 RODO); ich przetwarzanie wymaga odrębnej podstawy, np. wyraźnej zgody (art. 9 ust. 2 lit. a) — do określenia przez administratora. Podawaj tylko informacje niezbędne do zarezerwowania zabiegu lub pokoju; decyzje medyczne podejmuje lekarz uzdrowiskowy.",
+      ],
+    },
+    recordings: {
+      title: "5. Nagrania i transkrypcje",
+      body: [
+        "To, czy rozmowy są nagrywane i czy powstaje ich transkrypcja, zależy od konfiguracji agenta na platformie ElevenLabs. Ta aplikacja nie zapisuje nagrań ani transkrypcji.",
+        "Okres przechowywania nagrań i transkrypcji po stronie ElevenLabs: do określenia przez administratora (zależy od ustawień konta).",
+      ],
+    },
+    retention: {
+      title: "6. Okresy przechowywania",
+      body: [
+        "Okresy poniżej nie zostały ustalone i wymagają decyzji administratora. Ten dokument demonstracyjny nie podaje ich wbrew faktom.",
+      ],
+      items: [
+        "Nagrania i transkrypcje rozmów (ElevenLabs): do określenia przez administratora.",
+        "Dane rezerwacji przekazane przez asystentkę do systemu rezerwacji: do określenia przez administratora (w tej wersji system jest atrapą).",
+        "Wiadomości z formularza kontaktowego: nie są zapisywane ani nigdzie przekazywane (formularz demonstracyjny).",
+        "Adres IP używany do ograniczenia liczby żądań: wyłącznie w pamięci serwera, na czas okna ograniczenia (minuta); nie jest zapisywany na dysku.",
+        "Wybór języka w przeglądarce (localStorage): do czasu jego usunięcia w przeglądarce.",
+      ],
+    },
+    analytics: {
+      title: "7. Analityka i usługi zewnętrzne",
+      body: [
+        "W wersjach produkcyjnych strony działa Vercel Analytics, które zbiera zagregowane dane o odsłonach stron. Pliki cookie i okres przechowywania należy potwierdzić w dokumentacji dostawcy i uwzględnić w ustawieniach administratora.",
+        "Widget głosowy łączy się z domeną m1.openfpcdn.io (telemetria widgetu, w tym identyfikacja przeglądarki) oraz z endpointami ElevenLabs. Widget może pobierać czcionki z fonts.googleapis.com. Zakres danych przetwarzanych przez te połączenia opisuje dostawca widgetu i wymaga weryfikacji przez administratora.",
+      ],
+    },
+    cookies: {
+      title: "8. Pliki cookie i pamięć przeglądarki",
+      body: [
+        "Strona nie ustawia własnych plików cookie. Wybrany język zapisujemy w localStorage przeglądarki (klucz bukowy_dwor_lang), aby pamiętać wybór. Ten wpis nie zawiera danych osobowych.",
+      ],
+    },
+    rights: {
+      title: "9. Twoje prawa",
+      body: ["Przysługuje Ci prawo do:"],
+      items: [
+        "dostępu do swoich danych oraz uzyskania ich kopii (art. 15 RODO),",
+        "sprostowania danych (art. 16 RODO),",
+        "usunięcia danych (art. 17 RODO) oraz ograniczenia przetwarzania (art. 18 RODO),",
+        "przenoszenia danych (art. 20 RODO),",
+        "wniesienia sprzeciwu wobec przetwarzania (art. 21 RODO),",
+        "cofnięcia zgody w dowolnym momencie, bez wpływu na zgodność z prawem przetwarzania przed jej cofnięciem (art. 7 ust. 3 RODO),",
+        "wniesienia skargi do Prezesa Urzędu Ochrony Danych Osobowych (UODO).",
+      ],
+    },
+    contact: {
+      title: "10. Kontakt",
+      body: [
+        "W sprawach danych osobowych napisz na adres e-mail lub zadzwoń do recepcji (dane poniżej). Odpowiemy bez zbędnej zwłoki, najpóźniej w ciągu miesiąca od otrzymania żądania.",
+        "Ostatnia aktualizacja: wersja demonstracyjna, bez daty obowiązywania.",
+      ],
+    },
   },
 }
 
@@ -208,6 +313,8 @@ const en: Dictionary = {
     closeMenu: "Close menu",
     mainMenu: "Main menu",
     mobileMenu: "Mobile menu",
+    switchToPolish: "Switch to Polish",
+    switchToEnglish: "Switch to English",
   },
   footer: {
     tagline: "Thermal Spa & Health Resort in Krynica-Zdrój. Regeneration, clinical wellness, and tranquility in the heart of the mountains.",
@@ -228,6 +335,7 @@ const en: Dictionary = {
     hintTitle: "Do you need any assistance?",
     hintText: "Click the button below — Anna can help you book a treatment or room in English or Polish.",
     closeHint: "Close hint",
+    consentNotice: "By clicking, you start a voice conversation with Anna, processed by ElevenLabs, and allow microphone use.",
     bannerTitle: "Looking to book a treatment or check medical contraindications?",
     bannerText: "Anna, our virtual receptionist, will help you select the ideal thermal bath or physiotherapy and check real-time availability.",
     bannerButton: "Ask Anna about treatments",
@@ -362,7 +470,109 @@ const en: Dictionary = {
       email: "Please enter a valid email address.",
       message: "Please provide a message.",
     },
-    demoNote: "Demo build: this form does not send or store anything — for an urgent booking, please call the front desk.",
+    demoNote: "Demo build: the message is accepted by an endpoint that does not forward or store it anywhere. For an urgent booking, please call the front desk.",
+    sending: "Sending…",
+    submitError: "The message could not be sent. Please try again later or call the front desk.",
+    rateLimited: "Too many attempts. Please try again shortly.",
+  },
+  skipLink: "Skip to content",
+  errorPage: {
+    title: "Something went wrong",
+    text: "An unexpected error occurred. Please try again or return to the home page.",
+    retry: "Try again",
+    home: "Home page",
+  },
+  notFoundPage: {
+    title: "Page not found",
+    text: "The address you opened does not exist or has been moved.",
+    home: "Return to the home page",
+  },
+  privacyPage: {
+    tag: "Data processing information",
+    title: "Privacy Policy",
+    subtitle: "How we process personal data in the voice conversation with Anna, in the contact form and on the website.",
+    demoNotice: "Demo build (case study). The Bukowy Dwór resort, its contact details and all data in this application are fictional; no real guest data is processed here. Fields marked “to be defined by the controller” need a decision by the owner of a real deployment.",
+    controller: {
+      title: "1. Data controller",
+      body: [
+        "The controller of personal data is Bukowy Dwór Health Resort in Krynica-Zdrój (a fictional entity, demonstration only).",
+        "The controller's contact details are in section 10. Data protection officer: to be defined by the controller.",
+      ],
+    },
+    voice: {
+      title: "2. Voice conversation with Anna",
+      body: [
+        "After you click “Talk with Anna”, a voice conversation with an AI assistant starts. The conversation runs on the ElevenLabs platform, which acts as a processor on behalf of the controller. The content of the conversation, including data you give during it (for example name, stay dates, chosen treatments, health information), is sent to that platform.",
+        "Before the conversation, our server issues a short-lived, signed session URL (signed URL). The request contains the IP address and the Origin header, used only to limit the number of requests; they are not written to application logs.",
+      ],
+    },
+    microphone: {
+      title: "3. Microphone",
+      body: [
+        "The microphone is not switched on automatically. The browser asks for permission only after you start the conversation by clicking. Audio is sent to ElevenLabs only during that conversation.",
+        "You can withdraw microphone permission at any time in your browser or system settings. Instead of a conversation you can call the front desk or use the contact form.",
+      ],
+    },
+    purposes: {
+      title: "4. Purposes and legal bases",
+      body: [
+        "Purposes: answering questions about your stay, choosing a room and treatments, checking availability and passing a request to the front desk.",
+        "Legal basis: Art. 6(1)(b) GDPR (steps taken at the request of the data subject before a contract) — to be confirmed by the controller. Health data (for example contraindications to treatments) is a special category under Art. 9 GDPR; its processing needs a separate basis, for example explicit consent under Art. 9(2)(a) — to be defined by the controller. Please give only the information needed to book a treatment or room; medical decisions are made by the resort physician.",
+      ],
+    },
+    recordings: {
+      title: "5. Recordings and transcripts",
+      body: [
+        "Whether conversations are recorded and whether a transcript is created depends on the agent configuration on the ElevenLabs platform. This application does not store recordings or transcripts.",
+        "Retention period for recordings and transcripts on the ElevenLabs side: to be defined by the controller (it depends on the account settings).",
+      ],
+    },
+    retention: {
+      title: "6. Retention periods",
+      body: [
+        "The periods below have not been set and need a decision by the controller. This demonstration document does not invent them.",
+      ],
+      items: [
+        "Conversation recordings and transcripts (ElevenLabs): to be defined by the controller.",
+        "Booking data passed by the assistant to the reservation system: to be defined by the controller (in this version the system is a mock).",
+        "Contact form messages: not stored and not forwarded anywhere (demonstration form).",
+        "IP address used to limit the number of requests: only in server memory, for the length of the limit window (one minute); not written to disk.",
+        "Language choice in the browser (localStorage): until you remove it from the browser.",
+      ],
+    },
+    analytics: {
+      title: "7. Analytics and external services",
+      body: [
+        "Production builds of the website use Vercel Analytics, which collects aggregated page-view data. Cookies and retention should be confirmed in the vendor documentation and reflected in the controller's settings.",
+        "The voice widget connects to the m1.openfpcdn.io domain (widget telemetry, including browser identification) and to ElevenLabs endpoints. The widget may load fonts from fonts.googleapis.com. The provider of the widget describes the data processed by these connections; the controller must verify it.",
+      ],
+    },
+    cookies: {
+      title: "8. Cookies and browser storage",
+      body: [
+        "The website sets no cookies of its own. The chosen language is stored in the browser's localStorage (key bukowy_dwor_lang) so that your choice is remembered. This entry contains no personal data.",
+      ],
+    },
+    rights: {
+      title: "9. Your rights",
+      body: ["You have the right to:"],
+      items: [
+        "access your data and obtain a copy of it (Art. 15 GDPR),",
+        "rectify your data (Art. 16 GDPR),",
+        "erase your data (Art. 17 GDPR) and restrict processing (Art. 18 GDPR),",
+        "data portability (Art. 20 GDPR),",
+        "object to processing (Art. 21 GDPR),",
+        "withdraw consent at any time, without affecting the lawfulness of processing before withdrawal (Art. 7(3) GDPR),",
+        "lodge a complaint with the President of the Personal Data Protection Office (UODO, Poland).",
+      ],
+    },
+    contact: {
+      title: "10. Contact",
+      body: [
+        "For personal data matters, write to the e-mail address or call the front desk (details below). We will reply without undue delay and at the latest within one month of the request.",
+        "Last updated: demonstration version, no effective date.",
+      ],
+    },
   },
 }
 

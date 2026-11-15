@@ -1,10 +1,11 @@
 'use client'
 
 import { CheckCircle2 } from 'lucide-react'
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 
 import { HotelButton } from '@/components/hotel-button'
 import { useLanguage } from '@/context/language-context'
+import { HONEYPOT_FIELD } from '@/lib/contact/validation'
 
 type FormState = {
   name: string
@@ -13,6 +14,8 @@ type FormState = {
   topic: string
   message: string
 }
+
+type SubmitStatus = 'idle' | 'sending' | 'sent' | 'error'
 
 export function ContactForm() {
   const { t } = useLanguage()
@@ -23,8 +26,17 @@ export function ContactForm() {
     topic: t.contactPage.topicOptions[0],
     message: '',
   })
+  // Honeypot: hidden from people and assistive technology; bots that fill every input fill this too.
+  const [honeypot, setHoneypot] = useState('')
   const [errors, setErrors] = useState<Partial<FormState>>({})
-  const [submitted, setSubmitted] = useState(false)
+  const [status, setStatus] = useState<SubmitStatus>('idle')
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const successRef = useRef<HTMLDivElement>(null)
+
+  // Move focus to the success message so screen reader users hear it and the form is not lost.
+  useEffect(() => {
+    if (status === 'sent') successRef.current?.focus()
+  }, [status])
 
   const updateField =
     (field: keyof FormState) =>
@@ -32,8 +44,19 @@ export function ContactForm() {
       setForm((prev) => ({ ...prev, [field]: e.target.value }))
     }
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function submitToServer(payload: FormState): Promise<{ ok: boolean; status: number }> {
+    const res = await fetch('/api/contact', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ ...payload, [HONEYPOT_FIELD]: honeypot }),
+    })
+    return { ok: res.ok, status: res.status }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    if (status === 'sending') return
+
     const nextErrors: Partial<FormState> = {}
     if (!form.name.trim()) {
       nextErrors.name = t.contactPage.formErrors.name
@@ -46,26 +69,51 @@ export function ContactForm() {
     }
 
     setErrors(nextErrors)
-    if (Object.keys(nextErrors).length === 0) {
-      setSubmitted(true)
+    if (Object.keys(nextErrors).length > 0) {
+      // Put the cursor on the first invalid field; the error text is announced via role="alert".
+      const firstInvalid = (['name', 'email', 'message'] as const).find((key) => nextErrors[key])
+      if (firstInvalid) document.getElementById(firstInvalid)?.focus()
+      return
+    }
+
+    setStatus('sending')
+    setSubmitError(null)
+    try {
+      const result = await submitToServer(form)
+      if (result.ok) {
+        setStatus('sent')
+        return
+      }
+      setSubmitError(result.status === 429 ? t.contactPage.rateLimited : t.contactPage.submitError)
+      setStatus('error')
+    } catch {
+      setSubmitError(t.contactPage.submitError)
+      setStatus('error')
     }
   }
 
-  if (submitted) {
+  if (status === 'sent') {
     return (
-      <div className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-sage/30 bg-sage/10 p-8 text-center">
+      <div
+        ref={successRef}
+        tabIndex={-1}
+        role="status"
+        className="mt-6 flex flex-col items-center gap-3 rounded-2xl border border-sage/30 bg-sage/10 p-8 text-center outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+      >
         <CheckCircle2 className="size-10 text-sage" aria-hidden="true" />
         <h3 className="font-serif text-xl font-semibold text-navy">{t.contactPage.successTitle}</h3>
         <p className="text-base leading-relaxed text-charcoal/80">
           {t.contactPage.successText}
         </p>
-        {/* Jawna informacja: to demo, formularz nic nie wysyła. */}
+        {/* Explicit notice: this is a demo, the message is not delivered anywhere. */}
         <p className="mt-1 rounded-lg border border-gold/40 bg-warm-white px-4 py-2 text-sm text-charcoal/70">
           {t.contactPage.demoNote}
         </p>
       </div>
     )
   }
+
+  const sending = status === 'sending'
 
   return (
     <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-5" noValidate>
@@ -85,7 +133,7 @@ export function ContactForm() {
           className="min-h-[52px] rounded-lg border border-input bg-warm-white px-4 text-base text-charcoal outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
         />
         {errors.name && (
-          <p id="name-error" className="text-sm text-error">
+          <p id="name-error" role="alert" className="text-sm text-error">
             {errors.name}
           </p>
         )}
@@ -107,7 +155,7 @@ export function ContactForm() {
           className="min-h-[52px] rounded-lg border border-input bg-warm-white px-4 text-base text-charcoal outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
         />
         {errors.email && (
-          <p id="email-error" className="text-sm text-error">
+          <p id="email-error" role="alert" className="text-sm text-error">
             {errors.email}
           </p>
         )}
@@ -160,14 +208,34 @@ export function ContactForm() {
           className="rounded-lg border border-input bg-warm-white px-4 py-3 text-base text-charcoal outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
         />
         {errors.message && (
-          <p id="message-error" className="text-sm text-error">
+          <p id="message-error" role="alert" className="text-sm text-error">
             {errors.message}
           </p>
         )}
       </div>
 
-      <HotelButton type="submit" variant="primary" fullWidth>
-        {t.contactPage.sendButton}
+      {/* Honeypot: positioned off-screen, removed from the accessibility tree and the tab order. */}
+      <div aria-hidden="true" className="sr-only">
+        <label htmlFor={HONEYPOT_FIELD}>Website</label>
+        <input
+          id={HONEYPOT_FIELD}
+          name={HONEYPOT_FIELD}
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          value={honeypot}
+          onChange={(e) => setHoneypot(e.target.value)}
+        />
+      </div>
+
+      {submitError && (
+        <p role="alert" className="text-sm text-error">
+          {submitError}
+        </p>
+      )}
+
+      <HotelButton type="submit" variant="primary" fullWidth disabled={sending} aria-busy={sending}>
+        {sending ? t.contactPage.sending : t.contactPage.sendButton}
       </HotelButton>
     </form>
   )

@@ -3,9 +3,9 @@ import { ROOM_FACTS } from "../generated/hotel-facts"
 import { type L, loc } from "../i18n"
 
 // ---------------------------------------------------------------------------
-// Pokoje
-// Cena i lista typów pochodzą z mock_backend/data/rooms.json przez
-// lib/generated/hotel-facts.ts. Tutaj jest wyłącznie copy PL/EN.
+// Rooms
+// Prices and the list of room types come from mock_backend/data/rooms.json via
+// lib/generated/hotel-facts.ts. This file holds PL/EN copy only.
 // ---------------------------------------------------------------------------
 
 export type RoomId = (typeof ROOM_FACTS)[number]["id"]
@@ -21,15 +21,15 @@ type RoomCopy = {
 }
 
 /**
- * `Record<RoomId, RoomCopy>` sprawia, że nowy typ pokoju w rooms.json bez copy
- * (albo copy bez pokoju w backendzie) jest błędem kompilacji.
+ * `Record<RoomId, RoomCopy>` makes a new room type in rooms.json without copy
+ * (or copy without a backend room) a compile error.
  */
 const roomCopy: Record<RoomId, RoomCopy> = {
   jednoosobowy: {
     slug: { pl: "pokoj-jednoosobowy", en: "single-room" },
     name: { pl: "Pokój jednoosobowy", en: "Single Comfort Room" },
     capacity: { pl: "1 osoba", en: "1 Guest" },
-    image: "/images/room-single.png",
+    image: "/images/room-single.webp",
     description: {
       pl: "Spokojny, słoneczny pokój dla jednej osoby z widokiem na las bukowy. Idealny na dłuższy pobyt sanatoryjny.",
       en: "Quiet, sunlit room for one guest overlooking the beech forest. Ideal for health resort stays.",
@@ -61,7 +61,7 @@ const roomCopy: Record<RoomId, RoomCopy> = {
     slug: { pl: "pokoj-dwuosobowy", en: "double-room" },
     name: { pl: "Pokój dwuosobowy", en: "Double Comfort Room" },
     capacity: { pl: "2 osoby", en: "2 Guests" },
-    image: "/images/room-double.png",
+    image: "/images/room-double.webp",
     description: {
       pl: "Przestronny pokój dla dwóch osób z wygodną strefą wypoczynkową i widokiem na góry.",
       en: "Spacious room for two guests with a comfortable relaxation area and mountain views.",
@@ -93,7 +93,7 @@ const roomCopy: Record<RoomId, RoomCopy> = {
     slug: { pl: "apartament", en: "apartment-suite" },
     name: { pl: "Apartament", en: "Executive Health Suite" },
     capacity: { pl: "2–3 osoby", en: "2–3 Guests" },
-    image: "/images/room-apartment.png",
+    image: "/images/room-apartment.webp",
     description: {
       pl: "Apartament z osobnym salonem — najwięcej przestrzeni i komfortu, dla gości z opiekunem lub rodziną.",
       en: "Suite with separate living room — maximum comfort and space for guests with family or caregiver.",

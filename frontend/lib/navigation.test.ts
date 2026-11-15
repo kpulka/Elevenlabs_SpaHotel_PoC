@@ -4,13 +4,13 @@ import { getNavItems } from '@/lib/navigation'
 import { translations } from '@/lib/translations'
 
 describe('getNavItems', () => {
-  it('zwraca stałą kolejność ścieżek serwisu', () => {
+  it('returns the site routes in a fixed order', () => {
     const hrefs = getNavItems(translations.pl).map((item) => item.href)
 
     expect(hrefs).toEqual(['/pokoje', '/spa', '/restauracja', '/dojazd', '/kontakt'])
   })
 
-  it('etykiety pochodzą ze słownika przekazanego języka', () => {
+  it('takes labels from the dictionary of the given language', () => {
     const en = getNavItems(translations.en).map((item) => item.label)
     const pl = getNavItems(translations.pl).map((item) => item.label)
 

@@ -19,7 +19,7 @@ export default function ContactPage() {
       <SiteHeader />
       <main id="main-content">
         <PageHero
-          image="/images/hero-contact.png"
+          image="/images/hero-contact.webp"
           alt={t.images.contactHeroAlt}
           tag={t.nav.contact}
           title={t.contactPage.title}

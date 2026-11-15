@@ -27,15 +27,15 @@ interface PageHeroProps {
   tag: string
   title: string
   subtitle: string
-  /** Treść pod podtytułem, np. przyciski CTA na stronie głównej. */
+  /** Content below the subtitle, e.g. the CTA buttons on the home page. */
   children?: ReactNode
   minHeight?: keyof typeof minHeightClass
-  /** `home`: wyższy hero z gradientem i większą typografią. */
+  /** `home`: taller hero with a gradient and larger typography. */
   variant?: keyof typeof typography
 }
 
 /**
- * Hero podstrony: obraz tła (zawsze `priority`, bo to LCP), overlay, tag, jedyny h1 i podtytuł.
+ * Page hero: background image (always `priority`, it is the LCP), overlay, tag, the only h1 and a subtitle.
  */
 export function PageHero({
   image,

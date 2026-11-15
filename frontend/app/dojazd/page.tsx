@@ -37,7 +37,7 @@ export default function DirectionsPage() {
       <SiteHeader />
       <main id="main-content">
         <PageHero
-          image="/images/entrance.png"
+          image="/images/entrance.webp"
           alt={t.images.accessHeroAlt}
           tag={t.accessPage.tag}
           title={t.accessPage.title}

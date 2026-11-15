@@ -1,9 +1,9 @@
 /**
- * Wspólne stałe SEO dla serwisu.
+ * Shared SEO constants for the site.
  *
- * NEXT_PUBLIC_SITE_URL ustawiamy w środowisku produkcyjnym (np. https://bukowydwor.pl).
- * Fallback to domena przykładowa z dokumentacji projektu — sitemap/robots/OG muszą mieć
- * poprawny absolutny URL już w buildzie, także na środowiskach demo.
+ * NEXT_PUBLIC_SITE_URL is set in production (e.g. https://bukowydwor.example).
+ * The fallback is the example domain from the project docs: sitemap/robots/OG need
+ * a valid absolute URL at build time, also in demo environments.
  */
 export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://bukowydwor.example').replace(
   /\/+$/,
@@ -17,7 +17,7 @@ export const SITE_TITLE = 'Bukowy Dwór — Uzdrowisko Termalne w Krynicy-Zdroju
 export const SITE_DESCRIPTION =
   'Uzdrowisko Termalne Bukowy Dwór w Krynicy-Zdroju — pokoje bez barier, baseny termalne, zabiegi balneologiczne i restauracja z dietami leczniczymi.'
 
-/** Wspólny obraz Open Graph (1200x630, zrzut widgetu Anny). */
+/** Shared Open Graph image (1200x630, screenshot of the Anna widget). */
 export const OG_IMAGE = {
   url: '/og/anna-widget.jpg',
   width: 1200,
@@ -25,5 +25,5 @@ export const OG_IMAGE = {
   alt: 'Rozmowa z Anną — wirtualną recepcjonistką Uzdrowiska Bukowy Dwór',
 } as const
 
-/** Publiczne trasy serwisu (bez stron API) — używane w sitemap.ts. */
-export const PUBLIC_ROUTES = ['/', '/pokoje', '/spa', '/restauracja', '/dojazd', '/kontakt'] as const
+/** Public site routes (no API routes), used by sitemap.ts. */
+export const PUBLIC_ROUTES = ['/', '/pokoje', '/spa', '/restauracja', '/dojazd', '/kontakt', '/polityka'] as const

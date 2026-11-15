@@ -2,7 +2,7 @@ import type { Language } from "../translations"
 import { type L, loc } from "../i18n"
 
 // ---------------------------------------------------------------------------
-// Udogodnienia dla osób z niepełnosprawnościami
+// Accessibility features for guests with disabilities
 // ---------------------------------------------------------------------------
 
 export type AccessibilityIcon =

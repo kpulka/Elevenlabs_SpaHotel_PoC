@@ -101,10 +101,10 @@ export function SiteFooter() {
         <Container className="flex flex-col gap-2 py-6 text-sm text-white/60 md:flex-row md:items-center md:justify-between">
           <p>&copy; 2026 Bukowy Dwór. {t.footer.rights}</p>
           <div className="flex gap-4">
-            <Link href="#" className="outline-none hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
+            <Link href="/polityka" className="outline-none hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
               {t.footer.privacyPolicy}
             </Link>
-            <Link href="#" className="outline-none hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
+            <Link href="/polityka#rights" className="outline-none hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold">
               GDPR / RODO
             </Link>
           </div>

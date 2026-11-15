@@ -3,8 +3,8 @@ import type { ComponentProps } from 'react'
 import { cn } from '@/lib/utils'
 
 /**
- * Jedyne miejsce, w którym żyje szerokość treści strony (max 1280px + gutter 16/32px).
- * Zmiana szerokości lub paddingu wymaga edycji tylko tutaj.
+ * The single place that defines the page content width (max 1280px + 16/32px gutter).
+ * Changing the width or padding only requires an edit here.
  */
 export function Container({ className, ...props }: ComponentProps<'div'>) {
   return <div className={cn('mx-auto max-w-[1280px] px-4 md:px-8', className)} {...props} />
@@ -20,11 +20,11 @@ export type SectionTone = keyof typeof toneClass
 
 interface SectionProps extends ComponentProps<'section'> {
   tone: SectionTone
-  /** Dodatkowe klasy wewnętrznego kontenera (np. grid), bez szerokości. */
+  /** Extra classes for the inner container (e.g. grid), excluding width. */
   containerClassName?: string
 }
 
-/** Sekcja pełnej szerokości: tło wg tonu, wspólny pionowy odstęp i kontener `Container`. */
+/** Full-width section: background by tone, shared vertical spacing and a `Container`. */
 export function Section({ tone, className, containerClassName, children, ...props }: SectionProps) {
   return (
     <section {...props} className={cn(toneClass[tone], 'py-16 md:py-24', className)}>

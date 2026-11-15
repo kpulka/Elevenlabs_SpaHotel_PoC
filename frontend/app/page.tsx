@@ -27,7 +27,7 @@ export default function HomePage() {
         <PageHero
           variant="home"
           minHeight={640}
-          image="/images/hero-pool.png"
+          image="/images/hero-pool.webp"
           alt={t.images.homeHeroAlt}
           tag={t.home.heroTag}
           title={t.home.heroTitle}
@@ -95,7 +95,7 @@ export default function HomePage() {
           </div>
           <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl">
             <Image
-              src="/images/nature-path.png"
+              src="/images/nature-path.webp"
               alt={t.images.natureAlt}
               fill
               className="object-cover"

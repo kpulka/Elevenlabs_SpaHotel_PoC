@@ -5,7 +5,7 @@ import { OG_IMAGE, SITE_NAME } from '@/lib/site'
 
 const title = 'Kontakt i Recepcja 24/7'
 const description =
-  'Kontakt z Uzdrowiskiem Bukowy Dwór w Krynicy-Zdroju: recepcja czynna całodobowo, telefon +48 18 123 45 67, e-mail recepcja@bukowydwor.pl, formularz zapytania o rezerwację oraz rozmowa na żywo z Anną.'
+  'Kontakt z Uzdrowiskiem Bukowy Dwór w Krynicy-Zdroju: recepcja czynna całodobowo, telefon +48 18 123 45 67, e-mail recepcja@bukowydwor.example, formularz zapytania o rezerwację oraz rozmowa na żywo z Anną.'
 
 export const metadata: Metadata = {
   title,

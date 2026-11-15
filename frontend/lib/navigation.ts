@@ -5,7 +5,7 @@ export type NavItem = {
   readonly href: string
 }
 
-/** Główne pozycje nawigacji serwisu — wspólne dla nagłówka i stopki. */
+/** Main site navigation items, shared by the header and the footer. */
 export function getNavItems(t: Dictionary): readonly NavItem[] {
   return [
     { label: t.nav.rooms, href: '/pokoje' },

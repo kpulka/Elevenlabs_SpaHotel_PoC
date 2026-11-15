@@ -20,7 +20,7 @@ export default function RestaurantPage() {
       <SiteHeader />
       <main id="main-content">
         <PageHero
-          image="/images/restaurant.png"
+          image="/images/restaurant.webp"
           alt={t.images.restaurantHeroAlt}
           tag={t.diningPage.tag}
           title={t.diningPage.title}
@@ -46,7 +46,7 @@ export default function RestaurantPage() {
           <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-gold/20 shadow-md">
               <Image
-                src="/images/restaurant-dishes.png"
+                src="/images/restaurant-dishes.webp"
                 alt={t.images.restaurantDishesAlt}
                 fill
                 className="object-cover"

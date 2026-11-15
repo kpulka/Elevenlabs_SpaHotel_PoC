@@ -4,7 +4,7 @@ import { afterEach, describe, expect, it } from 'vitest'
 import { PageHero } from '@/components/page-hero'
 
 describe('PageHero', () => {
-  // Vitest działa bez `globals`, więc RTL nie czyści DOM automatycznie między testami.
+  // Vitest runs without `globals`, so RTL does not clean up the DOM between tests automatically.
   afterEach(() => {
     cleanup()
   })
@@ -12,7 +12,7 @@ describe('PageHero', () => {
   it('renders the image with its alt text and exactly one h1', () => {
     const { container } = render(
       <PageHero
-        image="/images/spa-pool.png"
+        image="/images/spa-pool.webp"
         alt="Basen termalny"
         tag="Strefa SPA"
         title="Odnowa ciała"
@@ -33,7 +33,7 @@ describe('PageHero', () => {
       <PageHero
         variant="home"
         minHeight={640}
-        image="/images/hero-pool.png"
+        image="/images/hero-pool.webp"
         alt="Hotel"
         tag="Uzdrowisko"
         title="Witamy"

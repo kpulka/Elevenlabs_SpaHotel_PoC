@@ -7,11 +7,13 @@
     "build": "next build --webpack",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint --quiet .",
+    "lint": "eslint . --quiet",
     "test": "vitest run",
+    "test:e2e": "playwright test",
     "i18n:check": "node scripts/check-i18n.mjs",
     "data:sync": "node scripts/sync-data.mjs",
-    "data:check": "node scripts/sync-data.mjs --check"
+    "data:check": "node scripts/sync-data.mjs --check",
+    "images:optimize": "node scripts/optimize-images.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.5.0",
@@ -27,6 +29,7 @@
     "tw-animate-css": "^1.4.0"
   },
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@tailwindcss/postcss": "^4.3.3",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
@@ -37,6 +40,7 @@
     "eslint-config-next": "16.3.0",
     "jsdom": "^31.0.0",
     "postcss": "^8.5",
+    "sharp": "^0.35.5",
     "tailwindcss": "^4.3.3",
     "typescript": "5.7.3",
     "vitest": "^5.1.0"

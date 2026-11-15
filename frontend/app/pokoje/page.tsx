@@ -18,7 +18,7 @@ export default function RoomsPage() {
       <SiteHeader />
       <main id="main-content">
         <PageHero
-          image="/images/hero-rooms.png"
+          image="/images/hero-rooms.webp"
           alt={t.images.roomsHeroAlt}
           tag={t.roomsPage.tag}
           title={t.roomsPage.title}

@@ -2,14 +2,14 @@ import type { Language } from "../translations"
 import { type L, loc } from "../i18n"
 
 // ---------------------------------------------------------------------------
-// Diety
+// Diets
 // ---------------------------------------------------------------------------
 
 export type Diet = {
   id: string
   name: string
   description: string
-  /** Dodatkowa informacja praktyczna (np. termin zgłoszenia diety). */
+  /** Extra practical note (e.g. the deadline for requesting a diet). */
   note?: string
 }
 
@@ -21,8 +21,8 @@ type DietCopy = {
 }
 
 /**
- * Dokładnie TRZY diety — tyle, ile realnie oferuje restauracja. Nie dopisuj
- * kolejnych pozycji bez potwierdzenia w bazie wiedzy hotelu.
+ * Exactly THREE diets, as many as the restaurant actually offers. Do not add
+ * more entries without confirmation in the hotel knowledge base.
  */
 const dietCopy: DietCopy[] = [
   {
@@ -68,7 +68,7 @@ export function getDiets(lang: Language): Diet[] {
 }
 
 // ---------------------------------------------------------------------------
-// Godziny posiłków
+// Meal times
 // ---------------------------------------------------------------------------
 
 export type MealTime = {

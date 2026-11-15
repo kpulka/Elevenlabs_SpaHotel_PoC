@@ -7,7 +7,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      // Endpoint API nie ma wartości dla robotów indeksujących.
+      // The API endpoint has no value for crawlers.
       disallow: '/api/',
     },
     sitemap: `${SITE_URL}/sitemap.xml`,

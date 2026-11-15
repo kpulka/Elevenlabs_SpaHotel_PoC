@@ -1,9 +1,9 @@
 import type { Language } from "./translations"
 
-/** Dwujęzyczna wartość — jedno miejsce na parę PL/EN zamiast dwóch równoległych tablic. */
+/** Bilingual value: one place for a PL/EN pair instead of two parallel arrays. */
 export type L<T> = { pl: T; en: T }
 
-/** Wybór wariantu językowego z rekordu dwujęzycznego. */
+/** Picks the language variant from a bilingual record. */
 export function loc<T>(value: L<T>, lang: Language): T {
   return lang === "en" ? value.en : value.pl
 }

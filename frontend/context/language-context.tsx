@@ -22,7 +22,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     try {
       const saved = localStorage.getItem('bukowy_dwor_lang') as Language | null
       if (saved && (saved === 'pl' || saved === 'en')) {
-        // Celowo w efekcie: localStorage czytamy dopiero po montażu, żeby nie było rozjazdu hydracji.
+        // Intentionally in an effect: localStorage is read only after mount to avoid a hydration mismatch.
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setLanguageState(saved)
         document.documentElement.lang = saved
