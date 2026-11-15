@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from logs import log_event
 from services.spa import RegulaOplaty
 
 # (wersja polska, wersja angielska) — tekst reguły opłat trafia do odpowiedzi i logu demo.
@@ -27,5 +28,5 @@ REGULY_OPLAT = {
 
 def odmowa(przed: dict, komunikat: str, po: dict | None = None) -> dict:
     """Jedna fabryka odmowy: wspólny kształt `success: False` + `message`, reszta z kontekstu endpointu."""
-    print(f"   ❌ {komunikat}")
+    log_event("business_rejection", demo=f"   ❌ {komunikat}", message=komunikat)
     return {"success": False, **przed, "message": komunikat, **(po or {})}

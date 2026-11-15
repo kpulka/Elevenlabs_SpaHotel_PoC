@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
-from data import NAZWY_USLUG, demo_log
+from data import NAZWY_USLUG
 from i18n import lang_of, pick
+from logs import log_demo
 from responses._common import odmowa
 from schemas import PrzelozenieSPA
 from services.spa import Odmowa, Powod, Przeniesienie, poza_oknem
@@ -15,7 +16,7 @@ def przelozenie(request: PrzelozenieSPA, wynik: Odmowa | Przeniesienie) -> dict:
         return _odmowa_przelozenia(request, wynik, lang)
 
     nowa = wynik.nowa
-    demo_log(
+    log_demo(
         "🔁 [SPA] ZMIANA TERMINU ZABIEGU (demo log)",
         f"   ID Potwierdzenia : {request.confirmation_id} → {nowa.confirmation_id}",
         f"   Zabieg           : {wynik.usluga.nazwa}",

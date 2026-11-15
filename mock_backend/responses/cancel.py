@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from data import demo_log
 from i18n import lang_of, pick
+from logs import log_demo, log_event
 from responses._common import REGULY_OPLAT
 from schemas import AnulowanieSPA
 from services.spa import WynikAnulowania
@@ -12,7 +12,11 @@ from services.spa import WynikAnulowania
 def anulowanie(request: AnulowanieSPA, wynik: WynikAnulowania) -> dict:
     lang = lang_of(request)
     if not wynik.znaleziona:
-        print(f"   ❌ Nie znaleziono rezerwacji '{request.confirmation_id}' — nie anulowano.")
+        log_event(
+            "reservation_not_found",
+            demo=f"   ❌ Nie znaleziono rezerwacji '{request.confirmation_id}' — nie anulowano.",
+            confirmation_id=request.confirmation_id,
+        )
         return {
             "success": False,
             "confirmation_id": request.confirmation_id,
@@ -42,7 +46,7 @@ def anulowanie(request: AnulowanieSPA, wynik: WynikAnulowania) -> dict:
     regula = pick(lang, regula_pl, regula_en)
     bezplatna = oplata.ulamek == 0.0
 
-    demo_log(
+    log_demo(
         "🗑️  [SPA] ANULOWANIE REZERWACJI (demo log)",
         f"   ID Potwierdzenia : {request.confirmation_id}",
         f"   Powód            : {request.reason or '-'}",

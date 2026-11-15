@@ -12,6 +12,7 @@ import subprocess
 import sys
 import threading
 import time
+import urllib.error
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from types import SimpleNamespace
@@ -189,6 +190,60 @@ def test_transport_error_retried_only_when_asked(monkeypatch):
         ApiClient(base, timeout=0.1).request("GET", "/v1/x")
     with pytest.raises(ApiError, match="nie doszło"):
         ApiClient(base, timeout=0.1, retries=1).request("GET", "/v1/x")
+
+
+class _CountingUrlopen:
+    """Replaces urlopen: records every attempt and always fails with a transport error."""
+
+    def __init__(self) -> None:
+        self.attempts: list[tuple[str, str | None]] = []
+
+    def __call__(self, req, timeout=None):
+        self.attempts.append((req.get_method(), req.get_header("Idempotency-key")))
+        raise urllib.error.URLError("connection refused")
+
+
+@pytest.fixture()
+def failing_transport(monkeypatch):
+    monkeypatch.setattr(_http, "RETRY_DELAY_SECONDS", 0)
+    counter = _CountingUrlopen()
+    monkeypatch.setattr(_http.urllib.request, "urlopen", counter)
+    return counter
+
+
+@pytest.mark.parametrize("method", ["GET", "HEAD", "PUT", "DELETE"])
+def test_idempotent_methods_are_retried_on_transport_error(failing_transport, method):
+    with pytest.raises(ApiError):
+        ApiClient("http://127.0.0.1:1", retries=2).request(method, "/v1/x", {"a": 1} if method == "PUT" else None)
+    assert len(failing_transport.attempts) == 3
+
+
+def test_plain_post_is_never_retried_on_transport_error(failing_transport):
+    # A POST that timed out may already have run on the server; repeating it could book twice.
+    with pytest.raises(ApiError):
+        ApiClient("http://127.0.0.1:1", retries=2).request("POST", "/v1/x", {"a": 1})
+    assert len(failing_transport.attempts) == 1
+
+
+def test_post_with_idempotency_key_is_retried_and_sends_the_header(failing_transport):
+    with pytest.raises(ApiError):
+        ApiClient("http://127.0.0.1:1", retries=2).request("POST", "/v1/x", {"a": 1}, idempotency_key="key-42")
+    assert failing_transport.attempts == [("POST", "key-42")] * 3
+
+
+def test_request_json_and_request_ok_pass_the_idempotency_key(failing_transport):
+    client = ApiClient("http://127.0.0.1:1", retries=1)
+    with pytest.raises(ApiError):
+        client.request_json("POST", "/v1/x", {}, idempotency_key="k-json")
+    with pytest.raises(ApiError):
+        client.request_ok("POST", "/v1/x", {}, idempotency_key="k-ok")
+    assert [key for _, key in failing_transport.attempts] == ["k-json", "k-json", "k-ok", "k-ok"]
+
+
+def test_no_retries_configured_means_single_attempt(failing_transport):
+    with pytest.raises(ApiError):
+        ApiClient("http://127.0.0.1:1", retries=0).request("GET", "/v1/x")
+    assert len(failing_transport.attempts) == 1
 
 
 def test_http_error_is_never_retried(server, monkeypatch):

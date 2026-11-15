@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
-from data import NAZWY_USLUG, demo_log
+from data import NAZWY_USLUG
+from logs import log_demo, log_event
 from schemas import ZapytanieSPA
 from services.spa import Dostepnosc, Powod, cennik, poza_oknem
 
 
 def dostepnosc(request: ZapytanieSPA, wynik: Dostepnosc) -> dict:
-    demo_log(
+    log_demo(
         "📅 [SPA] SPRAWDZENIE DOSTĘPNOŚCI (demo log)",
         f"   Zabieg : {request.service_name}",
         f"   Data   : {request.date}",
@@ -23,11 +24,16 @@ def dostepnosc(request: ZapytanieSPA, wynik: Dostepnosc) -> dict:
     elif wynik.powod is Powod.POZA_OKNEM:
         komunikat = poza_oknem(request.date)
     elif wynik.powod is Powod.BRAK_SLOTOW:
-        print(f"   ❌ Brak wolnych terminów dla '{usluga.nazwa}' w dniu {request.date}.")
+        log_event(
+            "no_free_slots",
+            demo=f"   ❌ Brak wolnych terminów dla '{usluga.nazwa}' w dniu {request.date}.",
+            service=usluga.nazwa,
+            date=request.date,
+        )
         komunikat = f"Brak wolnych terminów dla '{usluga.nazwa}' w dniu {request.date}."
     else:
         sloty = list(wynik.wolne)
-        print(f"   ✅ Dostępne sloty: {', '.join(sloty)}")
+        log_event("slots_available", demo=f"   ✅ Dostępne sloty: {', '.join(sloty)}", slots=sloty)
         return {
             "available": True,
             "slots": sloty,
@@ -54,7 +60,11 @@ def dostepnosc(request: ZapytanieSPA, wynik: Dostepnosc) -> dict:
 
 def _nierozpoznany_zabieg(request: ZapytanieSPA, wynik: Dostepnosc) -> dict:
     """Odpowiedź 200 dla nieznanego / niejednoznacznego zabiegu (agent ma dopytać)."""
-    print(f"   ⚠️  Zabieg '{request.service_name}' — status: {wynik.status}")
+    log_event(
+        "unknown_service",
+        demo=f"   ⚠️  Zabieg '{request.service_name}' — status: {wynik.status}",
+        status=wynik.status,
+    )
     bazowe = {
         "available": False,
         "slots": [],

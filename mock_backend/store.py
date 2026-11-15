@@ -9,11 +9,29 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Iterable, Sequence
+from zoneinfo import ZoneInfo
 
 from catalog import DATA_DIR, Usluga, normalizuj
+
+# Cały backend liczy "dziś" i godziny w strefie zakładu, a nie w strefie serwera (UTC w kontenerze).
+STREFA_ZAKLADU = ZoneInfo("Europe/Warsaw")
+
+
+def dzisiaj_warszawa() -> date:
+    return datetime.now(STREFA_ZAKLADU).date()
+
+
+def teraz_warszawa() -> datetime:
+    """Naiwny czas lokalny Warszawy (spójny z naiwnymi terminami z żądań)."""
+    return datetime.now(STREFA_ZAKLADU).replace(tzinfo=None)
+
+
+def klucz_goscia(gosc: str) -> str:
+    """Porównywalna postać imienia i nazwiska: bez nadmiarowych spacji i wielkości liter."""
+    return " ".join(gosc.split()).casefold()
 
 
 def _wczytaj_json(sciezka: Path) -> dict:
@@ -51,6 +69,11 @@ class SpaStore:
 
     Zajętość trzymamy jako ``{data_iso: {godzina, ...}}`` — jeden wspólny
     kalendarz zabiegowy, patrz ``Rezerwacja.klucz_slotu``.
+
+    Ta klasa to implementacja w pamięci procesu (domyślna). ``sqlite_store.SqliteSpaStore``
+    dziedziczy po niej okno czasowe i reguły i nadpisuje prymitywy magazynu
+    (``_zajete_godziny``, ``zajmij``, ``zwolnij``, ``rezerwacja``, ``rezerwacja_po_kluczu``,
+    ``duplikat``, ``nowy_numer``, ``reset``).
     """
 
     def __init__(self, uslugi: Sequence[Usluga], horyzont_dni: int = 14) -> None:
@@ -58,12 +81,13 @@ class SpaStore:
         self.horyzont_dni = horyzont_dni
         self._zajete: dict[str, set[str]] = {}
         self._rezerwacje: dict[str, Rezerwacja] = {}
+        self._klucze: dict[str, str] = {}  # idempotency_key -> confirmation_id
         self._next_id: int = 1000
 
     # ── okno czasowe ────────────────────────────────────────────────────────
     @property
     def dzisiaj(self) -> date:
-        return date.today()
+        return dzisiaj_warszawa()
 
     @property
     def ostatni_dzien(self) -> date:
@@ -81,18 +105,23 @@ class SpaStore:
         """Wolne godziny dla zabiegu i dnia (pusta lista gdy brak lub poza oknem)."""
         if not self.w_oknie(data_iso):
             return []
-        zajete = self._zajete.get(data_iso, set())
+        zajete = self._zajete_godziny(data_iso)
         return [godzina for godzina in usluga.sloty if godzina not in zajete]
 
     def czy_wolny(self, usluga: Usluga, data_iso: str, godzina: str) -> bool:
         return godzina in self.sloty_dnia(usluga, data_iso)
 
-    def zajmij(self, rezerwacja: Rezerwacja) -> bool:
+    def _zajete_godziny(self, klucz: str) -> set[str]:
+        """Zajęte godziny dla klucza zasobu (w tej implementacji: data ISO)."""
+        return self._zajete.get(klucz, set())
+
+    def zajmij(self, rezerwacja: Rezerwacja, idempotency_key: str | None = None) -> bool:
         """Rezerwuje slot. Zwraca False, jeśli slot jest już zajęty.
 
         Sprawdzenie i zapis są w jednej sekcji bez ``await``, a klucz jest
         wspólny dla wszystkich zabiegów — drugi gość na tę samą godzinę
-        (nawet na inny zabieg) dostaje False.
+        (nawet na inny zabieg) dostaje False. Gdy podano ``idempotency_key``,
+        zapisujemy go razem z rezerwacją.
         """
         klucz = rezerwacja.klucz_slotu
         zajete = self._zajete.setdefault(klucz, set())
@@ -100,6 +129,8 @@ class SpaStore:
             return False
         zajete.add(rezerwacja.godzina)
         self._rezerwacje[rezerwacja.confirmation_id] = rezerwacja
+        if idempotency_key:
+            self._klucze[idempotency_key] = rezerwacja.confirmation_id
         return True
 
     def zwolnij(self, confirmation_id: str) -> Rezerwacja | None:
@@ -117,6 +148,25 @@ class SpaStore:
     def rezerwacja(self, confirmation_id: str) -> Rezerwacja | None:
         return self._rezerwacje.get(confirmation_id)
 
+    # ── idempotencja ────────────────────────────────────────────────────────
+    def rezerwacja_po_kluczu(self, klucz: str) -> Rezerwacja | None:
+        """Aktywna rezerwacja zapisana pod kluczem idempotencji (anulowana = None)."""
+        numer = self._klucze.get(klucz)
+        return self._rezerwacje.get(numer) if numer else None
+
+    def duplikat(self, kod_uslugi: str, data_iso: str, godzina: str, gosc: str) -> Rezerwacja | None:
+        """Aktywna rezerwacja tego samego zabiegu, terminu i gościa (fallback bez klucza)."""
+        cel = klucz_goscia(gosc)
+        for rezerwacja in self._rezerwacje.values():
+            if (
+                rezerwacja.kod_uslugi == kod_uslugi
+                and rezerwacja.data == data_iso
+                and rezerwacja.godzina == godzina
+                and klucz_goscia(rezerwacja.gosc) == cel
+            ):
+                return rezerwacja
+        return None
+
     def nowy_numer(self) -> str:
         """Unikalny numer potwierdzenia w formacie SPA-XXXX."""
         self._next_id += 1
@@ -130,6 +180,7 @@ class SpaStore:
         """Czyści stan (używane w testach)."""
         self._zajete.clear()
         self._rezerwacje.clear()
+        self._klucze.clear()
         self._next_id = 1000
 
 

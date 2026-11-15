@@ -22,7 +22,7 @@ def test_send_sms_summary_en(client):
     body = odpowiedz.json()
     assert odpowiedz.status_code == 200
     assert body["success"] is True
-    assert body["delivered_to"] == "+48600100200"
+    assert body["delivered_to"] == "********200"  # PII: masked in responses too (see logs.mask_phone)
     assert body["language"] == "en"
     assert body["message"] == "Message sent."
 
@@ -41,3 +41,33 @@ def test_transfer_to_simulated_handoff(client):
     assert body["simulated"] is True
     assert body["department"] == "Dyżurka medyczna (gabinet 101)"
     assert body["language"] == "pl"
+
+
+def test_handoff_telegram_alert_masks_guest_and_phone(client, monkeypatch):
+    import telegram
+
+    wyslane: list[str] = []
+
+    async def falszywy_telegram(tekst: str, etykieta: str = "") -> bool:
+        wyslane.append(tekst)
+        return True
+
+    monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "123:TEST")
+    monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
+    monkeypatch.setattr(telegram, "wyslij_wiadomosc", falszywy_telegram)
+
+    client.post(
+        HANDOFF,
+        json={
+            "department": "recepcja",
+            "reason": "Oddzwońcie na 600 100 299",
+            "guest_name": "Jan Kowalski",
+            "language": "pl",
+        },
+    )
+    assert len(wyslane) == 1
+    alert = wyslane[0]
+    assert "Jan K." in alert
+    assert "Jan Kowalski" not in alert
+    assert "600 100 299" not in alert and "600100299" not in alert
+    assert "******299" in alert  # nine digits: six stars and the last three

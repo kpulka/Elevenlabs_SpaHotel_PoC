@@ -82,7 +82,11 @@ def test_booking_consumes_slot(client):
 
 def test_double_booking_same_slot_fails_with_remaining_slots(client):
     assert rezerwuj(client).json()["success"] is True
-    druga = rezerwuj(client)
+    # Inny gość: identyczne żądanie to retry i zwraca oryginalne potwierdzenie (test_idempotency.py).
+    druga = client.post(
+        BOOK,
+        json={"service_name": "masaż klasyczny", "date": dzien(3), "time": "14:00", "guest_name": "Anna Nowak"},
+    )
     body = druga.json()
     assert druga.status_code == 200
     assert body["success"] is False

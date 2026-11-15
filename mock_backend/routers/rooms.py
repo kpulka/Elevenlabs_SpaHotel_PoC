@@ -4,13 +4,15 @@ from __future__ import annotations
 
 from datetime import date
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 
-from data import POKOJE, demo_log
+from data import POKOJE
+from logs import log_demo, log_event
+from routers.security import require_webhook_secret
 from schemas import SprawdzeniePokoj
-from store import daty_pobytu
+from store import daty_pobytu, dzisiaj_warszawa
 
-router = APIRouter(tags=["rooms"])
+router = APIRouter(tags=["rooms"], dependencies=[Depends(require_webhook_secret)])
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -20,7 +22,7 @@ router = APIRouter(tags=["rooms"])
 @router.post("/check_room_availability")
 async def check_room_availability(request: SprawdzeniePokoj):
     """Sprawdza dostępność pokoju i liczy cenę pobytu (cennik z data/rooms.json)."""
-    demo_log(
+    log_demo(
         "🏨 [POKOJE] SPRAWDZENIE DOSTĘPNOŚCI (demo log)",
         f"   Typ pokoju  : {request.room_type}",
         f"   Check-in    : {request.check_in}",
@@ -29,7 +31,11 @@ async def check_room_availability(request: SprawdzeniePokoj):
 
     typ = POKOJE.znajdz(request.room_type)
     if typ is None:
-        print(f"   ⚠️  Nieznany/niejednoznaczny typ pokoju: '{request.room_type}'")
+        log_event(
+            "unknown_room_type",
+            demo=f"   ⚠️  Nieznany/niejednoznaczny typ pokoju: '{request.room_type}'",
+            room_type=request.room_type,
+        )
         return {
             "available": False,
             "room_type": request.room_type,
@@ -58,7 +64,7 @@ async def check_room_availability(request: SprawdzeniePokoj):
             "message": "Data wymeldowania musi być późniejsza niż data zameldowania.",
         }
 
-    if data_in < date.today():
+    if data_in < dzisiaj_warszawa():
         return {
             "available": False,
             "room_type": typ.kod,
@@ -75,7 +81,11 @@ async def check_room_availability(request: SprawdzeniePokoj):
     kolizja = sorted(set(daty_pobytu(request.check_in, request.check_out)) & zajete)
 
     if kolizja:
-        print(f"   ❌ ZAJĘTE — kolizja z blokadą {POKOJE.opis_blokady()}: {', '.join(kolizja)}")
+        log_event(
+            "room_blocked",
+            demo=f"   ❌ ZAJĘTE — kolizja z blokadą {POKOJE.opis_blokady()}: {', '.join(kolizja)}",
+            room_type=typ.kod,
+        )
         return {
             "available": False,
             "room_type": typ.kod,
@@ -91,9 +101,14 @@ async def check_room_availability(request: SprawdzeniePokoj):
             ),
         }
 
-    print(
-        f"   ✅ DOSTĘPNY — {liczba_nocy} noc(y) × {typ.cena_za_noc:g} {typ.waluta} "
-        f"= {cena_calkowita:g} {typ.waluta} łącznie."
+    log_event(
+        "room_available",
+        demo=(
+            f"   ✅ DOSTĘPNY — {liczba_nocy} noc(y) × {typ.cena_za_noc:g} {typ.waluta} "
+            f"= {cena_calkowita:g} {typ.waluta} łącznie."
+        ),
+        room_type=typ.kod,
+        total_price=cena_calkowita,
     )
     return {
         "available": True,

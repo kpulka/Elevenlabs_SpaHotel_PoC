@@ -9,6 +9,10 @@ Dwa style obsługi odpowiedzi, jawnie:
   * ``request_ok()`` rzuca ``ApiError`` na 4xx/5xx i na nie-JSON.
 Błędy sieci (DNS, timeout, reset połączenia) rzucają ``ApiError`` we wszystkich trybach.
 
+Ponowienia (``retries``) dotyczą WYŁĄCZNIE błędów transportu i tylko żądań bezpiecznych do powtórzenia:
+GET/HEAD/PUT/DELETE albo POST z ``idempotency_key`` (wtedy nagłówek ``Idempotency-Key``). Zwykły POST
+po timeoucie mógł się wykonać po stronie serwera, więc nie jest ponawiany.
+
 Klucz API trafia tylko do nagłówka. Każdy komunikat wyjątku przechodzi przez ``redact()``,
 więc klucz nie pojawi się w tekście błędu nawet wtedy, gdy serwer go odbije.
 
@@ -25,7 +29,7 @@ import time
 import urllib.error
 import urllib.request
 from pathlib import Path
-from typing import Any, Optional, Tuple
+from typing import Any
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 ENV_LOCAL = PROJECT_ROOT / "frontend" / ".env.local"
@@ -33,13 +37,15 @@ DEFAULT_TIMEOUT = 60.0
 ERROR_BODY_LIMIT = 300
 RETRY_DELAY_SECONDS = 1.5
 REDACTED = "***"
+# Methods that are safe to repeat after a transport error (RFC 9110, section 9.2.2).
+IDEMPOTENT_METHODS = frozenset({"GET", "HEAD", "PUT", "DELETE"})
 
 
 class ApiError(RuntimeError):
     """API nieosiągalne albo odpowiedź, której nie da się użyć."""
 
 
-def resolve_api_key(cli_value: Optional[str] = None, env_file: Optional[Path] = None) -> Optional[str]:
+def resolve_api_key(cli_value: str | None = None, env_file: Path | None = None) -> str | None:
     """--api-key > $ELEVENLABS_API_KEY > plik .env (domyślnie frontend/.env.local). Nigdy nie drukowany."""
     if cli_value and cli_value.strip():
         return cli_value.strip()
@@ -69,7 +75,7 @@ class ApiClient:
     def __init__(
         self,
         base: str,
-        key: Optional[str] = None,
+        key: str | None = None,
         timeout: float = DEFAULT_TIMEOUT,
         retries: int = 0,
     ) -> None:
@@ -84,37 +90,57 @@ class ApiClient:
             return text.replace(self._key, REDACTED)
         return text
 
+    def may_retry(self, method: str, idempotency_key: str | None = None) -> bool:
+        """True when a transport error may be retried for this request (see module docstring)."""
+        if self.retries <= 0:
+            return False
+        return method.upper() in IDEMPOTENT_METHODS or bool(idempotency_key)
+
     def request(
-        self, method: str, path: str, body: Optional[Any] = None, timeout: Optional[float] = None
-    ) -> Tuple[int, str]:
+        self,
+        method: str,
+        path: str,
+        body: Any | None = None,
+        timeout: float | None = None,
+        idempotency_key: str | None = None,
+    ) -> tuple[int, str]:
         """Surowe ``(status, tekst)``. Nie rzuca na 4xx/5xx; rzuca ``ApiError`` przy błędzie sieci."""
         url = f"{self.base}{path}"
         data = json.dumps(body, ensure_ascii=False).encode("utf-8") if body is not None else None
         effective_timeout = self.timeout if timeout is None else timeout
+        attempts = self.retries + 1 if self.may_retry(method, idempotency_key) else 1
         last_error = ""
-        for attempt in range(self.retries + 1):
+        for attempt in range(attempts):
             req = urllib.request.Request(url, data=data, method=method)
             req.add_header("Accept", "application/json")
             if self._key:
                 req.add_header("xi-api-key", self._key)
             if data is not None:
                 req.add_header("Content-Type", "application/json; charset=utf-8")
+            if idempotency_key:
+                req.add_header("Idempotency-Key", idempotency_key)
             try:
                 with urllib.request.urlopen(req, timeout=effective_timeout) as resp:
                     return resp.status, resp.read().decode("utf-8", "replace")
             except urllib.error.HTTPError as exc:  # odpowiedź serwera, nie błąd transportu
-                return exc.code, exc.read().decode("utf-8", "replace")
+                with exc:  # close the response body, not just read it
+                    return exc.code, exc.read().decode("utf-8", "replace")
             except (urllib.error.URLError, http.client.HTTPException, TimeoutError, OSError) as exc:
                 last_error = str(exc)
-                if attempt < self.retries:
+                if attempt < attempts - 1:
                     time.sleep(RETRY_DELAY_SECONDS)
         raise ApiError(self.redact(f"{method} {path} nie doszło: {last_error}"))
 
     def request_json(
-        self, method: str, path: str, body: Optional[Any] = None, timeout: Optional[float] = None
-    ) -> Tuple[int, Any]:
+        self,
+        method: str,
+        path: str,
+        body: Any | None = None,
+        timeout: float | None = None,
+        idempotency_key: str | None = None,
+    ) -> tuple[int, Any]:
         """``(status, obiekt JSON)``; pusta treść -> ``{}``; nie-JSON zwracany jako tekst."""
-        status, text = self.request(method, path, body, timeout)
+        status, text = self.request(method, path, body, timeout, idempotency_key)
         if not text.strip():
             return status, {}
         try:
@@ -123,10 +149,15 @@ class ApiClient:
             return status, text
 
     def request_ok(
-        self, method: str, path: str, body: Optional[Any] = None, timeout: Optional[float] = None
+        self,
+        method: str,
+        path: str,
+        body: Any | None = None,
+        timeout: float | None = None,
+        idempotency_key: str | None = None,
     ) -> Any:
         """Zwraca JSON; rzuca ``ApiError`` na HTTP >= 400 albo na nie-JSON."""
-        status, text = self.request(method, path, body, timeout)
+        status, text = self.request(method, path, body, timeout, idempotency_key)
         if status >= 400:
             snippet = text.strip()[:ERROR_BODY_LIMIT]
             raise ApiError(self.redact(f"{method} {path} -> HTTP {status}: {snippet}"))

@@ -1,0 +1,18 @@
+# Coverage for mock_backend. Not enabled by default (pytest.ini has no --cov); CI passes --cov.
+#   python -m pytest -q --cov=. --cov-report=term-missing
+[run]
+source = .
+omit =
+    tests/*
+    # CLI entry points that call the live ElevenLabs API. They are network glue: their pure helpers
+    # are tested through the shared client (tunnel/_http.py) and tests/test_run_simulations.py,
+    # and exercising the rest needs live calls, which the offline suite must never make.
+    tunnel/sync_agent_tools.py
+    tunnel/run_simulations.py
+
+[report]
+precision = 1
+show_missing = True
+exclude_also =
+    if __name__ == .__main__.:
+    raise NotImplementedError

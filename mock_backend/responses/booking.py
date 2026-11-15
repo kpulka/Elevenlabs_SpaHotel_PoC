@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
-from data import NAZWY_USLUG, demo_log
+from data import NAZWY_USLUG
+from logs import log_demo, log_event
 from responses._common import odmowa
 from schemas import RezerwacjaSPA
 from services.spa import Odmowa, Potwierdzenie, Powod, poza_oknem
 
 
 def rezerwacja(request: RezerwacjaSPA, wynik: Odmowa | Potwierdzenie) -> dict:
-    demo_log(
+    log_demo(
         "✍️  [SPA] NOWA REZERWACJA ZABIEGU (demo log)",
         f"   Gość    : {request.guest_name}",
         f"   Zabieg  : {request.service_name}",
@@ -19,7 +20,8 @@ def rezerwacja(request: RezerwacjaSPA, wynik: Odmowa | Potwierdzenie) -> dict:
         return _odmowa_rezerwacji(request, wynik)
 
     rezerwacja_ = wynik.rezerwacja
-    print(f"   ✅ Potwierdzenie: {rezerwacja_.confirmation_id}")
+    log_event("booking_confirmed", demo=f"   ✅ Potwierdzenie: {rezerwacja_.confirmation_id}",
+              confirmation_id=rezerwacja_.confirmation_id)
     return {
         "success": True,
         "confirmation_id": rezerwacja_.confirmation_id,
@@ -56,6 +58,8 @@ def _odmowa_rezerwacji(request: RezerwacjaSPA, wynik_odmowy: Odmowa) -> dict:
             f"Zabieg '{request.service_name}' nie jest oferowany w naszym SPA.",
             {"available_services": NAZWY_USLUG},
         )
+    if wynik_odmowy.powod is Powod.KLUCZ_KONFLIKT:
+        return odmowa(przed, "Ten klucz idempotencji był już użyty do innej rezerwacji. Wygeneruj nowy klucz.")
     if wynik_odmowy.powod is Powod.PRZESZLOSC:
         return odmowa(przed, f"Data {request.date} jest w przeszłości — nie można zarezerwować terminu.")
     if wynik_odmowy.powod is Powod.POZA_OKNEM:

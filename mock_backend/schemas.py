@@ -7,14 +7,18 @@ Zasada: błędy FORMATU (zła data, zła godzina, puste imię) to HTTP 422 —
 agent dostaje czytelny błąd walidacji. Błędy BIZNESOWE (termin w przeszłości,
 zajęty slot, nieznany zabieg) zwracają HTTP 200 z ``available/success: false``
 i wyjaśnieniem w ``message``, bo agent głosowy radzi sobie z tym znacznie lepiej.
+
+Wspólne reguły są zdefiniowane raz jako typy ``Annotated`` (np. ``NazwaUslugi``, ``DataISO``)
+i używane we wszystkich modelach, które ich potrzebują.
 """
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import date, datetime
-from typing import Optional
+from typing import Annotated
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import AfterValidator, BaseModel, Field
 
 # Godziny w formacie HH:MM — "99:99" nie przejdzie walidacji formatu.
 FORMAT_GODZINY = "%H:%M"
@@ -59,71 +63,93 @@ def _waliduj_date_czasu(wartosc: str) -> str:
     return oczyszczona
 
 
-def _waliduj_jezyk(wartosc: Optional[str]) -> str:
+def _waliduj_jezyk(wartosc: str | None) -> str:
     return "en" if (wartosc or "").strip().lower().startswith("en") else "pl"
 
 
-class _ModelZJezykiem(BaseModel):
-    language: Optional[str] = "pl"
+def _niepusty(pole: str, komunikat: str | None = None) -> Callable[[str], str]:
+    """Fabryka walidatora: przycina wartość i odrzuca pusty ciąg."""
 
-    @field_validator("language")
-    @classmethod
-    def _jezyk(cls, wartosc: Optional[str]) -> str:
-        return _waliduj_jezyk(wartosc)
+    def _waliduj(wartosc: str) -> str:
+        oczyszczona = wartosc.strip()
+        if not oczyszczona:
+            raise ValueError(komunikat or f"{pole} nie może być pusty.")
+        return oczyszczona
+
+    return _waliduj
+
+
+def _numer_potwierdzenia(wartosc: str) -> str:
+    return _niepusty("confirmation_id")(wartosc).upper()
+
+
+def _klucz_idempotencji(wartosc: str | None) -> str | None:
+    if wartosc is None or not wartosc.strip():
+        return None
+    return wartosc.strip()
+
+
+def _telefon(wartosc: str) -> str:
+    oczyszczona = wartosc.strip()
+    if sum(znak.isdigit() for znak in oczyszczona) < 6:
+        raise ValueError("phone_number musi zawierać co najmniej 6 cyfr (np. +48600100200).")
+    return oczyszczona
+
+
+def _termin_zabiegu(wartosc: str | None) -> str | None:
+    return None if wartosc is None or not wartosc.strip() else _waliduj_date_czasu(wartosc)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Typy wspólne (raz zdefiniowane, używane w wielu modelach)
+# ─────────────────────────────────────────────────────────────────────────────
+
+NazwaUslugi = Annotated[
+    str,
+    Field(min_length=1, max_length=120),
+    AfterValidator(_niepusty("service_name")),
+]
+DataISO = Annotated[str, AfterValidator(_waliduj_date)]
+GodzinaHHMM = Annotated[str, AfterValidator(_waliduj_godzine)]
+Jezyk = Annotated[str | None, AfterValidator(_waliduj_jezyk)]
+NumerPotwierdzenia = Annotated[
+    str,
+    Field(min_length=1, max_length=40),
+    AfterValidator(_numer_potwierdzenia),
+]
+
+
+class _ModelZJezykiem(BaseModel):
+    language: Jezyk = "pl"
 
 
 class _ModelZPotwierdzeniem(_ModelZJezykiem):
     """Bazowy model dla żądań wymagających identyfikatora potwierdzenia rezerwacji."""
 
-    confirmation_id: str = Field(..., min_length=1, max_length=40)
-
-    @field_validator("confirmation_id")
-    @classmethod
-    def _numer(cls, wartosc: str) -> str:
-        oczyszczona = wartosc.strip()
-        if not oczyszczona:
-            raise ValueError("confirmation_id nie może być pusty.")
-        return oczyszczona.upper()
+    confirmation_id: NumerPotwierdzenia
 
 
 class ZapytanieSPA(BaseModel):
     """Żądanie sprawdzenia dostępności zabiegu SPA."""
 
-    service_name: str = Field(..., min_length=1, max_length=120)
-    date: str
-
-    @field_validator("service_name")
-    @classmethod
-    def _nazwa(cls, wartosc: str) -> str:
-        oczyszczona = wartosc.strip()
-        if not oczyszczona:
-            raise ValueError("service_name nie może być pusty.")
-        return oczyszczona
-
-    @field_validator("date")
-    @classmethod
-    def _data(cls, wartosc: str) -> str:
-        return _waliduj_date(wartosc)
+    service_name: NazwaUslugi
+    date: DataISO
 
 
 class RezerwacjaSPA(ZapytanieSPA):
-    """Żądanie rezerwacji zabiegu SPA."""
+    """Żądanie rezerwacji zabiegu SPA.
 
-    time: str
-    guest_name: str = Field(..., min_length=1, max_length=120)
+    ``idempotency_key`` (opcjonalny) pozwala bezpiecznie ponowić to samo żądanie: backend
+    zwróci wtedy oryginalne potwierdzenie zamiast odmowy "slot zajęty".
+    """
 
-    @field_validator("time")
-    @classmethod
-    def _godzina(cls, wartosc: str) -> str:
-        return _waliduj_godzine(wartosc)
-
-    @field_validator("guest_name")
-    @classmethod
-    def _gosc(cls, wartosc: str) -> str:
-        oczyszczona = wartosc.strip()
-        if not oczyszczona:
-            raise ValueError("guest_name nie może być pusty — potrzebne do rezerwacji.")
-        return oczyszczona
+    time: GodzinaHHMM
+    guest_name: Annotated[
+        str,
+        Field(min_length=1, max_length=120),
+        AfterValidator(_niepusty("guest_name", "guest_name nie może być pusty — potrzebne do rezerwacji.")),
+    ]
+    idempotency_key: Annotated[str | None, Field(max_length=128), AfterValidator(_klucz_idempotencji)] = None
 
 
 class AnulowanieSPA(_ModelZPotwierdzeniem):
@@ -135,88 +161,42 @@ class AnulowanieSPA(_ModelZPotwierdzeniem):
     wywołaniami agenta), ale bez niego backend nie zna godziny zabiegu.
     """
 
-    reason: Optional[str] = ""
-    medical_release: Optional[bool] = False
-    appointment_datetime: Optional[str] = None
-
-    @field_validator("appointment_datetime")
-    @classmethod
-    def _termin(cls, wartosc: Optional[str]) -> Optional[str]:
-        return None if wartosc is None or not wartosc.strip() else _waliduj_date_czasu(wartosc)
+    reason: str | None = Field(default="", max_length=500)
+    medical_release: bool | None = False
+    appointment_datetime: Annotated[str | None, AfterValidator(_termin_zabiegu)] = None
 
 
 class PrzelozenieSPA(_ModelZPotwierdzeniem):
     """Żądanie zmiany terminu zabiegu SPA (reschedule)."""
 
-    service_name: str = Field(..., min_length=1, max_length=120)
-    new_date: str
-    new_time: str
-    guest_name: Optional[str] = ""
-
-    @field_validator("service_name")
-    @classmethod
-    def _nazwa(cls, wartosc: str) -> str:
-        oczyszczona = wartosc.strip()
-        if not oczyszczona:
-            raise ValueError("service_name nie może być pusty.")
-        return oczyszczona
-
-    @field_validator("new_date")
-    @classmethod
-    def _data(cls, wartosc: str) -> str:
-        return _waliduj_date(wartosc)
-
-    @field_validator("new_time")
-    @classmethod
-    def _godzina(cls, wartosc: str) -> str:
-        return _waliduj_godzine(wartosc)
+    service_name: NazwaUslugi
+    new_date: DataISO
+    new_time: GodzinaHHMM
+    guest_name: str | None = Field(default="", max_length=120)
 
 
 class SprawdzeniePokoj(BaseModel):
     """Żądanie sprawdzenia dostępności pokoju."""
 
-    room_type: str = Field(..., min_length=1, max_length=80)
-    check_in: str
-    check_out: str
-
-    @field_validator("room_type")
-    @classmethod
-    def _typ(cls, wartosc: str) -> str:
-        oczyszczona = wartosc.strip()
-        if not oczyszczona:
-            raise ValueError("room_type nie może być pusty.")
-        return oczyszczona
-
-    @field_validator("check_in", "check_out")
-    @classmethod
-    def _data(cls, wartosc: str) -> str:
-        return _waliduj_date(wartosc)
+    room_type: Annotated[
+        str,
+        Field(min_length=1, max_length=80),
+        AfterValidator(_niepusty("room_type")),
+    ]
+    check_in: DataISO
+    check_out: DataISO
 
 
 class WysylkaSMS(_ModelZJezykiem):
     """Żądanie wysłania podsumowania SMS/Telegram."""
 
-    phone_number: str = Field(..., min_length=3, max_length=32)
-    summary_text: str = Field(..., min_length=1, max_length=2000)
-    confirmation_id: Optional[str] = ""
-
-    @field_validator("phone_number")
-    @classmethod
-    def _telefon(cls, wartosc: str) -> str:
-        oczyszczona = wartosc.strip()
-        if sum(znak.isdigit() for znak in oczyszczona) < 6:
-            raise ValueError(
-                "phone_number musi zawierać co najmniej 6 cyfr (np. +48600100200)."
-            )
-        return oczyszczona
-
-    @field_validator("summary_text")
-    @classmethod
-    def _tresc(cls, wartosc: str) -> str:
-        oczyszczona = wartosc.strip()
-        if not oczyszczona:
-            raise ValueError("summary_text nie może być pusty.")
-        return oczyszczona
+    phone_number: Annotated[str, Field(min_length=3, max_length=32), AfterValidator(_telefon)]
+    summary_text: Annotated[
+        str,
+        Field(min_length=1, max_length=2000),
+        AfterValidator(_niepusty("summary_text")),
+    ]
+    confirmation_id: str | None = ""
 
 
 class Handoff(_ModelZJezykiem):
@@ -227,6 +207,6 @@ class Handoff(_ModelZJezykiem):
     loguje zdarzenie do konsoli i (opcjonalnie) wysyła alert na Telegram.
     """
 
-    department: Optional[str] = "recepcja"  # recepcja | dyzurka_medyczna
-    reason: Optional[str] = ""
-    guest_name: Optional[str] = ""
+    department: str | None = Field(default="recepcja", max_length=40)  # recepcja | dyzurka_medyczna
+    reason: str | None = Field(default="", max_length=500)
+    guest_name: str | None = Field(default="", max_length=120)

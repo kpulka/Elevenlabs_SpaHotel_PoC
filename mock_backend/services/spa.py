@@ -1,8 +1,8 @@
 """Reguły biznesowe zabiegów SPA.
 
 Moduł nie zna FastAPI ani formatu odpowiedzi: zwraca wyniki domenowe (dataclass / Enum).
-Teksty dla agenta, słowniki odpowiedzi, ``print`` i logi demo buduje ``responses.py``.
-Jedyny stan zmieniany tutaj to kalendarz w ``SPA_STORE`` (zajmij / zwolnij).
+Teksty dla agenta, słowniki odpowiedzi i logi demo buduje ``responses.py``.
+Jedyny stan zmieniany tutaj to kalendarz w ``data.SPA_STORE`` (zajmij / zwolnij).
 """
 
 from __future__ import annotations
@@ -12,9 +12,10 @@ from dataclasses import dataclass
 from datetime import date, datetime
 from enum import Enum
 
+import data
 from catalog import Usluga, WynikDopasowania, dopasuj
-from data import SPA_STORE, USLUGI
-from store import Rezerwacja, SpaStore
+from data import USLUGI
+from store import STREFA_ZAKLADU, Rezerwacja, SpaStore, klucz_goscia, teraz_warszawa
 
 # Próg bezpłatnej anulacji: odwołanie ściśle ponad 2 h przed zabiegiem jest bezpłatne.
 PROG_BEZPLATNEJ_ANULACJI_H = 2
@@ -33,6 +34,7 @@ class Powod(str, Enum):
     ZAJETY = "zajety"
     WYSCIG = "wyscig"  # slot zajęty między sprawdzeniem a zapisem
     NIE_ZNALEZIONO = "nie_znaleziono"
+    KLUCZ_KONFLIKT = "klucz_konflikt"  # ten sam idempotency_key użyty do innej rezerwacji
 
 
 class RegulaOplaty(str, Enum):
@@ -61,6 +63,7 @@ class Dostepnosc:
 class Potwierdzenie:
     rezerwacja: Rezerwacja
     usluga: Usluga
+    nowa: bool = True  # False = ponowienie istniejącej rezerwacji (idempotencja), bez nowego zdarzenia
 
 
 @dataclass(frozen=True)
@@ -96,7 +99,7 @@ def znajdz_zabieg(zapytanie: str) -> WynikDopasowania:
 
 
 def _w_przeszlosci(data_iso: str) -> bool:
-    return date.fromisoformat(data_iso) < SPA_STORE.dzisiaj
+    return date.fromisoformat(data_iso) < data.SPA_STORE.dzisiaj
 
 
 def _nazwy(uslugi: Iterable[Usluga]) -> tuple[str, ...]:
@@ -115,7 +118,7 @@ def sprawdz_dostepnosc(zapytanie: str, data_iso: str) -> Dostepnosc:
 
     if _w_przeszlosci(data_iso):
         return Dostepnosc(usluga, wynik.status, Powod.PRZESZLOSC)
-    if not SPA_STORE.w_oknie(data_iso):
+    if not data.SPA_STORE.w_oknie(data_iso):
         return Dostepnosc(usluga, wynik.status, Powod.POZA_OKNEM)
 
     wolne = tuple(wolne_sloty(usluga, data_iso))
@@ -128,7 +131,13 @@ def sprawdz_dostepnosc(zapytanie: str, data_iso: str) -> Dostepnosc:
 # Rezerwacja
 # ─────────────────────────────────────────────────────────────────────────────
 
-def zarezerwuj(zapytanie: str, data_iso: str, godzina: str, gosc: str) -> Odmowa | Potwierdzenie:
+def zarezerwuj(
+    zapytanie: str,
+    data_iso: str,
+    godzina: str,
+    gosc: str,
+    idempotency_key: str | None = None,
+) -> Odmowa | Potwierdzenie:
     wynik = znajdz_zabieg(zapytanie)
     usluga = wynik.usluga  # zawężenie typu: patrz sprawdz_dostepnosc
     if usluga is None or not wynik.dopasowano:
@@ -136,9 +145,15 @@ def zarezerwuj(zapytanie: str, data_iso: str, godzina: str, gosc: str) -> Odmowa
             return Odmowa(Powod.NIEJEDNOZNACZNY, kandydaci=_nazwy(wynik.kandydaci))
         return Odmowa(Powod.NIEZNANY)
 
+    # Ponowne wysłanie tej samej rezerwacji (retry) ma zwrócić ORYGINALNE potwierdzenie,
+    # a nie "slot zajęty" — sprawdzamy to przed regułami czasu, bo dzień mógł już minąć.
+    powtorka = _powtorka_rezerwacji(usluga, data_iso, godzina, gosc, idempotency_key)
+    if powtorka is not None:
+        return powtorka
+
     if _w_przeszlosci(data_iso):
         return Odmowa(Powod.PRZESZLOSC, usluga)
-    if not SPA_STORE.w_oknie(data_iso):
+    if not data.SPA_STORE.w_oknie(data_iso):
         return Odmowa(Powod.POZA_OKNEM, usluga)
 
     wolne = tuple(wolne_sloty(usluga, data_iso))
@@ -149,15 +164,42 @@ def zarezerwuj(zapytanie: str, data_iso: str, godzina: str, gosc: str) -> Odmowa
 
     # Odczyt i zapis stanu bez `await` — w jednym event loopie operacja jest atomowa.
     rezerwacja = Rezerwacja(
-        confirmation_id=SPA_STORE.nowy_numer(),
+        confirmation_id=data.SPA_STORE.nowy_numer(),
         kod_uslugi=usluga.kod,
         data=data_iso,
         godzina=godzina,
         gosc=gosc,
     )
-    if not SPA_STORE.zajmij(rezerwacja):
+    # Rezerwacja i klucz idempotencji zapisywane razem (w SQLite w jednej transakcji).
+    if not data.SPA_STORE.zajmij(rezerwacja, idempotency_key=idempotency_key):
         return Odmowa(Powod.WYSCIG, usluga, wolne=tuple(wolne_sloty(usluga, data_iso)))
     return Potwierdzenie(rezerwacja, usluga)
+
+
+def _powtorka_rezerwacji(
+    usluga: Usluga,
+    data_iso: str,
+    godzina: str,
+    gosc: str,
+    idempotency_key: str | None,
+) -> Potwierdzenie | Odmowa | None:
+    """Zwraca istniejące potwierdzenie, gdy żądanie powtarza już zapisaną rezerwację.
+
+    1. ``idempotency_key`` znany -> ta sama rezerwacja (zgodny payload) albo konflikt klucza.
+    2. Brak klucza / nieznany klucz -> fallback: ta sama usługa, data, godzina i gość (po normalizacji).
+    """
+    if idempotency_key:
+        znana = data.SPA_STORE.rezerwacja_po_kluczu(idempotency_key)
+        if znana is not None:
+            oryginal = (znana.kod_uslugi, znana.data, znana.godzina, klucz_goscia(znana.gosc))
+            if oryginal == (usluga.kod, data_iso, godzina, klucz_goscia(gosc)):
+                return Potwierdzenie(znana, usluga, nowa=False)
+            return Odmowa(Powod.KLUCZ_KONFLIKT, usluga)
+
+    duplikat = data.SPA_STORE.duplikat(usluga.kod, data_iso, godzina, gosc)
+    if duplikat is not None:
+        return Potwierdzenie(duplikat, usluga, nowa=False)
+    return None
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -182,8 +224,8 @@ def oblicz_oplate_anulowania(
 
     termin = datetime.fromisoformat(appointment_datetime)
     if termin.tzinfo is not None:
-        termin = termin.astimezone().replace(tzinfo=None)
-    punkt_odniesienia = datetime.now() if teraz is None else teraz
+        termin = termin.astimezone(STREFA_ZAKLADU).replace(tzinfo=None)
+    punkt_odniesienia = teraz_warszawa() if teraz is None else teraz
     godziny_przed = (termin - punkt_odniesienia).total_seconds() / 3600
 
     if godziny_przed > PROG_BEZPLATNEJ_ANULACJI_H:
@@ -197,10 +239,10 @@ def anuluj_rezerwacje(
     appointment_datetime: str | None,
     teraz: datetime | None = None,
 ) -> WynikAnulowania:
-    if SPA_STORE.rezerwacja(numer) is None:
+    if data.SPA_STORE.rezerwacja(numer) is None:
         return WynikAnulowania(znaleziona=False)
     oplata = oblicz_oplate_anulowania(medical_release, appointment_datetime, teraz)
-    zwolniona = SPA_STORE.zwolnij(numer) is not None
+    zwolniona = data.SPA_STORE.zwolnij(numer) is not None
     return WynikAnulowania(znaleziona=True, oplata=oplata, zwolniona=zwolniona)
 
 
@@ -216,7 +258,7 @@ def przenies_rezerwacje(
     gosc: str | None,  # None (brak w zapytaniu) -> zostaje gość z poprzedniej rezerwacji
 ) -> Odmowa | Przeniesienie:
     """Stary slot wraca do puli, nowy zostaje zajęty. Przy błędzie zapisu stary slot jest przywracany."""
-    stara = SPA_STORE.rezerwacja(numer)
+    stara = data.SPA_STORE.rezerwacja(numer)
     if stara is None:
         return Odmowa(Powod.NIE_ZNALEZIONO)
 
@@ -229,7 +271,7 @@ def przenies_rezerwacje(
 
     if _w_przeszlosci(nowa_data):
         return Odmowa(Powod.PRZESZLOSC, usluga, stara=stara)
-    if not SPA_STORE.w_oknie(nowa_data):
+    if not data.SPA_STORE.w_oknie(nowa_data):
         return Odmowa(Powod.POZA_OKNEM, usluga, stara=stara)
     if nowa_godzina not in usluga.sloty:
         return Odmowa(Powod.POZA_GRAFIKIEM, usluga, stara=stara)
@@ -239,16 +281,16 @@ def przenies_rezerwacje(
         return Odmowa(Powod.ZAJETY, usluga, wolne=wolne, stara=stara)
 
     # Zwolnienie starego i zajęcie nowego slotu — sekcja bez `await`, więc atomowa.
-    SPA_STORE.zwolnij(numer)
+    data.SPA_STORE.zwolnij(numer)
     nowa = Rezerwacja(
-        confirmation_id=SPA_STORE.nowy_numer(),
+        confirmation_id=data.SPA_STORE.nowy_numer(),
         kod_uslugi=usluga.kod,
         data=nowa_data,
         godzina=nowa_godzina,
         gosc=gosc or stara.gosc,
     )
-    if not SPA_STORE.zajmij(nowa):
-        SPA_STORE.zajmij(stara)  # przywracamy stary slot, żeby nie zgubić rezerwacji
+    if not data.SPA_STORE.zajmij(nowa):
+        data.SPA_STORE.zajmij(stara)  # przywracamy stary slot, żeby nie zgubić rezerwacji
         return Odmowa(
             Powod.WYSCIG,
             usluga,
@@ -258,8 +300,9 @@ def przenies_rezerwacje(
     return Przeniesienie(stara_numer=numer, nowa=nowa, usluga=usluga)
 
 
-def wolne_sloty(usluga: Usluga, data_iso: str, store: SpaStore = SPA_STORE) -> list[str]:
-    return store.sloty_dnia(usluga, data_iso)
+def wolne_sloty(usluga: Usluga, data_iso: str, store: SpaStore | None = None) -> list[str]:
+    magazyn = data.SPA_STORE if store is None else store
+    return magazyn.sloty_dnia(usluga, data_iso)
 
 
 def cennik(usluga: Usluga) -> dict[str, int]:
@@ -267,9 +310,10 @@ def cennik(usluga: Usluga) -> dict[str, int]:
     return {"price_pln": usluga.cena_pln, "duration_min": usluga.czas_min}
 
 
-def poza_oknem(data_iso: str, store: SpaStore = SPA_STORE) -> str:
+def poza_oknem(data_iso: str, store: SpaStore | None = None) -> str:
+    magazyn = data.SPA_STORE if store is None else store
     return (
         f"Termin {data_iso} jest poza oknem rezerwacji "
-        f"({store.dzisiaj.isoformat()} – {store.ostatni_dzien.isoformat()})."
+        f"({magazyn.dzisiaj.isoformat()} – {magazyn.ostatni_dzien.isoformat()})."
     )
 

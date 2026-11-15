@@ -1,15 +1,22 @@
-"""Endpointy komunikacji: SMS / Telegram oraz symulowany handoff do personelu."""
+"""Endpointy komunikacji: SMS / Telegram oraz symulowany handoff do personelu.
+
+PII: numer telefonu w odpowiedzi, logach i na Telegramie jest maskowany (``mask_phone``), imię gościa
+w alertach i logach jest skracane (``mask_name``), a numery wpisane w wolnym tekście powodu są
+redagowane (``redact_phones``). Zdarzenie ``handoff.requested`` używa tej samej maskowanej postaci.
+"""
 
 from __future__ import annotations
 
-from fastapi import APIRouter
+from fastapi import APIRouter, BackgroundTasks, Depends
 
+import events
 import telegram
-from data import demo_log
 from i18n import lang_of, pick
+from logs import log_demo, log_event, mask_name, mask_phone, redact_phones
+from routers.security import require_webhook_secret
 from schemas import Handoff, WysylkaSMS
 
-router = APIRouter(tags=["comms"])
+router = APIRouter(tags=["comms"], dependencies=[Depends(require_webhook_secret)])
 
 DZIALY = {
     "recepcja": "Recepcja główna",
@@ -18,7 +25,7 @@ DZIALY = {
 
 
 def _tekst_sms_na_telegram(request: WysylkaSMS) -> str:
-    tekst = f"🏨 *Bukowy Dwór — Potwierdzenie Rezerwacji*\n\n📞 Gość: `{request.phone_number}`\n"
+    tekst = f"🏨 *Bukowy Dwór — Potwierdzenie Rezerwacji*\n\n📞 Gość: `{mask_phone(request.phone_number)}`\n"
     if request.confirmation_id:
         tekst += f"🔖 Nr ref.: `{request.confirmation_id}`\n"
     return tekst + f"\n📋 {request.summary_text}"
@@ -27,9 +34,9 @@ def _tekst_sms_na_telegram(request: WysylkaSMS) -> str:
 def _tekst_handoffu(request: Handoff, dzial: str) -> str:
     tekst = f"🛎️ *Anna prosi o asystę — {dzial}*\n\n"
     if request.guest_name:
-        tekst += f"👤 Gość: `{request.guest_name}`\n"
+        tekst += f"👤 Gość: `{mask_name(request.guest_name)}`\n"
     if request.reason:
-        tekst += f"📋 Powód: {request.reason}\n"
+        tekst += f"📋 Powód: {redact_phones(request.reason)}\n"
     return tekst + "\n_(To symulacja handoffu — na produkcji ustaw realne przekierowanie.)_"
 
 
@@ -38,34 +45,44 @@ def _tekst_handoffu(request: Handoff, dzial: str) -> str:
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.post("/send_sms_summary")
-async def send_sms_summary(request: WysylkaSMS):
-    """Symuluje wysyłkę SMS: drukuje treść (demo) i opcjonalnie wysyła na Telegram."""
+async def send_sms_summary(request: WysylkaSMS, background: BackgroundTasks):
+    """Symuluje wysyłkę SMS: drukuje treść (demo) i opcjonalnie wysyła na Telegram w tle."""
     lang = lang_of(request)
-    demo_log(
+    telegram_wlaczony = telegram.skonfigurowany()
+    log_event(
+        "sms_summary_requested",
+        phone=mask_phone(request.phone_number),
+        confirmation_id=request.confirmation_id or None,
+        telegram=telegram_wlaczony,
+    )
+    log_demo(
         "📱 [SMS] WYSYŁKA PODSUMOWANIA (demo log)",
-        f"   Odbiorca : {request.phone_number}",
+        f"   Odbiorca : {mask_phone(request.phone_number)}",
         f"   Nr ref.  : {request.confirmation_id or '-'}",
         f"   Język    : {pick(lang, 'PL', 'EN')}",
         "   📩 TREŚĆ SMS:",
         f"   {request.summary_text}",
     )
 
-    if telegram.skonfigurowany():
-        await telegram.wyslij_wiadomosc(_tekst_sms_na_telegram(request), etykieta="SMS")
+    if telegram_wlaczony:
+        # Wysyłka w tle: odpowiedź dla agenta nie czeka na Telegram; błędy tylko w logu.
+        background.add_task(telegram.wyslij_wiadomosc, _tekst_sms_na_telegram(request), etykieta="SMS")
     else:
-        print(
-            pick(
+        log_event(
+            "telegram_not_configured",
+            demo=pick(
                 lang,
                 "   ℹ️  Telegram nie skonfigurowany — SMS tylko w konsoli "
                 "(ustaw TELEGRAM_BOT_TOKEN i TELEGRAM_CHAT_ID).",
                 "   ℹ️  Telegram not configured — SMS printed to console only.",
-            )
+            ),
+            channel="SMS",
         )
 
     return {
         "success": True,
         "message": pick(lang, "Wiadomość wysłana.", "Message sent."),
-        "delivered_to": request.phone_number,
+        "delivered_to": mask_phone(request.phone_number),
         "language": request.language,
     }
 
@@ -75,29 +92,44 @@ async def send_sms_summary(request: WysylkaSMS):
 # ─────────────────────────────────────────────────────────────────────────────
 
 @router.post("/transfer_to_simulated_handoff")
-async def transfer_to_simulated_handoff(request: Handoff):
+async def transfer_to_simulated_handoff(request: Handoff, background: BackgroundTasks):
     """Symuluje przekazanie rozmowy do żywego pracownika (PoC, bez telefonii)."""
     dzial = DZIALY.get((request.department or "").strip().lower(), request.department or "Recepcja")
     lang = lang_of(request)
-    demo_log(
+    telegram_wlaczony = telegram.skonfigurowany()
+    log_event("handoff_requested", department=dzial, telegram=telegram_wlaczony)
+    log_demo(
         "🛎️  [HANDOFF] PRZEKAZANIE DO CZŁOWIEKA (demo log)",
         f"   Dział : {dzial}",
-        f"   Gość  : {request.guest_name or '-'}",
-        f"   Powód : {request.reason or '-'}",
+        f"   Gość  : {mask_name(request.guest_name) or '-'}",
+        f"   Powód : {redact_phones(request.reason) or '-'}",
         f"   Język : {pick(lang, 'PL', 'EN')}",
     )
 
-    if telegram.skonfigurowany():
-        await telegram.wyslij_wiadomosc(_tekst_handoffu(request, dzial), etykieta="Alert handoff")
+    if telegram_wlaczony:
+        background.add_task(telegram.wyslij_wiadomosc, _tekst_handoffu(request, dzial), etykieta="Alert handoff")
     else:
-        print(
-            pick(
+        log_event(
+            "telegram_not_configured",
+            demo=pick(
                 lang,
                 "   ℹ️  Telegram nie skonfigurowany — handoff tylko w konsoli "
                 "(ustaw TELEGRAM_BOT_TOKEN i TELEGRAM_CHAT_ID).",
                 "   ℹ️  Telegram not configured — handoff logged to console only.",
-            )
+            ),
+            channel="handoff",
         )
+
+    events.schedule(
+        background,
+        "handoff.requested",
+        {
+            "department": dzial,
+            "reason": redact_phones(request.reason or ""),
+            "guest_name": mask_name(request.guest_name or ""),
+            "language": lang,
+        },
+    )
 
     return {
         "success": True,
