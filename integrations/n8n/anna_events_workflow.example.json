@@ -1,0 +1,537 @@
+{
+  "name": "[EXAMPLE, NOT DEPLOYED] Anna events - verify HMAC, route to CRM and calendar (placeholders)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## EXAMPLE - NOT DEPLOYED\n\nReceives signed Anna events (booking.created / booking.rescheduled / booking.cancelled / handoff.requested), verifies HMAC-SHA256 and the timestamp window (300 s) in the Code node, then calls CRM and calendar PLACEHOLDER URLs.\n\nBefore use: set env ANNA_EVENTS_SIGNING_SECRET, ANNA_CRM_URL, ANNA_CALENDAR_URL; attach credential httpHeaderAuth; enable Raw Body on the Webhook node. See README.md. Never executed in a live n8n instance.",
+        "height": 320,
+        "width": 520,
+        "color": 3
+      },
+      "id": "a1b2c3d4-0001-4000-8000-000000000001",
+      "name": "Note (example)",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -420,
+        -340
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "anna/events",
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": true
+        }
+      },
+      "id": "a1b2c3d4-0002-4000-8000-000000000002",
+      "name": "Webhook - Anna events",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -180,
+        0
+      ],
+      "webhookId": "00000000-0000-4000-8000-00000000e001"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Code node (mode: Run Once for All Items) for the Anna events workflow.\n// Source of truth for the jsCode embedded in anna_events_workflow.example.json.\n// Mirrors receiver_example.py: same headers, same signed bytes, same 300 s tolerance.\n//\n// Needs: NODE_FUNCTION_ALLOW_BUILTIN=crypto (built-in module access in Code node)\n//        and access to $env.ANNA_EVENTS_SIGNING_SECRET (see integrations/n8n/README.md).\n\nconst crypto = require('crypto');\nconst TOLERANCE_S = 300;\n\nconst item = $input.first();\nconst headers = item.json.headers || {};\nconst eventIdHeader = headers['x-anna-event-id'];\nconst timestamp = headers['x-anna-timestamp'];\nconst signature = headers['x-anna-signature'];\nconst secret = $env.ANNA_EVENTS_SIGNING_SECRET;\n\n// RAW bytes are required: the signature covers the body exactly as it arrived.\n// Webhook node option \"Raw Body\" must be enabled. Where the raw body lands depends on\n// the n8n version: binary property \"data\" (base64) or json.rawBody (string). Check yours.\nlet raw = null;\nif (item.binary && item.binary.data && item.binary.data.data) {\n  raw = Buffer.from(item.binary.data.data, 'base64');\n} else if (typeof item.json.rawBody === 'string') {\n  raw = Buffer.from(item.json.rawBody, 'utf8');\n}\n\nfunction verdict() {\n  if (!secret) return 'missing_secret';\n  if (!timestamp || !signature || raw === null) return 'missing_headers';\n  if (!/^[0-9]{1,12}$/.test(timestamp)) return 'bad_timestamp';\n  const nowS = Math.floor(Date.now() / 1000);\n  if (Math.abs(nowS - Number(timestamp)) > TOLERANCE_S) return 'stale_timestamp';\n\n  const mac = crypto\n    .createHmac('sha256', secret)\n    .update(Buffer.concat([Buffer.from(timestamp + '.', 'ascii'), raw]))\n    .digest('hex');\n  const expected = Buffer.from('sha256=' + mac, 'utf8');\n  const given = Buffer.from(String(signature), 'utf8');\n  if (expected.length !== given.length || !crypto.timingSafeEqual(expected, given)) return 'bad_signature';\n  return 'ok';\n}\n\nconst reason = verdict();\nlet event = null;\nlet finalReason = reason;\n\nif (reason === 'ok') {\n  try {\n    event = JSON.parse(raw.toString('utf8'));\n  } catch (err) {\n    event = null;\n    finalReason = 'invalid_json';\n  }\n  if (event && event.event_id !== eventIdHeader) {\n    event = null;\n    finalReason = 'event_id_mismatch';\n  }\n}\n\nconst authorized = finalReason === 'ok';\nreturn [\n  {\n    json: {\n      authorized: authorized,\n      reason: finalReason,\n      eventId: eventIdHeader || null,\n      eventType: authorized ? event.event_type : null,\n      event: authorized ? event : null,\n    },\n  },\n];\n"
+      },
+      "id": "a1b2c3d4-0003-4000-8000-000000000003",
+      "name": "Code - verify HMAC",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        60,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c0000002-0000-4000-8000-000000000001",
+              "leftValue": "={{ $json.authorized }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-0004-4000-8000-000000000004",
+      "name": "IF - signature valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        300,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { accepted: true, event_id: $json.eventId } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "a1b2c3d4-0005-4000-8000-000000000005",
+      "name": "Respond 200",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        560,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { error: 'unauthorized' } }}",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "id": "a1b2c3d4-0006-4000-8000-000000000006",
+      "name": "Respond 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        560,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c0000001-0000-4000-8000-000000000001",
+                    "leftValue": "={{ $json.eventType }}",
+                    "rightValue": "booking.created",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "booking.created"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c0000001-0000-4000-8000-000000000002",
+                    "leftValue": "={{ $json.eventType }}",
+                    "rightValue": "booking.rescheduled",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "booking.rescheduled"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c0000001-0000-4000-8000-000000000003",
+                    "leftValue": "={{ $json.eventType }}",
+                    "rightValue": "booking.cancelled",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "booking.cancelled"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c0000001-0000-4000-8000-000000000004",
+                    "leftValue": "={{ $json.eventType }}",
+                    "rightValue": "handoff.requested",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "handoff.requested"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "id": "a1b2c3d4-0007-4000-8000-000000000007",
+      "name": "Switch - event_type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3,
+      "position": [
+        560,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ANNA_CRM_URL }}/bookings",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Code - verify HMAC').first().json.event) }}"
+      },
+      "id": "a1b2c3d4-0008-4000-8000-000000000008",
+      "name": "CRM - booking (placeholder)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        820,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "PLACEHOLDER - Anna events auth header"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ANNA_CALENDAR_URL }}/events",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Code - verify HMAC').first().json.event) }}"
+      },
+      "id": "a1b2c3d4-0009-4000-8000-000000000009",
+      "name": "Calendar - create slot (placeholder)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1060,
+        -60
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "PLACEHOLDER - Anna events auth header"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ $env.ANNA_CALENDAR_URL }}/events/{{ $('Code - verify HMAC').first().json.event.data.confirmation_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Code - verify HMAC').first().json.event) }}"
+      },
+      "id": "a1b2c3d4-0010-4000-8000-000000000010",
+      "name": "Calendar - move slot (placeholder)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        820,
+        80
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "PLACEHOLDER - Anna events auth header"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "DELETE",
+        "url": "={{ $env.ANNA_CALENDAR_URL }}/events/{{ $('Code - verify HMAC').first().json.event.data.confirmation_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        }
+      },
+      "id": "a1b2c3d4-0011-4000-8000-000000000011",
+      "name": "Calendar - free slot (placeholder)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        820,
+        220
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "PLACEHOLDER - Anna events auth header"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ANNA_CRM_URL }}/tickets",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 15000
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($('Code - verify HMAC').first().json.event) }}"
+      },
+      "id": "a1b2c3d4-0012-4000-8000-000000000012",
+      "name": "CRM - handoff ticket (placeholder)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        820,
+        360
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "PLACEHOLDER - Anna events auth header"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "a1b2c3d4-0013-4000-8000-000000000013",
+      "name": "NoOp - unknown event (ignored)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        820,
+        520
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook - Anna events": {
+      "main": [
+        [
+          {
+            "node": "Code - verify HMAC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code - verify HMAC": {
+      "main": [
+        [
+          {
+            "node": "IF - signature valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF - signature valid": {
+      "main": [
+        [
+          {
+            "node": "Respond 200",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Switch - event_type",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond 401",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch - event_type": {
+      "main": [
+        [
+          {
+            "node": "CRM - booking (placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calendar - move slot (placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Calendar - free slot (placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CRM - handoff ticket (placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "NoOp - unknown event (ignored)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM - booking (placeholder)": {
+      "main": [
+        [
+          {
+            "node": "Calendar - create slot (placeholder)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false,
+    "description": "Example for the Anna outbound events contract. Placeholders only; no secrets; not executed in n8n."
+  },
+  "tags": []
+}

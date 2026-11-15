@@ -1,0 +1,137 @@
+{
+  "_comment": "FICTIONAL dental clinic (exercise). Tool names follow the PoC style (verb_object, snake_case). Schemas are JSON Schema; response_contract lists fields the agent may read. base_url is a placeholder. Keep this file in sync with client.json (checked by mock_backend/tests/test_render_vertical.py).",
+  "base_url": "https://REPLACE-ME.example.invalid",
+  "tools": [
+    {
+      "name": "check_dental_availability",
+      "description": "Sprawdza wolne terminy usługi w danym dniu. Zwraca listę godzin (slots) i czas trwania. Przy niejednoznacznej nazwie zwraca ambiguous.",
+      "method": "POST",
+      "path": "/check_dental_availability",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "service_name": {"type": "string", "description": "Nazwa usługi z katalogu (client.json services)"},
+          "date": {"type": "string", "description": "Data RRRR-MM-DD"},
+          "language": {"type": "string", "enum": ["pl", "en"], "description": "Język rozmówcy"}
+        },
+        "required": ["service_name", "date", "language"]
+      },
+      "response_contract": {
+        "success": "boolean",
+        "available": "boolean",
+        "slots": "array of 'GG:MM' (alternatywy przy braku terminu)",
+        "ambiguous": "array of {name, duration_min} gdy nazwa jest niejednoznaczna",
+        "duration_min": "number",
+        "message": "string do przeczytania rozmówcy"
+      }
+    },
+    {
+      "name": "book_dental_appointment",
+      "description": "Tworzy rezerwację po potwierdzeniu przez rozmówcę. Zwraca confirmation_id. Nie przyjmuje danych zdrowotnych (flagi przekazuje się przez handoff).",
+      "method": "POST",
+      "path": "/book_dental_appointment",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "service_name": {"type": "string"},
+          "date": {"type": "string", "description": "RRRR-MM-DD"},
+          "time": {"type": "string", "description": "GG:MM"},
+          "guest_name": {"type": "string", "description": "Imię i nazwisko pacjenta"},
+          "language": {"type": "string", "enum": ["pl", "en"]},
+          "idempotency_key": {"type": "string", "description": "Opcjonalny klucz do bezpiecznego ponowienia żądania"}
+        },
+        "required": ["service_name", "date", "time", "guest_name", "language"]
+      },
+      "response_contract": {
+        "success": "boolean",
+        "confirmation_id": "string (np. DEN-1001)",
+        "slots": "array (alternatywy przy zajętym terminie)",
+        "message": "string"
+      }
+    },
+    {
+      "name": "cancel_dental_appointment",
+      "description": "Anuluje wizytę. Opłatę wylicza backend na podstawie czasu do terminu i zwolnienia medycznego.",
+      "method": "POST",
+      "path": "/cancel_dental_appointment",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "confirmation_id": {"type": "string"},
+          "appointment_datetime": {"type": "string", "description": "ISO 8601 z godziną, np. 2026-11-09T18:30"},
+          "reason": {"type": "string"},
+          "medical_release": {"type": "boolean"},
+          "language": {"type": "string", "enum": ["pl", "en"]}
+        },
+        "required": ["confirmation_id", "appointment_datetime", "reason", "medical_release", "language"]
+      },
+      "response_contract": {
+        "success": "boolean",
+        "found": "boolean",
+        "fee": "number (ułamek: 0.0 albo 0.5)",
+        "free_of_charge": "boolean",
+        "fee_rule": "string do powtórzenia pacjentowi",
+        "message": "string"
+      }
+    },
+    {
+      "name": "reschedule_dental_appointment",
+      "description": "Przenosi wizytę na nowy termin. Zwraca nowy identyfikator, stary przestaje obowiązywać.",
+      "method": "POST",
+      "path": "/reschedule_dental_appointment",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "confirmation_id": {"type": "string"},
+          "service_name": {"type": "string"},
+          "new_date": {"type": "string", "description": "RRRR-MM-DD"},
+          "new_time": {"type": "string", "description": "GG:MM"},
+          "guest_name": {"type": "string"},
+          "language": {"type": "string", "enum": ["pl", "en"]}
+        },
+        "required": ["confirmation_id", "service_name", "new_date", "new_time", "guest_name", "language"]
+      },
+      "response_contract": {
+        "success": "boolean",
+        "confirmation_id": "string (nowy identyfikator)",
+        "found": "boolean",
+        "slots": "array (alternatywy)",
+        "message": "string"
+      }
+    },
+    {
+      "name": "send_sms_summary",
+      "description": "Wysyła SMS z potwierdzeniem na numer podany przez rozmówcę. Wywoływać wyłącznie po potwierdzeniu numeru i (dla osoby trzeciej) zgody.",
+      "method": "POST",
+      "path": "/send_sms_summary",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phone_number": {"type": "string", "description": "Numer w formacie międzynarodowym"},
+          "summary_text": {"type": "string"},
+          "confirmation_id": {"type": "string"},
+          "language": {"type": "string", "enum": ["pl", "en"]}
+        },
+        "required": ["phone_number", "summary_text", "language"]
+      },
+      "response_contract": {"success": "boolean", "message": "string"}
+    },
+    {
+      "name": "transfer_to_simulated_handoff",
+      "description": "Zgłasza sprawę człowiekowi w klinice (w PoC: log i alert, bez telefonii). Nie gwarantuje natychmiastowego połączenia.",
+      "method": "POST",
+      "path": "/transfer_to_simulated_handoff",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "department": {"type": "string", "enum": ["recepcja", "lekarz_dyzurny", "kierownik"], "description": "Dział docelowy"},
+          "reason": {"type": "string", "description": "Krótki powód, bez opisu choroby"},
+          "guest_name": {"type": "string", "description": "Opcjonalnie"},
+          "language": {"type": "string", "enum": ["pl", "en"]}
+        },
+        "required": ["department", "reason", "language"]
+      },
+      "response_contract": {"success": "boolean", "message": "string"}
+    }
+  ]
+}

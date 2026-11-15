@@ -1,6 +1,6 @@
-﻿> **Status:** aktualny (2026-11) — tłumaczenie EN dokumentu `docs/architektura_stack_technologiczny.md` (wersja źródłowa: PL).
+﻿> **Status:** current (2026-11). Labels used below: **In repo** (verified in this codebase), **Design / Enterprise tier** (not active on the Creator plan; not verified here), **Design** (not implemented). This is a translation of the Polish source document `docs/pl/architektura_stack_technologiczny.md` (wersja źródłowa: PL).
 
-# Enterprise System Architecture & Tech Stack — Virtual AI Receptionist (Bukowy Dwór)
+# System Architecture & Tech Stack — Virtual AI Receptionist (Bukowy Dwór)
 
 > Technical implementation reference, enterprise architecture, interfaces, connectors, and communication protocols connecting **ElevenLabs Conversational AI** with hotel and medical resort infrastructure.
 
@@ -11,11 +11,11 @@
 The system is built upon the **Cloud-Native Unified Conversational Loop** paradigm, eliminating the multi-second latency typical of traditional cascaded pipelines (STT → External LLM → TTS).
 
 The architecture spans 5 core layers:
-1. **Omnichannel Inbound Layer** — Telephony SIP Trunking (RFC 3261) and Web/Mobile WebRTC full-duplex audio.
-2. **Edge Security & Authorization Layer** — 15-min TTL Signed URLs, Zero Retention Mode (ZRM), and EU Data Residency.
+1. **Omnichannel Inbound Layer** — Telephony SIP Trunking (RFC 3261; **Design: not connected in the PoC**) and Web/Mobile WebRTC full-duplex audio (**In repo**: web widget).
+2. **Edge Security & Authorization Layer** — 15-min TTL signed URLs (**In repo**); Zero Retention Mode and EU data residency (**Design / Enterprise tier**).
 3. **ElevenLabs AI Core Engine** — Unified STT (Scribe v2), LLM Orchestrator (**`gemini-3.5-flash-lite`**), Vector RAG, and Emotional TTS (Eleven v3 Conversational).
 4. **Tool Calling & Integration Layer** — 7 deterministic HTTPS POST Webhooks, JSON Schema parameter validation, and (target state) SIP REFER call handoff; in the PoC the handoff is a simulated webhook.
-5. **Hospitality Enterprise Systems** — Hotel PMS/ERP database (e.g., Opera Cloud, Mews, Protel, KWHotel), SMS dispatch gateways (Twilio / SMSAPI), and on-duty medical staff.
+5. **Hospitality Systems** — hotel PMS/ERP (e.g., Opera Cloud, Mews, Protel, KWHotel; **Design: not connected**, the PoC keeps slots in memory), SMS gateways (Twilio / SMSAPI; **Design: not connected**), Telegram alerts (**In repo**), and on-duty medical staff.
 
 ---
 
@@ -36,8 +36,8 @@ flowchart TB
     %% 1. INBOUND
     subgraph INBOUND ["📱 1. OMNICHANNEL INBOUND CHANNELS"]
         direction LR
-        PHONE["☎️ Standard Telephony<br/>(PSTN / GSM / VoLTE)"]:::clientLayer
-        SIP_TRUNK["🏢 Hotel PBX Central Switch<br/>(Twilio / Asterisk / FreePBX)<br/>SIP Trunking RFC 3261"]:::clientLayer
+        PHONE["☎️ Standard Telephony (design)<br/>(PSTN / GSM / VoLTE)"]:::clientLayer
+        SIP_TRUNK["🏢 Hotel PBX Central Switch<br/>(Twilio / Asterisk / FreePBX)<br/>SIP Trunking RFC 3261<br/>DESIGN, not connected"]:::clientLayer
         WEB_CLIENT["💻 Web / Mobile WebRTC Client<br/>(Next.js 16 + React 19)<br/>@elevenlabs/convai-widget-embed"]:::clientLayer
         
         PHONE -->|"G.711 / Opus Audio"| SIP_TRUNK
@@ -46,9 +46,9 @@ flowchart TB
     %% 2. EDGE & SECURITY
     subgraph EDGE ["🔒 2. EDGE GATEWAY & SECURITY"]
         direction TB
-        SIP_URI["ElevenLabs SIP Gateway<br/>sip:agent_id@sip.elevenlabs.io<br/>+ SIP UUI RFC 7433 Headers"]:::edgeLayer
+        SIP_URI["ElevenLabs SIP Gateway<br/>sip:agent_id@sip.elevenlabs.io<br/>+ SIP UUI RFC 7433 Headers (design)"]:::edgeLayer
         SIGNED_URL_API["Next.js Route Handler<br/>GET /api/anna/signed-url<br/>(15-min TTL Signed Tokens)"]:::edgeLayer
-        SEC_POL["Security & Compliance:<br/>• Zero Retention Mode (ZRM)<br/>• EU Data Residency (Frankfurt)<br/>• PII Redaction in Transcripts"]:::secLayer
+        SEC_POL["Security & Compliance (Design / Enterprise tier, not active):<br/>• Zero Retention Mode (ZRM)<br/>• EU Data Residency (Frankfurt)<br/>• PII Redaction in Transcripts"]:::secLayer
     end
 
     SIP_TRUNK -->|"SIP / TLS + SRTP Audio"| SIP_URI
@@ -56,7 +56,7 @@ flowchart TB
     SIGNED_URL_API -->|"WSS Secure Handshake"| WSS_CONN
 
     %% 3. ELEVENLABS AI CORE
-    subgraph AI_CORE ["⚡ 3. ELEVENLABS CONVERSATIONAL AI ENGINE (EU CLOUD)"]
+    subgraph AI_CORE ["⚡ 3. ELEVENLABS CONVERSATIONAL AI ENGINE (cloud region to verify)"]
         direction TB
         
         WSS_CONN["🌐 Transport Layer:<br/>WebSockets / WebRTC Opus Audio"]:::aiSub
@@ -122,11 +122,11 @@ flowchart TB
         
         FASTAPI_GW["Gateway PoC: FastAPI mock_backend<br/>• Uvicorn ASGI Server, port 8011<br/>• 7 POST routes + 2 GET (/, /health)<br/>• Pydantic v2 Validation<br/>• ngrok / Cloudflare Tunnel for HTTPS"]:::backendLayer
         
-        PMS_CORE["Hotel PMS / ERP Database<br/>(Opera Cloud / Mews / Protel / KWHotel)<br/>• Balneology treatment schedule<br/>• Room inventory & folio management"]:::pmsLayer
+        PMS_CORE["Hotel PMS / ERP Database (design, not connected)<br/>(Opera Cloud / Mews / Protel / KWHotel)<br/>• Balneology treatment schedule<br/>• Room inventory & folio management"]:::pmsLayer
         
-        SMS_GW["Messaging & Notification Gateway<br/>• Twilio / SMSAPI / Infobip REST API<br/>• Telegram Bot API"]:::backendLayer
+        SMS_GW["Messaging & Notification Gateway<br/>• Twilio / SMSAPI / Infobip REST API (design, not connected)<br/>• Telegram Bot API (In repo)"]:::backendLayer
         
-        HUMAN_ESC["Human Staff Escalation<br/>• Front Desk: +48 18 123 45 67<br/>• Nurse Station: +48 18 123 45 99<br/>(SIP REFER target — PoC handoff is simulated)"]:::pmsLayer
+        HUMAN_ESC["Human Staff Escalation<br/>• Front Desk: +48 18 123 45 67<br/>• Nurse Station: +48 18 123 45 99<br/>(SIP REFER target: design; the PoC handoff is simulated)"]:::pmsLayer
     end
 
     T1 -->|"HTTPS POST Webhook"| FASTAPI_GW
@@ -150,16 +150,16 @@ flowchart TB
 - **Voice SDK:** `@elevenlabs/convai-widget-embed` (0.16.4+).
 - **Transport Security:** Next.js Server Route Handler `GET /api/anna/signed-url` generates temporary Signed WebRTC/WSS URLs with 15-minute TTL without exposing server `xi-api-key`.
 
-### B. Telephony Gateway & SIP Trunking
-- **Protocols:** SIP Trunking (RFC 3261) with TLS and SRTP encryption.
-- **Telco Infrastructure:** Twilio Elastic SIP Trunking / Kamailio SBC / Asterisk PBX.
-- **Multi-Tenant Context Injection:** Uses **RFC 7433 SIP UUI (User-to-User Information)** header to pass property parameters in-band:
+### B. Telephony Gateway & SIP Trunking (Design: not implemented; the PoC has no telephony)
+- **Protocols (design):** SIP Trunking (RFC 3261) with TLS and SRTP encryption.
+- **Telco Infrastructure (design):** Twilio Elastic SIP Trunking / Kamailio SBC / Asterisk PBX.
+- **Multi-Tenant Context Injection (design; requires telephony, not implemented):** Uses **RFC 7433 SIP UUI (User-to-User Information)** header to pass property parameters in-band:
   ```http
-  User-to-User: hotel_id=bukowy_dwor;ani=+48600111222;lang=pl-PL;encoding=hex
+  User-to-User: hotel_id=<property>;ani=+48XXXXXXXXX;lang=pl-PL;encoding=hex
   ```
 - **Call Escalation:** Target state is native `SIP REFER` warm transfers to receptionists or emergency medical staff without terminating the trunk line. **PoC state:** no telephony/SIP is connected (`transfer_to_number` not wired) — escalation is a simulated `transfer_to_simulated_handoff` webhook.
 
-### C. ElevenLabs Conversational AI Engine
+### C. ElevenLabs Conversational AI Engine (latency figures are not measured in this repository)
 - **Speech-to-Text (STT):** `Scribe v2 Realtime` (~150ms latency, Polish balneology vocabulary customization, robust noise suppression).
 - **LLM Reasoning:** **`gemini-3.5-flash-lite`** (temperature 0.1, strict grounding system prompt, published agent workflows + 7 procedures).
 - **Knowledge Base (RAG):** 5 Markdown files partitioned into `prompt` mode (critical safety rules & base pricing) and `auto` mode (semantic vector retrieval).
@@ -176,7 +176,7 @@ flowchart TB
   6. `send_sms_summary(phone_number, summary_text, id, language)` → Dispatches SMS/Telegram confirmation.
   7. `transfer_to_simulated_handoff(department, reason, language)` → Simulated human handoff (log + optional Telegram alert).
 
-### E. Enterprise Security & GDPR Compliance
-- **Zero Retention Mode (ZRM):** Audio streams are processed strictly in volatile RAM and destroyed upon session termination.
-- **Conversation History Redaction:** Automated masking of PII (national IDs, phone numbers, health notes) in log storage.
-- **EU Data Residency:** All compute, model inference, and vector embeddings reside strictly within EU regions (Frankfurt / Dublin).
+### E. Security & GDPR Compliance (Enterprise-tier items are design only)
+- **Zero Retention Mode (ZRM)** (**Design / Enterprise tier**; not active on the Creator plan): Audio streams are processed strictly in volatile RAM and destroyed upon session termination.
+- **Conversation History Redaction** (**Design / Enterprise tier**; the repo's own evaluation transcripts are redacted on save, see `mock_backend/tunnel/transcripts.py`): Automated masking of PII (national IDs, phone numbers, health notes) in log storage.
+- **EU Data Residency** (**Design / Enterprise tier**; not verified for this agent): All compute, model inference, and vector embeddings reside strictly within EU regions (Frankfurt / Dublin).
