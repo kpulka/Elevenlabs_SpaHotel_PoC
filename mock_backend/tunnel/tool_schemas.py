@@ -24,12 +24,13 @@ TOOL_PATHS: Dict[str, str] = {
     "reschedule_spa_appointment": "/reschedule_spa_appointment",
 }
 
-# Pola request body każdego narzędzia (kolejność jak w README). Wszystkie pola są
-# w kontrakcie; które z nich są opcjonalne, mówi mock_backend/schemas.py.
+# Pola request body, które AGENT wysyła (zgodnie z agent/system_prompt_v3.md i procedures_7.md).
+# Porównanie z modelami Pydantic w mock_backend/schemas.py robi tests/test_tool_schemas.py,
+# z dwoma wyjątkami opisanymi niżej.
 TOOL_BODY_FIELDS: Dict[str, Tuple[str, ...]] = {
-    "check_spa_availability": ("service_name", "date"),
-    "book_spa_appointment": ("service_name", "date", "time", "guest_name"),
-    "check_room_availability": ("room_type", "check_in", "check_out"),
+    "check_spa_availability": ("service_name", "date", "language"),
+    "book_spa_appointment": ("service_name", "date", "time", "guest_name", "language"),
+    "check_room_availability": ("room_type", "check_in", "check_out", "language"),
     "send_sms_summary": ("phone_number", "summary_text", "confirmation_id", "language"),
     "transfer_to_simulated_handoff": ("department", "reason", "guest_name", "language"),
     "cancel_spa_appointment": (
@@ -38,6 +39,22 @@ TOOL_BODY_FIELDS: Dict[str, Tuple[str, ...]] = {
     "reschedule_spa_appointment": (
         "confirmation_id", "service_name", "new_date", "new_time", "guest_name", "language",
     ),
+}
+
+
+# Pola, które agent wysyła, a które backend (Pydantic) ignoruje: modele ZapytanieSPA,
+# RezerwacjaSPA i SprawdzeniePokoj nie definiują ``language``, więc odpowiedzi tych tras
+# są po polsku. Gdy backend doda pole, usuń wpis stąd (test to wymusi).
+BACKEND_IGNORED_FIELDS: Dict[str, Tuple[str, ...]] = {
+    "check_spa_availability": ("language",),
+    "book_spa_appointment": ("language",),
+    "check_room_availability": ("language",),
+}
+
+# Pola przyjmowane przez backend, których agent NIE wysyła. ``idempotency_key`` jest opcjonalny
+# w RezerwacjaSPA; prompt go nie używa, bo nie ma w panelu generowanego klucza (decyzja: brak).
+BACKEND_OPTIONAL_UNSENT_FIELDS: Dict[str, Tuple[str, ...]] = {
+    "book_spa_appointment": ("idempotency_key",),
 }
 
 

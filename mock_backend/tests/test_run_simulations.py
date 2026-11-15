@@ -1,17 +1,20 @@
 """Testy runbooka K2 (`tunnel/run_simulations.py`) — offline, bez sieci i sekretów.
 
 Sprawdzają to, co da się zepsuć po cichu: kształt payloadów wysyłanych do API,
-asercje na transkrypt (0% vs 50%), guard kredytów i odczyt transkryptu.
+asercje na transkrypt (0% vs 50%), guard kredytów, wybór agenta z env i odczyt transkryptu.
 """
 
 from __future__ import annotations
 
 import json
+import re
 from datetime import date
 
 import pytest
 
-from tunnel import run_simulations as rs
+from tunnel import run_simulations as rs, scenarios as sc
+
+TODAY = date(2026, 11, 13)
 
 
 class FakeClient:
@@ -24,40 +27,49 @@ class FakeClient:
         return self.responses[path]
 
 
-SEEDS = {
-    "book": {"id": "SPA-0001", "date": "2026-11-10", "time": "11:00", "service": "masaż leczniczy pleców"},
-    "cancel_free": {"id": "SPA-0002", "date": "2026-11-11", "time": "10:00", "service": "masaż leczniczy pleców"},
-    "cancel_fee": {"id": "SPA-0003", "date": "2026-11-09", "time": "16:00", "service": "kąpiel siarczkowa"},
-}
+def _payloads(slugs_prefix: str | None = None):
+    seeds = sc.dry_run_seeds(TODAY)
+    scenarios = sc.selected(only=[slugs_prefix] if slugs_prefix else None)
+    return {p["slug"]: p for p in sc.scenario_payloads(seeds, today=TODAY, scenarios=scenarios)}
 
 
-def test_three_scenarios_with_prefixed_names():
-    payloads = rs.scenario_payloads(SEEDS)
+def test_all_scenarios_have_prefixed_unique_names():
+    payloads = sc.scenario_payloads(sc.dry_run_seeds(TODAY), today=TODAY)
     names = [p["body"]["name"] for p in payloads]
-    assert len(names) == 3
+    assert len(names) == len(sc.SCENARIOS) >= 16
     assert all(n.startswith(rs.TEST_PREFIX) for n in names)
-    assert len(set(names)) == 3
+    assert len(set(names)) == len(names)
     assert all(p["body"]["type"] == "simulation" for p in payloads)
 
 
 def test_cancel_scenarios_embed_real_seed_number_and_datetime():
-    payloads = {p["slug"]: p for p in rs.scenario_payloads(SEEDS)}
+    seeds = sc.dry_run_seeds(TODAY)
+    payloads = _payloads()
 
     free = payloads["02-anulowanie-ponad-2h"]["body"]
-    assert "SPA-0002" in free["simulation_scenario"]
-    assert "2026-11-11T10:00" in " ".join(free["success_conditions"])
+    assert seeds["cancel_free"]["id"] in free["simulation_scenario"]
+    assert f"{seeds['cancel_free']['date']}T{seeds['cancel_free']['time']}" in " ".join(free["success_conditions"])
 
     fee = payloads["03-anulowanie-ponizej-2h"]["body"]
-    assert "SPA-0003" in fee["simulation_scenario"]
-    assert "2026-11-09T16:00" in " ".join(fee["success_conditions"])
+    assert seeds["cancel_fee"]["id"] in fee["simulation_scenario"]
+    assert f"{seeds['cancel_fee']['date']}T{seeds['cancel_fee']['time']}" in " ".join(fee["success_conditions"])
 
 
 def test_fee_assertions_are_not_swapped():
-    payloads = {p["slug"]: p for p in rs.scenario_payloads(SEEDS)}
+    payloads = _payloads()
     over_two = payloads["02-anulowanie-ponad-2h"]["expect"]
     under_two = payloads["03-anulowanie-ponizej-2h"]["expect"]
-    assert "0%" in over_two["text"] and "50%" in over_two["forbid"]
-    assert "50%" in under_two["text"] and "bezpłatn" in under_two["forbid"]
+    assert any(re.search(p, "zwolnienie: 0%") for p in over_two["text"])
+    assert not any(re.search(p, "opłata 50%") for p in over_two["text"])
+    assert any(re.search(p, "opłata 50%") for p in under_two["text"])
+    assert any(re.search(p, "bezpłatnie") for p in under_two["forbid"])
+
+
+def test_zero_percent_pattern_does_not_match_fifty_percent():
+    payloads = _payloads("02")
+    pattern = payloads["02-anulowanie-ponad-2h"]["expect"]["text"][0]
+    assert re.search(pattern, "opłata 50%") is None
+    assert re.search(pattern, "bezpłatnie, 0%") is not None
 
 
 def test_whoami_blocks_when_credits_exhausted():
@@ -100,7 +112,43 @@ def test_transcript_text_flattens_agent_responses():
 
 
 def test_scenario_placeholders_are_all_filled():
-    for payload in rs.scenario_payloads(SEEDS):
+    for payload in sc.scenario_payloads(sc.dry_run_seeds(TODAY), today=TODAY):
         texts = [payload["body"]["simulation_scenario"], *payload["body"]["success_conditions"],
                  *payload["expect"]["text"], *payload["expect"]["forbid"]]
-        assert not [t for t in texts if "{" in t or "}" in t], payload["slug"]
+        assert not [t for t in texts if sc.leftover_placeholders(t)], payload["slug"]
+
+
+def test_agent_id_comes_from_env_and_fails_closed(monkeypatch):
+    monkeypatch.delenv("ELEVENLABS_AGENT_ID", raising=False)
+    assert rs.default_agent() == ""
+    monkeypatch.setenv("ELEVENLABS_AGENT_ID", "agent_test_123")
+    assert rs.default_agent() == "agent_test_123"
+    monkeypatch.setenv("ELEVENLABS_AGENT_ID", "   ")
+    assert rs.default_agent() == ""
+
+
+def test_dispatch_without_agent_id_exits_2(monkeypatch, capsys):
+    monkeypatch.delenv("ELEVENLABS_AGENT_ID", raising=False)
+    args = rs.parse_args([])
+    assert rs.dispatch(args) == 2
+    assert "ELEVENLABS_AGENT_ID" in capsys.readouterr().out
+
+
+def test_only_filter_selects_by_slug_prefix():
+    args = rs.parse_args(["--dry-run", "--only", "02,16"])
+    assert rs.only_prefixes(args) == ["02", "16"]
+    chosen = sc.selected(only=rs.only_prefixes(args))
+    assert [s["slug"][:2] for s in chosen] == ["02", "16"]
+
+
+def test_skip_scenario3_drops_the_fee_scenario_only():
+    chosen = sc.selected(skip_scenario3=True)
+    assert all(not s["slug"].startswith("03") for s in chosen)
+    assert len(chosen) == len(sc.SCENARIOS) - 1
+
+
+def test_build_seed_without_reservation_only_reads_slot(monkeypatch):
+    client = FakeClient({"/check_spa_availability": (200, {"available": True, "slots": ["09:00"]})})
+    seed = rs.build_seed(client, "book", sc.SEED_SPECS["book"])
+    assert seed is not None and seed["id"] == "" and seed["time"] == "09:00"
+    assert all(path != "/book_spa_appointment" for _, path, _ in client.calls)

@@ -1,0 +1,152 @@
+{
+  "_comment": "Przykładowy kontrakt narzędzi (webhooki) z NAZWAMI I POLAMI PoC: check_spa_availability, book_spa_appointment, cancel_spa_appointment, reschedule_spa_appointment, check_room_availability, send_sms_summary, transfer_to_simulated_handoff. Te same nazwy i pola wysyła agent (agent/system_prompt_v3.md) i mock backend (mock_backend/tunnel/tool_schemas.py). Dla nowego klienta zmień nazwy, pola i opisy w TYM pliku oraz w tool_schemas.py i uruchom scripts/check_tool_contract.py. Adres backendu jest placeholderem.",
+  "base_url": "https://REPLACE-ME.example.invalid",
+  "tools": [
+    {
+      "name": "check_spa_availability",
+      "description": "Sprawdza dostępność zabiegu w danym dniu. Zwraca wolne godziny oraz cenę i czas z systemu.",
+      "method": "POST",
+      "path": "/check_spa_availability",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "service_name": {"type": "string", "description": "Nazwa zabiegu dokładnie jak w katalogu"},
+          "date": {"type": "string", "description": "Data w formacie RRRR-MM-DD"},
+          "language": {"type": "string", "enum": ["pl", "en"], "description": "Język rozmówcy"}
+        },
+        "required": ["service_name", "date", "language"]
+      },
+      "response_contract": {
+        "success": "boolean",
+        "available": "boolean",
+        "slots": "array of 'HH:MM' (alternatywy przy braku terminu)",
+        "ambiguous": "array of {name, price, duration_min} gdy nazwa jest niejednoznaczna",
+        "price_pln": "number (z systemu, nigdy z promptu)",
+        "message": "string do przeczytania rozmówcy"
+      }
+    },
+    {
+      "name": "book_spa_appointment",
+      "description": "Tworzy rezerwację po potwierdzeniu przez rozmówcę. Zwraca confirmation_id.",
+      "method": "POST",
+      "path": "/book_spa_appointment",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "service_name": {"type": "string"},
+          "date": {"type": "string", "description": "RRRR-MM-DD"},
+          "time": {"type": "string", "description": "GG:MM"},
+          "guest_name": {"type": "string", "description": "Imię i nazwisko"},
+          "language": {"type": "string", "enum": ["pl", "en"]}
+        },
+        "required": ["service_name", "date", "time", "guest_name", "language"]
+      },
+      "response_contract": {
+        "success": "boolean",
+        "confirmation_id": "string (np. SPA-0001)",
+        "slots": "array (alternatywy przy zajętym slocie)",
+        "message": "string"
+      }
+    },
+    {
+      "name": "cancel_spa_appointment",
+      "description": "Anuluje rezerwację. Opłatę wylicza backend na podstawie czasu do terminu.",
+      "method": "POST",
+      "path": "/cancel_spa_appointment",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "confirmation_id": {"type": "string"},
+          "appointment_datetime": {"type": "string", "description": "ISO 8601 z godziną, np. 2026-11-09T18:30"},
+          "reason": {"type": "string"},
+          "medical_release": {"type": "boolean"},
+          "language": {"type": "string", "enum": ["pl", "en"]}
+        },
+        "required": ["confirmation_id", "appointment_datetime", "reason", "medical_release", "language"]
+      },
+      "response_contract": {
+        "success": "boolean",
+        "fee": "number",
+        "free_of_charge": "boolean",
+        "fee_rule": "string do powtórzenia gościowi",
+        "message": "string"
+      },
+      "_note": "Brak pola guest_name: weryfikacja nazwiska po stronie agenta i/lub recepcji. Rozważ dodanie, jeśli system to obsługuje."
+    },
+    {
+      "name": "reschedule_spa_appointment",
+      "description": "Przenosi rezerwację na nowy termin. Zwraca nowy identyfikator.",
+      "method": "POST",
+      "path": "/reschedule_spa_appointment",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "confirmation_id": {"type": "string"},
+          "service_name": {"type": "string"},
+          "new_date": {"type": "string"},
+          "new_time": {"type": "string"},
+          "guest_name": {"type": "string"},
+          "language": {"type": "string", "enum": ["pl", "en"]}
+        },
+        "required": ["confirmation_id", "service_name", "new_date", "new_time", "guest_name", "language"]
+      },
+      "response_contract": {
+        "success": "boolean",
+        "confirmation_id": "string (nowy identyfikator)",
+        "slots": "array (alternatywy)",
+        "message": "string"
+      }
+    },
+    {
+      "name": "check_room_availability",
+      "description": "Sprawdza dostępność pokoju w zadanym terminie i zwraca cenę za noc.",
+      "method": "POST",
+      "path": "/check_room_availability",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "room_type": {"type": "string", "description": "Typ pokoju z katalogu"},
+          "check_in": {"type": "string", "description": "RRRR-MM-DD"},
+          "check_out": {"type": "string", "description": "RRRR-MM-DD"},
+          "language": {"type": "string", "enum": ["pl", "en"]}
+        },
+        "required": ["room_type", "check_in", "check_out", "language"]
+      },
+      "response_contract": {"available": "boolean", "message": "string"}
+    },
+    {
+      "name": "send_sms_summary",
+      "description": "Wysyła SMS z potwierdzeniem na numer podany przez rozmówcę (po jego zgodzie).",
+      "method": "POST",
+      "path": "/send_sms_summary",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "phone_number": {"type": "string", "description": "Numer w formacie międzynarodowym"},
+          "summary_text": {"type": "string"},
+          "confirmation_id": {"type": "string"},
+          "language": {"type": "string", "enum": ["pl", "en"]}
+        },
+        "required": ["phone_number", "summary_text", "language"]
+      },
+      "response_contract": {"success": "boolean", "message": "string"}
+    },
+    {
+      "name": "transfer_to_simulated_handoff",
+      "description": "Zgłasza sprawę pracownikowi (w PoC: log i alert, bez połączenia telefonicznego).",
+      "method": "POST",
+      "path": "/transfer_to_simulated_handoff",
+      "parameters": {
+        "type": "object",
+        "properties": {
+          "department": {"type": "string", "enum": ["recepcja", "dyzurka_medyczna"], "description": "Dział docelowy"},
+          "reason": {"type": "string", "description": "Krótka flaga powodu, bez diagnozy"},
+          "guest_name": {"type": "string", "description": "Opcjonalnie"},
+          "language": {"type": "string", "enum": ["pl", "en"]}
+        },
+        "required": ["department", "reason", "language"]
+      },
+      "response_contract": {"success": "boolean", "message": "string"}
+    }
+  ]
+}

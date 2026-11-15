@@ -31,19 +31,28 @@ Nigdy nie usuwa ani nie zmienia istniejących pól i jest idempotentny.
 
 ## `run_simulations.py` — dowód z żywych symulacji (K2)
 
-Trzy symulacje agenta (niejednoznaczny zabieg, anulowanie >2 h = 0%, anulowanie <2 h = 50%)
-razem z transkryptami zapisywanymi do `.planning/transcripts/`:
+Symulacje agenta (rezerwacja niejednoznacznego zabiegu, anulowanie >2 h = 0%, <2 h = 50%, zmiana terminu,
+zadatek, wczesny przyjazd/późny wyjazd, dieta, transport, reklamacja, dostępność z datą przeszłą oraz dwa
+ataki: prompt injection i anulowanie ze złym nazwiskiem). Scenariusze to dane w `scenarios.py`; każdy ma
+`procedure` (nazwa z `agent/procedures/procedure_ids.json`) i `tags`. Transkrypty trafiają do
+`evals/transcripts/` (nadpisanie: `ANNA_TRANSCRIPTS_DIR`); są maskowane z danych osobowych gości.
+Instrukcja pełna: `evals/README.md`.
 
 ```bash
 python mock_backend/tunnel/run_simulations.py --check      # kredyty ElevenLabs + /health + gałąź
 python mock_backend/tunnel/run_simulations.py --dry-run    # payloady scenariuszy, zero wywołań płatnych
+python mock_backend/tunnel/run_simulations.py --only 02,16 # tylko wybrane (ogranicza koszt)
 python mock_backend/tunnel/run_simulations.py              # pełny przebieg
 ```
 
-Skrypt sam seeduje rezerwacje i wplata ich numery `SPA-XXXX` w scenariusze (backend liczy opłatę
-z `appointment_datetime` vs `now`, więc daty są liczone w momencie uruchomienia). Przed startem
+Skrypt sam seeduje rezerwacje potrzebne scenariuszom i wplata ich numery `SPA-XXXX` w treść (backend liczy
+opłatę z `appointment_datetime` vs `now`, więc daty są liczone w momencie uruchomienia). Przed startem
 sprawdza też, czy **hosty webhooków siedmiu narzędzi Anny** odpowiadają na `/health` (filtruje po
 `TOOL_PATHS`, więc obce narzędzia z workspace'u nie zaśmiecają wyniku) — martwy tunel kończy się
-exit 2 zamiast trzech nieudanych symulacji. Exit codes: `0` wszystko przeszło, `1` test nie przeszedł,
+exit 2 zamiast nieudanych symulacji. Exit codes: `0` wszystko przeszło, `1` test nie przeszedł,
 `2` konfiguracja/backend, `3` brak kredytów, `4` timeout. Scenariusz <2 h wymaga wolnego slotu
 w najbliższych 2 h — uruchom między 08:00 a 16:00 albo dodaj `--skip-scenario3`.
+
+ID agenta: `--agent-id`, a domyślnie `$ELEVENLABS_AGENT_ID` (brak = błąd, kod wyjścia 2; w `--dry-run` nie jest potrzebny).
+
+Sekwencję wywołań narzędzi i zakazane frazy sprawdza `sequence_check.py` (także offline, w testach).

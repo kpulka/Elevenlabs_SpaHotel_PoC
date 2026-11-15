@@ -1,0 +1,78 @@
+{
+  "_comment": "Config-as-code eksport agenta Anna (wersja v3). Wartości pochodzą z repo: agent/system_prompt_v3.md, scripts/deploy_kb_and_tools.py, docs/architecture.md, docs/pl/plan_implementacji_recepcjonisty.md. Brak sekretów i ID agenta; ID podaje ELEVENLABS_AGENT_ID. Stan live może się różnić - patrz agent/config/README.md.",
+  "schema_version": 1,
+  "agent": {
+    "name": "Anna - Recepcja Bukowy Dwór (PoC)",
+    "first_message": "Dzień dobry, tu Anna, wirtualna asystentka recepcji Uzdrowiska Bukowy Dwór w Krynicy-Zdroju. Rozmowa może być zapisywana (także jako transkrypt) w celu obsługi Pana/Pani zgłoszenia. W czym mogę Panu lub Pani dzisiaj pomóc?",
+    "default_language": "pl",
+    "languages": ["pl", "en"],
+    "timezone": "Europe/Warsaw",
+    "phone_numbers": [],
+    "max_duration_seconds": 900,
+    "note_max_duration": "Podniesione z 300 s zgodnie z docs/pl/audyt_agenta_2026-08.md (addendum)."
+  },
+  "llm": {
+    "provider": "elevenlabs-managed",
+    "model": "gemini-3.5-flash-lite",
+    "temperature": 0.1,
+    "system_prompt_file": "agent/system_prompt_v3.md",
+    "workflow_file": "agent/workflow/workflow_v3.json",
+    "procedures_file": "agent/procedures/procedure_ids.json"
+  },
+  "stt": {
+    "model": "scribe_v2_realtime",
+    "language": "pl"
+  },
+  "tts": {
+    "model": "eleven_v3_conversational",
+    "voice_name": "Jessica - Playful, Bright, Warm (premade)",
+    "voice_id": "cgSgspJ2msm6clMCkdW9",
+    "stability": 0.80,
+    "similarity_boost": 0.75,
+    "speed": 0.85
+  },
+  "turn": {
+    "turn_eagerness": "patient",
+    "turn_timeout_seconds": 3.0
+  },
+  "knowledge_base": {
+    "rag_enabled": true,
+    "documents": [
+      { "name": "Bukowy_Dwor_01_dojazd", "source": "agent/knowledge_base_txt/01_informacje_ogolne_i_dojazd.txt", "usage_mode": "auto" },
+      { "name": "Bukowy_Dwor_02_zabiegi", "source": "agent/knowledge_base_txt/02_katalog_zabiegow_spa_i_zdrowie.txt", "usage_mode": "auto" },
+      { "name": "Bukowy_Dwor_03_pokoje", "source": "agent/knowledge_base_txt/03_pokoje_i_cennik.txt", "usage_mode": "prompt" },
+      { "name": "Bukowy_Dwor_04_diety", "source": "agent/knowledge_base_txt/04_restauracja_i_diety.txt", "usage_mode": "auto" },
+      { "name": "Bukowy_Dwor_05_procedury", "source": "agent/knowledge_base_txt/05_procedury_i_polityki.txt", "usage_mode": "prompt" }
+    ]
+  },
+  "tools": [
+    { "name": "check_spa_availability", "type": "webhook", "path": "/check_spa_availability" },
+    { "name": "book_spa_appointment", "type": "webhook", "path": "/book_spa_appointment" },
+    { "name": "cancel_spa_appointment", "type": "webhook", "path": "/cancel_spa_appointment" },
+    { "name": "reschedule_spa_appointment", "type": "webhook", "path": "/reschedule_spa_appointment" },
+    { "name": "check_room_availability", "type": "webhook", "path": "/check_room_availability" },
+    { "name": "send_sms_summary", "type": "webhook", "path": "/send_sms_summary" },
+    { "name": "transfer_to_simulated_handoff", "type": "webhook", "path": "/transfer_to_simulated_handoff" }
+  ],
+  "tool_base_url": "PLACEHOLDER: https://<tunel-lub-host-backendu>",
+  "dynamic_variables": {
+    "user_language": "pl"
+  },
+  "tool_ids": {
+    "_comment": "ID narzędzi zarejestrowanych w agencie (te same co w agent/procedures/procedures_7.md). Cancel i reschedule nie mają ID w repo.",
+    "check_spa_availability": "tool_4801m0ncs38tf8t93f45jfj992dt",
+    "book_spa_appointment": "tool_6001m0ncs38vf73v1zbaa9p5vdfv",
+    "check_room_availability": "tool_6301m0ncs38wewt865sh99v1qkm8",
+    "send_sms_summary": "tool_8101m0ncs38xe6tb29923tjt9045",
+    "transfer_to_simulated_handoff": "tool_6001m0ntyt8xefgsx1e8mcqnsw1n"
+  },
+  "procedures": [
+    "procedura_anulowania_rezerwacji_spa",
+    "procedura_zmiany_terminu_zabiegu",
+    "procedura_odwolania_pobytu_i_zwrotu_zadatku",
+    "procedura_wczesnego_przyjazdu_i_poznego_wyjazdu",
+    "procedura_zgloszenia_diety_leczniczej",
+    "procedura_zamowienia_transportu_i_meleksa",
+    "procedura_reklamacji_i_trudnego_goscia"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "_comment": "Wyjątki dla scripts/lint_prompt_kb.py. Każdy wpis wymaga uzasadnienia. Wpis tu nie jest faktem: to przykład albo format, który nie ma pokrycia w KB z założenia.",
+  "amounts": {},
+  "hours": {
+    "14:30": "Przykład parafrazy w prompcie (\"rezerwujemy masaż ... o godzinie 14:30\"), nie fakt o ofercie.",
+    "18:30": "Przykład formatu daty i godziny w prompcie (\"dziewiątego listopada o 18:30\" -> 2026-11-09T18:30)."
+  },
+  "phrases": {
+    "pani": "Forma grzecznościowa z wytycznych stylu (\"Pani\" lub \"Pan\"), nie fakt o ofercie.",
+    "pan": "Forma grzecznościowa z wytycznych stylu (\"Pani\" lub \"Pan\"), nie fakt o ofercie."
+  }
+}

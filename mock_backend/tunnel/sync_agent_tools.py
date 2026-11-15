@@ -40,6 +40,7 @@ from __future__ import annotations
 import argparse
 import io
 import json
+import os
 import re
 import sys
 import urllib.parse
@@ -55,6 +56,31 @@ except ImportError:  # import jako pakiet: `from tunnel import sync_agent_tools`
 DEFAULT_API_BASE = "https://api.elevenlabs.io"
 HTTP_TIMEOUT = 60.0
 HTTP_RETRIES = 1  # ponowienie tylko przy błędzie sieci (patrz _http.ApiClient)
+
+# Header the backend expects on every tool call (routers/security.py). The sync sets it on each
+# tool when $ANNA_WEBHOOK_SECRET is configured; without it every call would be rejected with 401.
+# NOTE: `api_schema.request_headers` follows the ElevenLabs tool schema as documented; it has not
+# been verified against the live workspace from this repository (the value is never printed).
+AUTH_HEADER = "X-Webhook-Secret"
+
+
+def webhook_secret_from_env() -> str:
+    return os.environ.get("ANNA_WEBHOOK_SECRET", "").strip()
+
+
+def auth_header_ok(schema: dict, secret: str) -> bool:
+    """True when no secret is configured, or the tool already carries the exact header value."""
+    if not secret:
+        return True
+    headers = schema.get("request_headers")
+    return isinstance(headers, dict) and headers.get(AUTH_HEADER) == secret
+
+
+def with_auth_header(schema: dict, secret: str) -> dict:
+    """Return the schema with the auth header merged in (existing headers are kept)."""
+    headers = dict(schema.get("request_headers") or {})
+    headers[AUTH_HEADER] = secret
+    return {**schema, "request_headers": headers}
 
 
 # ── endpoints (ApiClient z _http.py) ───────────────────────────────────────
@@ -170,6 +196,11 @@ def run_sync(client: ApiClient, base_url: str, dry_run: bool) -> int:
     index = ts.index_by_name(list_tools(client))
 
     print(f"Synchronizacja webhooków -> {base}" + (" [DRY-RUN: bez zapisu]" if dry_run else ""))
+    secret = webhook_secret_from_env()
+    if secret:
+        print(f"  Nagłówek {AUTH_HEADER} zostanie ustawiony na każdym narzędziu (wartość nie jest wypisywana).")
+    else:
+        print(f"  UWAGA: ANNA_WEBHOOK_SECRET nie jest ustawiony — nagłówek {AUTH_HEADER} nie jest zarządzany.")
     failures = 0
     changed = 0
 
@@ -186,18 +217,23 @@ def run_sync(client: ApiClient, base_url: str, dry_run: bool) -> int:
         schema = ts.api_schema_of(config)
         current = str(schema.get("url") or "")
 
-        if current == target:
+        header_ok = auth_header_ok(schema, secret)
+        if current == target and header_ok:
             print(f"  [OK]   {name}: już wskazuje na nowy URL (bez zmian)")
             continue
 
         print(f"  [{'DRY' if dry_run else 'PATCH'}] {name} ({tool_id})")
         print(f"         było: {current or '(brak)'}")
         print(f"         będzie: {target}")
+        if not header_ok:
+            print(f"         + ustawia nagłówek {AUTH_HEADER}")
         if dry_run:
             changed += 1
             continue
 
         schema["url"] = target
+        if not header_ok:
+            schema = with_auth_header(schema, secret)
         config["api_schema"] = schema
         try:
             status, detail = patch_tool(client, tool_id, config)

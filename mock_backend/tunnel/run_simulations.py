@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Produce the K2 evidence: seed the mock PMS, run three live simulations, save transcripts.
+"""Produce the K2 evidence: seed the mock PMS, run live simulations, save transcripts.
 
 Why this exists
 ---------------
-The K2 proof is not "the prompt looks right" -- it is three recorded conversations in
-which the agent asks before booking an ambiguous treatment, quotes the backend's 0%/50%
-cancellation fee instead of inventing one, and passes ``appointment_datetime`` to the
-tool. Simulations are created through the current API (``POST /v1/convai/agent-testing/
-create`` + ``POST /v1/convai/agents/{id}/run-tests``); the old ``simulate-conversation``
+The K2 proof is not "the prompt looks right" -- it is recorded conversations in which the
+agent asks before booking an ambiguous treatment, quotes the backend's 0%/50% cancellation
+fee instead of inventing one, passes ``appointment_datetime`` to the tool, and follows each
+of the 7 operational procedures (see ``scenarios.py``). Simulations are created through the
+current API (``POST /v1/convai/agent-testing/create`` + ``POST /v1/convai/agents/{id}/run-tests``);
+the old ``simulate-conversation``
 endpoint was removed on 31 Oct 2026 and returns 410.
 
 Dates are computed at run time, never hardcoded: the mock backend computes the fee from
@@ -23,11 +24,12 @@ Modes
   (default)          full run: credits check, seed, create tests, run, poll, save
   --check            read-only: subscription credits + backend health + branch
   --dry-run          build every payload and print it, spend nothing, write nothing
+  --only SLUG,...    run only scenarios whose slug starts with one of the prefixes (cost guard)
   --keep-tests       do not delete previous ``K2-*`` tests first
-  --skip-scenario3   run scenarios 1-2 only (when no slot is within the 2 h window)
+  --skip-scenario3   skip the <2 h scenario (when no slot is within the 2 h window)
 
 Exit codes: 0 = all simulations passed, 1 = at least one failed, 2 = config/backend,
-3 = credits exhausted, 4 = timeout, 5 = partial (scenario 3 skipped).
+3 = credits exhausted, 4 = timeout. Transcripts are redacted (see ``transcripts.py``).
 
 The key is read from ``--api-key``, else ``$ELEVENLABS_API_KEY``, else ``frontend/.env.local``.
 It is never printed. Standard library only (urllib), like ``sync_agent_tools.py``.
@@ -37,6 +39,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 import urllib.parse
@@ -46,22 +49,30 @@ from typing import Any, Dict, List, Optional, Tuple
 
 try:  # uruchomienie jako skrypt: sys.path[0] == katalog tunnel/
     from _http import ApiClient, resolve_api_key
-    from scenarios import TEST_PREFIX, dry_run_seeds, scenario_payloads
+    from scenarios import SEED_SPECS, TEST_PREFIX, dry_run_seeds, scenario_payloads, selected
     from tool_schemas import TOOL_PATHS, api_schema_of, tool_name
     from transcripts import save, transcript_text  # noqa: F401 - transcript_text: re-eksport dla testów
 except ImportError:  # import jako pakiet: `from tunnel import run_simulations`
     from tunnel._http import ApiClient, resolve_api_key
-    from tunnel.scenarios import TEST_PREFIX, dry_run_seeds, scenario_payloads
+    from tunnel.scenarios import SEED_SPECS, TEST_PREFIX, dry_run_seeds, scenario_payloads, selected
     from tunnel.tool_schemas import TOOL_PATHS, api_schema_of, tool_name
     from tunnel.transcripts import save, transcript_text  # noqa: F401
 
 API_BASE = "https://api.elevenlabs.io"
 CALL_TIMEOUT = 120  # sekundy na jedno wywołanie HTTP (symulacje bywają wolne)
-DEFAULT_AGENT = "agent_8401m0n03cggfgebhfh0cj96t7aj"
 DEFAULT_BRANCH = "agtbrch_9601m0n03dege4yvwseypec1hm81"
 DEFAULT_BACKEND = "http://127.0.0.1:8011"
 POLL_SECONDS = 15
 POLL_TIMEOUT = 900
+
+
+def default_agent() -> str:
+    """ID agenta z ``$ELEVENLABS_AGENT_ID``; pusty string, gdy zmienna nie jest ustawiona.
+
+    Brak wbudowanego ID jest celowy: symulacje uruchamiają się na konkretnym agencie, więc
+    bez jawnego ID skrypt kończy się błędem zamiast cicho trafić w nie ten agent.
+    """
+    return os.environ.get("ELEVENLABS_AGENT_ID", "").strip()
 
 
 def _utf8_stdout() -> None:
@@ -168,20 +179,26 @@ def tool_health(key: str, timeout: int = 20) -> List[Dict[str, Any]]:
     return report
 
 
-def seed(backend: ApiClient, days_ahead: int, service: str, slot: Optional[str],
-         guest: str) -> Optional[Dict[str, Any]]:
-    day = date.today() + timedelta(days=days_ahead)
-    when = slot or find_slot(backend, service, day)
+def build_seed(backend: ApiClient, name: str, spec: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Seed z ``SEED_SPECS``: termin (i dla ``reserve`` także rezerwacja w PMS). None = brak slotu/błąd."""
+    day = date.today() + timedelta(days=spec["days"])
+    within = spec.get("within_hours")
+    when = find_slot(backend, spec["service"], day, within_hours=within)
     if when is None:
+        print(f"seed '{name}': brak wolnego slotu na {day.isoformat()}")
         return None
+    if not spec["reserve"]:
+        return {"id": "", "date": day.isoformat(), "time": when,
+                "service": spec["service"], "guest": spec.get("guest") or ""}
+    guest = spec["guest"]
     status, resp = backend.request_json(
         "POST", "/book_spa_appointment",
-        {"service_name": service, "date": day.isoformat(), "time": when, "guest_name": guest},
+        {"service_name": spec["service"], "date": day.isoformat(), "time": when, "guest_name": guest},
     )
     if status != 200 or not isinstance(resp, dict) or not resp.get("success"):
         return None
     return {"id": resp["confirmation_id"], "date": day.isoformat(), "time": when,
-            "service": resp.get("service_name", service), "guest": guest}
+            "service": resp.get("service_name", spec["service"]), "guest": guest}
 
 
 def cleanup_old_tests(client: ApiClient) -> None:
@@ -240,12 +257,15 @@ def poll(client: ApiClient, invocation: str) -> Dict[str, Any]:
 # ── CLI: parsowanie, sprawdzenia wstępne, tryby ───────────────────────────
 def parse_args(argv: Optional[List[str]] = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="K2 evidence: live simulations + transcripts.")
-    parser.add_argument("--agent-id", default=DEFAULT_AGENT)
+    parser.add_argument("--agent-id", default=default_agent(),
+                        help="domyślnie $ELEVENLABS_AGENT_ID; wymagane poza --dry-run (brak = błąd)")
     parser.add_argument("--branch-id", default=DEFAULT_BRANCH)
     parser.add_argument("--backend", default=DEFAULT_BACKEND)
     parser.add_argument("--api-key")
     parser.add_argument("--check", action="store_true", help="tylko odczyt: kredyty, backend, gałąź")
     parser.add_argument("--dry-run", action="store_true", help="zbuduj payloady, nic nie uruchamiaj")
+    parser.add_argument("--only", help="tylko scenariusze o podanych prefiksach slugów, po przecinku "
+                                       "(np. 02,16) — ogranicza koszt kredytów")
     parser.add_argument("--keep-tests", action="store_true", help="nie usuwaj poprzednich testów K2-*")
     parser.add_argument("--skip-scenario3", action="store_true", help="pomiń scenariusz <2 h")
     parser.add_argument("--skip-tools-check", action="store_true",
@@ -279,43 +299,46 @@ def _check_tools(key: str) -> Optional[int]:
     return None
 
 
+def only_prefixes(args: argparse.Namespace) -> Optional[List[str]]:
+    raw = getattr(args, "only", None)
+    if not raw:
+        return None
+    return [part.strip() for part in raw.split(",") if part.strip()]
+
+
 def _print_dry_run(args: argparse.Namespace) -> int:
-    payloads = scenario_payloads(dry_run_seeds(date.today()))
-    if args.skip_scenario3:
-        payloads = [p for p in payloads if not p["slug"].startswith("03")]
+    scenarios = selected(args.skip_scenario3, only_prefixes(args))
+    payloads = scenario_payloads(dry_run_seeds(date.today()), scenarios=scenarios)
     print("\n--- dry run: payloady (bez seed, bez POST) ---")
     print(json.dumps([p["body"] for p in payloads], ensure_ascii=False, indent=2))
     print("--- koniec; nic nie utworzono, nic nie uruchomiono ---")
     return 0
 
 
-def _run_simulations(el: ApiClient, backend: ApiClient, args: argparse.Namespace) -> int:
-    if args.skip_scenario3:
-        fee_slot = None
-    else:
-        fee_slot = find_slot(backend, "kąpiel siarczkowa", date.today(), within_hours=2)
-        if fee_slot is None:
-            print("Scenariusz <2 h: brak wolnego slotu w najbliższych 2 h.")
-            print("Uruchom ponownie między 08:00 a 16:00 (albo z --skip-scenario3).")
-            return 2
-        print(f"Scenariusz <2 h: dzisiejszy slot {fee_slot}")
-
-    # Wartości są Optional tylko do pętli niżej, która kończy się przy pierwszym None.
-    seeds: dict[str, Any] = {
-        "book": seed(backend, 1, "masaż leczniczy pleców", None, "Piotr Zieliński"),
-        "cancel_free": seed(backend, 2, "masaż leczniczy pleców", None, "Jan Kowalski"),
-        "cancel_fee": seed(backend, 0, "kąpiel siarczkowa", fee_slot, "Maria Nowak") if fee_slot else None,
-    }
-    for name, value in seeds.items():
+def _seed_all(backend: ApiClient, needed: List[str]) -> Optional[Dict[str, Dict[str, Any]]]:
+    """Seeduje tylko potrzebne rezerwacje; None przy pierwszym niepowodzeniu (kod 2)."""
+    seeds: Dict[str, Dict[str, Any]] = {}
+    for name in needed:
+        value = build_seed(backend, name, SEED_SPECS[name])
         if value is None:
             print(f"seed '{name}' nie wyszedł — sprawdź dostępność w backendzie")
-            return 2
-        print(f"seed {name}: {value['id']} {value['date']} {value['time']}")
+            return None
+        print(f"seed {name}: {value['id'] or '(bez rezerwacji)'} {value['date']} {value['time']}")
+        seeds[name] = value
+    return seeds
 
-    payloads = scenario_payloads(seeds)
-    if args.skip_scenario3:
-        payloads = [p for p in payloads if not p["slug"].startswith("03")]
 
+def _run_simulations(el: ApiClient, backend: ApiClient, args: argparse.Namespace) -> int:
+    scenarios = selected(args.skip_scenario3, only_prefixes(args))
+    if not scenarios:
+        print("brak scenariuszy po filtrach (--only / --skip-scenario3)")
+        return 2
+    needed = sorted({s["seed"] for s in scenarios if s["seed"]})
+    seeds = _seed_all(backend, needed)
+    if seeds is None:
+        return 2
+
+    payloads = scenario_payloads(seeds, scenarios=scenarios)
     if not args.keep_tests:
         cleanup_old_tests(el)
 
@@ -331,6 +354,10 @@ def _run_simulations(el: ApiClient, backend: ApiClient, args: argparse.Namespace
 
 
 def dispatch(args: argparse.Namespace) -> int:
+    if not args.dry_run and not args.agent_id:
+        print("brak ID agenta: ustaw ELEVENLABS_AGENT_ID albo podaj --agent-id "
+              "(w --dry-run nie jest potrzebny)")
+        return 2
     key = api_key(args.api_key)
     el = ApiClient(API_BASE, key, timeout=CALL_TIMEOUT)
     backend = ApiClient(args.backend, timeout=CALL_TIMEOUT)

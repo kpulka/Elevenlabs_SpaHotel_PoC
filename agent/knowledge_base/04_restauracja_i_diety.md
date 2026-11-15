@@ -7,9 +7,9 @@
 
 ## Dostosowanie do potrzeb gości starszych
 - **Obsługa:** W przypadku trudności z poruszaniem się, kelnerzy pomagają w przyniesieniu jedzenia z bufetu do stolika.
-- **Room Service:** W przypadku złego samopoczucia, dostarczenie posiłku do pokoju jest bezpłatne (zazwyczaj kosztuje 20 PLN). Wymaga zgłoszenia telefonicznego z pokoju.
+- **Room Service:** W przypadku złego samopoczucia gość może zamówić posiłek do pokoju. Wymaga zgłoszenia telefonicznego z pokoju. Opłatę za dostarczenie podaje recepcja.
 
-## Dostępne diety (dokładnie trzy, bez dodatkowych dopłat)
+## Dostępne diety (trzy pozycje, bez dodatkowych dopłat)
 Agent przyjmujący rezerwację musi zapytać o preferencje żywieniowe i choroby.
 1. **Dieta cukrzycowa:** Posiłki o niskim indeksie glikemicznym, węglowodany złożone, brak cukru dodanego.
 2. **Dieta lekkostrawna (wątrobowa/żołądkowa):** Dania gotowane na parze, pieczone, bez produktów wzdymających i ostrych przypraw.

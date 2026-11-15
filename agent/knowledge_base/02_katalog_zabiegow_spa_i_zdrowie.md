@@ -21,6 +21,7 @@
 - **Konsultacja lekarska:** Wymagana przed rozpoczęciem jakichkolwiek zabiegów z użyciem prądu (np. jonoforeza) lub silnych borowin.
 - **Dyżur pielęgniarski:** Pielęgniarka dyżuruje całodobowo w gabinecie 101 (parter).
 - **Przycisk SOS:** Każda kabina zabiegowa oraz pokoje hotelowe wyposażone są w czerwone przyciski SOS połączone bezpośrednio z dyżurką pielęgniarki.
+- **Numer alarmowy:** 112. Przy zagrożeniu życia (np. ból w klatce piersiowej, duszność, utrata przytomności) gość dzwoni pod 112 w pierwszej kolejności.
 
 ### 3. Kąpiel borowinowa „Głęboka Regeneracja"
 - **Czas trwania:** 25 minut.
