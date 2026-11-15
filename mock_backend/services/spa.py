@@ -214,7 +214,7 @@ def oblicz_oplate_anulowania(
     """Reguła opłat: zwolnienie medyczne = 0; brak godziny = 50%;
     > 2 h przed zabiegiem = 0; ≤ 2 h (w tym termin już minął) = 50%.
 
-    Jedyny próg w kodzie to 2 h (docs/elevenlabs_agent_procedures.md); 24 h i 48 h
+    Jedyny próg w kodzie to 2 h (docs/pl/elevenlabs_agent_procedures.md); 24 h i 48 h
     nie mają tu osobnych stawek.
     """
     if medical_release:
