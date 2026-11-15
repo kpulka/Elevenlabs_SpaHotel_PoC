@@ -7,7 +7,7 @@
 | Environment | PoC (ElevenLabs agent, widget channel) |
 | Detected | while checking a KB correction in a test conversation |
 | Duration | unknown: the source does not record start or end times |
-| Source | [`docs/lessons-learned.md`, lesson 7](../lessons-learned.md#7-a-200-ok-is-not-proof-that-anything-changed), [`scripts/deploy_kb_and_tools.py`](../../deploy_kb_and_tools.py) |
+| Source | [`docs/lessons-learned.md`, lesson 7](../lessons-learned.md#7-a-200-ok-is-not-proof-that-anything-changed), [`scripts/deploy_kb_and_tools.py`](../../scripts/deploy_kb_and_tools.py) |
 
 > **Faithfulness note.** The facts below come from `lessons-learned.md` (lesson 7) and from reading `scripts/deploy_kb_and_tools.py`. Where the two disagree, the table in section 6 says so. Timestamps and the exact number of affected conversations are not in the record and are marked `unknown`.
 

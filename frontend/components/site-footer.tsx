@@ -1,6 +1,6 @@
 'use client'
 
-import { Globe, Mail, MapPin, Phone, Share2 } from 'lucide-react'
+import { Mail, MapPin, Phone } from 'lucide-react'
 import Link from 'next/link'
 
 import { Container } from '@/components/section'
@@ -21,22 +21,6 @@ export function SiteFooter() {
           <p className="mt-4 max-w-xs text-base leading-relaxed text-white/80">
             {t.footer.tagline}
           </p>
-          <div className="mt-6 flex gap-3">
-            <a
-              href="#"
-              aria-label="Bukowy Dwór Facebook"
-              className="flex size-12 items-center justify-center rounded-full border border-white/20 outline-none transition-colors hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
-            >
-              <Globe className="size-5" aria-hidden="true" />
-            </a>
-            <a
-              href="#"
-              aria-label="Bukowy Dwór Instagram"
-              className="flex size-12 items-center justify-center rounded-full border border-white/20 outline-none transition-colors hover:border-gold hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
-            >
-              <Share2 className="size-5" aria-hidden="true" />
-            </a>
-          </div>
         </div>
 
         <div>

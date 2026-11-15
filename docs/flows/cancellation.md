@@ -1,6 +1,6 @@
 # Cancellation of a SPA appointment
 
-Status: **derived from `procedures_7.md` (procedure 1) and `services/spa.py`; transitions tested offline** in `mock_backend/tests/test_flow_transitions.py`.
+Status: **derived from `procedures_7.md` (procedure 1) and `mock_backend/services/spa.py`; transitions tested offline** in `mock_backend/tests/test_flow_transitions.py`.
 
 ## State diagram
 

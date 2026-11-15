@@ -31,7 +31,7 @@ Legal basis column: the proposed basis. `[COUNSEL]` = needs legal review.
 
 Known gaps in A2–A5 (from the code, not yet fixed):
 
-- The guest name is included in the Telegram alert text (`routers/comms.py`, `guest_name`). Masking is planned.
+- The guest name is included in the Telegram alert text (`mock_backend/routers/comms.py`, `guest_name`). Masking is planned.
 - The recipient phone number is returned unmasked in one response field (`delivered_to`).
 - Health context in free text (reason, handoff reason) is not separated from other text.
 

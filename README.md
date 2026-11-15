@@ -95,7 +95,7 @@ recover from a transport error in the middle of a sentence.
 | `book_spa_appointment` | consumes the slot; with an `idempotency_key`, a retried request returns the existing booking instead of creating a second one |
 | `cancel_spa_appointment` | **>2 h before = free, <2 h = 50 %, medical release = free**, computed from `appointment_datetime`; an unknown reservation returns `success:false` |
 | `reschedule_spa_appointment` | releases the old slot, takes the new one, returns a new `SPA-XXXX` |
-| `check_room_availability` | per-night pricing from `data/rooms.json`; refuses past dates |
+| `check_room_availability` | per-night pricing from `mock_backend/data/rooms.json`; refuses past dates |
 | `send_sms_summary` | prints the SMS for the live demo and mirrors it to Telegram when configured |
 | `transfer_to_simulated_handoff` | alerts reception or the medical room; simulated, because there is no telephony |
 

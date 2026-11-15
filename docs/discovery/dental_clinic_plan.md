@@ -67,7 +67,7 @@ Parity check: copy `scripts/check_kb_parity.py` pattern for `.md` and `.txt` (no
 
 | Gate | Entry criteria | Exit criteria |
 |---|---|---|
-| G0 Offline | `render_vertical.py` valid; prompt names configured tools only; scenario shape check green | all offline tests green |
+| G0 Offline | `agent/verticals/render_vertical.py` valid; prompt names configured tools only; scenario shape check green | all offline tests green |
 | G1 Scenario run (test environment) | backend routes exist in a test environment; no production data | every critical scenario passes; booking scenarios at least 90 % |
 | G2 Owner review | KB 05 confirmed; O-1 to O-5 closed | signed review in the repository |
 | G3 Supervised pilot | handoff channel tested in and out of hours | 5–10 supervised calls, each transcript reviewed, zero wrong prices, zero emergency misses |
