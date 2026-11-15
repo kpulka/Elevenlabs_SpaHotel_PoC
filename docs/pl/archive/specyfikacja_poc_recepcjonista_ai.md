@@ -1,4 +1,4 @@
-> **Status:** historyczne — zastąpione przez `docs/specyfikacja_recepcjonista_ai.md` (archiwum, nieaktualne). Zarchiwizowano 2026-11: zakres PoC scalono do specyfikacji kanonicznej, szczegóły techniczne do `docs/plan_implementacji_recepcjonisty.md`.
+> **Status:** historyczne — zastąpione przez `docs/pl/specyfikacja_recepcjonista_ai.md` (archiwum, nieaktualne). Zarchiwizowano 2026-11: zakres PoC scalono do specyfikacji kanonicznej, szczegóły techniczne do `docs/pl/plan_implementacji_recepcjonisty.md`.
 
 # Specyfikacja PoC: Wirtualny Recepcjonista AI (Hotel & SPA) — ZDEPRECJONOWANY
 

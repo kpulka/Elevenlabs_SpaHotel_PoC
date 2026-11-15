@@ -1,10 +1,10 @@
-# presentation/ — deck rekrutacyjny i materiał demo
+# presentation/ — deck case study i materiał demo
 
-Osobny deliverable: prezentacja case study „Wirtualny Recepcjonista AI — Bukowy Dwór" (ElevenLabs Deployment Strategist) plus surowce, z których powstała. Dokumentacja systemu jest w `docs/` (`docs/INDEX.md`).
+Osobny deliverable: prezentacja case study „Wirtualny Recepcjonista AI — Bukowy Dwór" (portfolio: wdrożenie agenta głosowego ElevenLabs dla fikcyjnego uzdrowiska) plus surowce, z których powstała. Dokumentacja systemu jest w `docs/` (`docs/INDEX.md`).
 
 **Co otworzyć pierwsze:**
 - Online: [kpulka.github.io/Elevenlabs_SpaHotel_PoC](https://kpulka.github.io/Elevenlabs_SpaHotel_PoC/) — strona-wejście `index.html` z linkami do obu decków (GitHub Pages z tego katalogu, `.github/workflows/pages.yml`).
-- `prezentacja.html` — wersja PL decku w przeglądarce, bez zależności (to pokazujesz na rozmowie). EN: `presentation_en.html`.
+- `prezentacja.html` — wersja PL decku w przeglądarce, bez zależności (otwierasz ją podczas prezentacji). EN: `presentation_en.html`.
 - `Bukowy_Dwor_Case_Study.pptx` / `Bukowy_Dwor_Case_Study_EN.pptx` — te same slajdy do edycji w PowerPoint/Google Slides.
 - `content_pl.json` / `content_en.json` — **kanon treści decku** (teksty, tabele, notatki prelegenta; 69 kluczy, identyczne struktury w obu językach). To z nich generator buduje PPTX.
 - `slides/` — układ: kolory, funkcje slajdów `slide_01_title` … `slide_14_qa`, lista `SLIDES` w kolejności.
@@ -30,7 +30,7 @@ python presentation/generate_deck.py --lang all --out-dir DIR   # poza repo, np.
 - PL: podtytuł „Chętnie pogłębię swój token" (błąd językowy na slajdzie Pytania); „dostępny 8h/dobę".
 - EN: „Sub-500ms" (kanon: ~430 ms); „Frankfurt / Dublin"; „15-min TTL"; „RFC 7433"; „Opera Cloud / Mews" (kanon: Opera/KWHotel); „Quick Reply Chips (PL, EN, DE, UK, ES)" (kanon: 6 opcji, DE/EN/UA).
 - Kolejność: w `deck_spec*.json` demo jest przed kanałami (slajdy 8/9); w PPTX jest odwrotnie.
-- Layouty i ścieżki obrazów w JSON-ie (`D:/Projects/...`) nie mają odpowiednika w generatorze.
+- Layouty i lokalne, bezwzględne ścieżki obrazów w JSON-ie nie mają odpowiednika w generatorze.
 
 Różnice tez (np. Frankfurt, TTL, RFC) wymagają decyzji właściciela treści, zanim trafią do kanonu.
 
@@ -38,8 +38,8 @@ Różnice tez (np. Frankfurt, TTL, RFC) wymagają decyzji właściciela treści,
 >
 > **Guard:** `python presentation/verify_deck.py` (bez zależności — PPTX czytany jako zip) sprawdza arytmetykę planów, obecność kanonicznych liczb i brak wycofanych, w obu PPTX, obu HTML-ach, obu `deck_spec*.json` i business case; liczy też 14 slajdów. Ten sam skrypt jest jobem `docs` w CI — liczby nie rozjadą się po cichu.
 
-> **Stan plików `.pptx` (2026-11-09, przegenerowane 2026-11-10):** oba decki są przegenerowane z poprawionych źródeł i aktualne faktograficznie — 14 slajdów, 7/7 narzędzi agenta, backend na `:8011`, bez „4 webhooków", starego portu 8000 i `transfer_to_number`. PPTX, HTML i `deck_spec*.json` opisują ten sam system — teraz sprawdzane maszynowo, nie tylko przez brak zakazanych stringów.
+> **Stan plików `.pptx` (przegenerowane 2026-11-15 generatorem z `content_*.json`; treść planu Enterprise oznaczona jako projekt):** oba decki są przegenerowane z poprawionych źródeł i aktualne faktograficznie — 14 slajdów, 7/7 narzędzi agenta, backend na `:8011`, bez „4 webhooków", starego portu 8000 i `transfer_to_number`. PPTX, HTML i `deck_spec*.json` opisują ten sam system — teraz sprawdzane maszynowo, nie tylko przez brak zakazanych stringów.
 
-**Pliki `.md`** to materiał wejściowy i przygotowanie do rozmów, w kolejności procesu: `00_brief_prezentacja.md` (co ma osiągnąć deck), `01_diagram_architektury.md` + `01_architecture_diagrams_en.md` (diagramy Mermaid), `02/03/04` (tok myślenia V1, narracja demo, outline slajdów), `05/06/09` (materiały V2: pytania, Excalidraw, przygotowanie do Hiring Managera), `07` (UX), `08` (wytyczne UI strony hotelu).
+**Notatki przygotowawcze** (brief, narracja demo, outline slajdów) są prywatne i nie są częścią publicznego repozytorium. Źródłem treści decku w repo są pliki `content_*.json`; `slides/` to tylko układ.
 
 **`assets/`** — na slajdy produktowe trafiają `anna_widget_desktop.jpg` (agent w rozmowie), `anna_widget_chips.jpg` (chipy), `anna_widget_success.jpg` (potwierdzenie rezerwacji) oraz `anna_widget_rozmowa.jpg` (używany w głównym `README.md`); `diagram_architecture.png`, `diagram_multihotel.png`, `enterprise_security.png` na slajdy architektury/bezpieczeństwa; `persona_zofia.png` na slajd persony; `webhook_responses.json` to surowe odpowiedzi mock backendu użyte w przykładach. `anna_live_homepage.png` i `anna_live_spa.png` to pełnostronicowe zrzuty strony hotelu z sierpnia 2026 — materiał referencyjny, nie są wstawiane do decków (są tylko w `deck_spec*.json`). Zrzuty widgetu pochodzą z żywego demo; odświeżenie ich wymaga rozmowy z agentem (zużywa kredyty ElevenLabs), więc robimy to tylko przed pokazem, nie przy każdej zmianie decku.

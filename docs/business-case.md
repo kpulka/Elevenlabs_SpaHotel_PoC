@@ -1,7 +1,7 @@
 # Business Case
 
 > Why a voice agent for a spa hotel, what it should change, how success would be measured — and what must **not** be automated.
-> Recruiter-facing companion to [deployment-playbook.md](deployment-playbook.md) and [lessons-learned.md](lessons-learned.md).
+> Companion to [deployment-playbook.md](deployment-playbook.md) and [lessons-learned.md](lessons-learned.md).
 
 ## 1. Context
 
@@ -38,8 +38,8 @@ the guest to a human whenever the question is outside its mandate.
 | Standard policy explanations (cancellation fee, deposit, check-in/out) | Anything missing from the knowledge base |
 
 The line between the two columns is enforced by the prompt, by the procedures and by the backend — not by
-good intentions. See [the 7 procedures](../docs/elevenlabs_agent_procedures.md) and
-[the audit of the live agent](../docs/audyt_agenta_2026-08.md).
+good intentions. See [the 7 procedures](agent-workflows-and-procedures.md) and
+[the audit of the live agent](pl/audyt_agenta_2026-08.md) (Polish original).
 
 ## 4. Value drivers
 

@@ -17,7 +17,7 @@
 | **6. Operate** | Continuous improvement | Weekly transcript review, KB change process, quarterly red-team | Ongoing |
 
 The engineering equivalent of this phase model is what this repository already does at PoC scale:
-`.planning/` holds the phase briefs, each phase ends with a full gate (backend tests, type-check,
+the work was cut into phases with written briefs, each phase ends with a full gate (backend tests, type-check,
 i18n parity, generated-data check, production build) and CI must be green on `main`.
 
 ## 2. Go-live checklist
@@ -47,9 +47,9 @@ i18n parity, generated-data check, production build) and CI must be green on `ma
 |---|---|---|
 | Channel | Web widget; telephony-ready but not wired to a trunk | Hotel PBX / SIP trunk with `transfer_to_number` to the desk |
 | Webhook hosting | Local laptop behind a Cloudflare quick tunnel | Containerised service on a managed platform, fixed domain, WAF, autoscaling |
-| Webhook authentication | None | Signed requests (shared secret or mTLS), IP allow-list |
+| Webhook authentication | Shared secret in the `X-Webhook-Secret` header on the seven tool endpoints; HMAC-SHA256 with a timestamp (300 s window) available per request; **off when `ANNA_WEBHOOK_SECRET` is empty** (demo mode) | HMAC required for every call, or mTLS; IP allow-list; secret rotation |
 | PMS | FastAPI mock implementing the booking contract | One adapter per PMS (Opera Cloud, Mews, Protel, …) behind the same HTTP contract |
-| Secrets | Local `.env` files, never committed | Secret manager, rotating keys, least-privilege API keys per environment |
+| Secrets | Local `.env` files, never committed (`--env-file` for the container) | Secret manager, rotating keys, least-privilege API keys per environment |
 | Environments | One | dev / staging / prod, using ElevenLabs agent **branches** and versions per environment |
 | Observability | Console log plus Telegram alerts | Structured logs, per-conversation tracing, dashboards, alerting |
 | Evaluation | Manual runs and the simulation runbook | Automated simulated-conversation tests in CI on every prompt or KB change |
@@ -67,9 +67,17 @@ i18n parity, generated-data check, production build) and CI must be green on `ma
   route so the key never reaches the browser (`frontend/app/api/anna/signed-url`).
 - **Prompt injection and abuse** — tools accept only schema-validated parameters, and the backend enforces
   business rules independently of the model: the LLM is never trusted for authorisation or pricing.
-- **Auditability** — every booking carries a conversation id, so any action can be traced to a transcript.
+- **Auditability** — every request gets a request ID. A conversation ID is read from the `X-Conversation-Id` header or the `conversation_id` query parameter, and both are written to the JSON logs. The tool configuration has to send one of them for a tool call to be traced to its conversation; wiring that into the ElevenLabs tools is an open item.
 - **Red-teaming** — before go-live and quarterly: jailbreak attempts, medical-advice baiting,
   price manipulation, PII fishing.
+
+## 4a. Operational prerequisite: the webhook secret must reach the agent
+
+With `ANNA_WEBHOOK_SECRET` set, every tool call from the agent must carry the same value in the
+`X-Webhook-Secret` request header. Configure it on each of the seven tools in the ElevenLabs workspace before
+enabling the secret; otherwise the calls are rejected with `401` and the procedures fail. The tunnel start scripts
+refuse to open a public tunnel while the secret is empty, so an unauthenticated public endpoint is not started by
+accident.
 
 ## 5. Failure modes and runbook
 
@@ -114,3 +122,38 @@ cheap.
 3. Automated evaluation harness with nightly regression runs
 4. Outbound use cases: appointment reminders, no-show recovery (with consent)
 5. Multi-property rollout: one core agent, per-hotel knowledge base and variables
+
+## 9. Deploy to a managed PaaS
+
+> **Status: config provided, not deployed.** Nothing in this repository deploys to a cloud platform, and the
+> files below have not been run against a live account. They describe how the backend would run on a managed
+> platform instead of a laptop behind a quick tunnel.
+
+What is in the repository:
+
+- `mock_backend/Dockerfile`: the image (Python 3.12 slim, non-root user, `/health` health check, `/var/lib/anna`
+  for the SQLite file).
+- `mock_backend/fly.toml`: Fly.io app configuration. One machine, a `/health` check every 30 s, a volume mounted at
+  `/var/lib/anna`, `ANNA_DB_PATH` inside that volume, and `auto_stop_machines = "off"`. Secrets are set with
+  `fly secrets`, not in the file.
+- `mock_backend/compose.yaml`: the same image run locally with a named volume, for a rehearsal before a platform
+  deployment.
+
+Steps a deployment would take (not run):
+
+1. Create the app and a one-gigabyte volume; set `ANNA_WEBHOOK_SECRET` as a secret (and the optional Telegram variables).
+2. Deploy, then check `/health` and `/docs` on the platform host.
+3. Point the seven agent tools at the fixed HTTPS host with `mock_backend/tunnel/sync_agent_tools.py --base-url https://<host>`.
+   The quick tunnel is then no longer needed.
+4. Confirm that every tool sends the `X-Webhook-Secret` header (section 4a).
+5. Run the preflight before spending credits: `python mock_backend/tunnel/run_simulations.py --check`.
+
+Exit criteria before a go-live decision:
+
+- A fixed domain with a valid TLS certificate, and `CORS_ORIGINS` set to the website origin instead of `*`.
+- The volume backup has been restored once in a test.
+- `/metrics` and the logs are reachable only by the operator.
+- The previous image tag is known, so a rollback is one deploy away.
+
+Known limits of this configuration: one machine only (the SQLite file is local to one volume, and there is no
+cross-machine locking), a shared-secret webhook scheme (section 3), and no managed database.

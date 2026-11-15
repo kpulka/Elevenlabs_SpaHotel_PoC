@@ -23,9 +23,8 @@ What it checks
 Standard library only (a .pptx is a zip), so CI needs no python-pptx. Slides are read by
 concatenating the ``<a:t>`` runs of each paragraph, which survives text split across runs.
 
-Historical documents that quote the old figures *as history* (``presentation/02_v1_interview_
-thought_process_en.md``, ``docs/lessons-learned.md``, ``presentation/README.md``) are not in the
-surface table on purpose.
+Documents that quote the old figures *as history* (``docs/lessons-learned.md``,
+``presentation/README.md``) are not in the surface table on purpose.
 
 Run:
     python presentation/verify_deck.py
@@ -122,11 +121,11 @@ def content_parity_failures() -> list[str]:
     only_pl = sorted(set(pl) - set(en))
     only_en = sorted(set(en) - set(pl))
     if only_pl or only_en:
-        failures.append(f"content: klucze tylko w PL {only_pl}, tylko w EN {only_en}")
+        failures.append(f"content: keys only in PL {only_pl}, only in EN {only_en}")
     for key in sorted(set(pl) & set(en)):
         if shape_of(pl[key]) != shape_of(en[key]):
-            failures.append(f"content: {key!r} ma inny kształt (typ / długość listy) w PL i EN")
-    print(f"  content pl/en  {len(pl)} / {len(en)} kluczy")
+            failures.append(f"content: {key!r} has a different shape (type / list length) in PL and EN")
+    print(f"  content pl/en  {len(pl)} / {len(en)} keys")
     return failures
 
 
@@ -134,7 +133,7 @@ def surface_text(key: str, path: Path) -> tuple[str, int | None]:
     if path.suffix == ".pptx":
         return pptx_text(path)
     if not path.exists():
-        raise SystemExit(f"brak pliku: {path}")
+        raise SystemExit(f"missing file: {path}")
     return path.read_text(encoding="utf-8"), None
 
 
@@ -146,46 +145,46 @@ def main() -> int:
     rate_scale = SCALE_COST / SCALE_MINUTES
     if abs(rate_creator - rate_scale) > 0.005:
         failures.append(
-            f"plany nie opisują tego samego kursu: {CREATOR_COST}/{CREATOR_MINUTES}="
+            f"the plans do not describe the same per-minute rate: {CREATOR_COST}/{CREATOR_MINUTES}="
             f"{rate_creator:.3f} vs {SCALE_COST}/{SCALE_MINUTES}={rate_scale:.3f}"
         )
     published_rate = round(rate_scale, 2)
     if published_rate != 0.08:
-        failures.append(f"kurs do publikacji wyszedł {published_rate}, a dokumenty mówią 0.08")
+        failures.append(f"the published rate computes to {published_rate}, but the documents say 0.08")
     coverage_usd = BOOKINGS_TO_COVER_SCALE * NIGHT_BOOKING_PLN / FX_PLN_PER_USD
     if coverage_usd < SCALE_COST:
         failures.append(
-            f"{BOOKINGS_TO_COVER_SCALE} × {NIGHT_BOOKING_PLN:.0f} PLN = ${coverage_usd:.0f} nie pokrywa "
-            f"planu Scale (${SCALE_COST:.0f})"
+            f"{BOOKINGS_TO_COVER_SCALE} × {NIGHT_BOOKING_PLN:.0f} PLN = ${coverage_usd:.0f} does not cover "
+            f"the Scale plan (${SCALE_COST:.0f})"
         )
 
     # 2. Cross-artifact consistency.
     for key, path in PLANS.items():
         text, slides = surface_text(key, path)
         if slides is not None and slides != SLIDE_COUNT:
-            failures.append(f"{key}: {slides} slajdów, oczekiwano {SLIDE_COUNT}")
+            failures.append(f"{key}: {slides} slides, expected {SLIDE_COUNT}")
         for needle in REQUIRED[key]:
             if needle not in text:
-                failures.append(f"{key}: brak wymaganej liczby/zwrotu {needle!r}")
+                failures.append(f"{key}: required figure/phrase missing {needle!r}")
         for needle in RETRACTED:
             if needle in text:
-                failures.append(f"{key}: wciąż zawiera wycofaną liczbę {needle!r}")
-        print(f"  {key:14} {len(text):6} znaków" + (f", {slides} slajdów" if slides else ""))
+                failures.append(f"{key}: still contains retracted figure {needle!r}")
+        print(f"  {key:14} {len(text):6} chars" + (f", {slides} slides" if slides else ""))
 
     # 3. The generator's content source: PL and EN must describe the same deck.
     failures.extend(content_parity_failures())
 
-    print(f"\nkurs: {CREATOR_COST:.0f}/{CREATOR_MINUTES:.0f} = {rate_creator:.3f} "
+    print(f"\nrate: {CREATOR_COST:.0f}/{CREATOR_MINUTES:.0f} = {rate_creator:.3f} "
           f"| {SCALE_COST:.0f}/{SCALE_MINUTES:.0f} = {rate_scale:.3f} -> ${published_rate:.2f}/min")
-    print(f"pokrycie Scale: {BOOKINGS_TO_COVER_SCALE} × {NIGHT_BOOKING_PLN:.0f} PLN "
+    print(f"Scale coverage: {BOOKINGS_TO_COVER_SCALE} × {NIGHT_BOOKING_PLN:.0f} PLN "
           f"= {BOOKINGS_TO_COVER_SCALE * NIGHT_BOOKING_PLN:.0f} PLN = ${coverage_usd:.0f}")
 
     if failures:
-        print(f"\nNIEPOWODZENIE ({len(failures)}):")
+        print(f"\nFAILED ({len(failures)}):")
         for item in failures:
             print(f"  - {item}")
         return 1
-    print("\nOK: liczby spójne we wszystkich artefaktach")
+    print("\nOK: figures are consistent across all artifacts")
     return 0
 
 

@@ -1,6 +1,6 @@
 # Lessons Learned
 
-> Seven-plus real problems hit while building and testing this PoC, how each was diagnosed, and what changed.
+> Eight real problems hit while building and testing this PoC, how each was diagnosed, and what changed.
 > Every entry is verifiable in this repository; each one maps to a production concern in
 > [deployment-playbook.md](deployment-playbook.md).
 
@@ -34,7 +34,7 @@ backend that notifies staff with the conversation context. Prompt and configurat
 production path (SIP transfer) is documented separately instead of being implied.
 
 **Takeaway.** Safety rules need an executable path. Audit prompt ↔ configuration consistency as a release
-step; the artifact of that audit is [audyt_agenta_2026-08.md](audyt_agenta_2026-08.md).
+step; the artifact of that audit is [pl/audyt_agenta_2026-08.md](pl/audyt_agenta_2026-08.md) (Polish original).
 
 ## 3. The widget silently did nothing
 
@@ -91,7 +91,7 @@ file in the repository.
 
 **Fix.** A KB change means: create a new document → re-point the agent's `knowledge_base` list (preserving
 each entry's `usage_mode`) → delete the old document → verify by searching for a marker string in
-`extracted_inner_html`. For deployments the repository uses a REST script (`deploy_kb_and_tools.py`) rather
+`extracted_inner_html`. For deployments the repository uses a REST script (`scripts/deploy_kb_and_tools.py` in the repository root) rather
 than a UI, so the change is reproducible and reviewable.
 
 **Takeaway.** Verify state, never the status code. Any "deploy" step needs an assertion that reads the

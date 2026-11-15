@@ -4,7 +4,7 @@
     {
       "layout": "title",
       "title": "Wirtualny Recepcjonista AI — Bukowy Dwór & SPA",
-      "subtitle": "Case study: ElevenLabs Conversational AI w sieci hoteli uzdrowiskowych — Deployment Strategist, 2026",
+      "subtitle": "Case study: ElevenLabs Conversational AI w sieci hoteli uzdrowiskowych, 2026",
       "background": "1B2A4A",
       "notes": "Zaczynam od 30 sekund kontekstu biznesowego, nie od architektury."
     },
@@ -100,7 +100,7 @@
         "Na żywo w widgetcie na naszej stronie (lub za chwilę screen)"
       ],
       "images": [
-        {"path": "D:/Projects/Elevenlabs/SpaHotels/presentation/assets/anna_live_homepage.png", "left": 0.6, "top": 4.4, "width": 4.2}
+        {"path": "assets/anna_live_homepage.png", "left": 0.6, "top": 4.4, "width": 4.2}
       ],
       "notes": "Pełny skrypt w presentacją. Fallback: screeny odpowiedzi JSON."
     },
@@ -118,17 +118,17 @@
         "Transkrypcja live + success card z danymi rezerwacji"
       ],
       "images": [
-        {"path": "D:/Projects/Elevenlabs/SpaHotels/presentation/assets/anna_live_spa.png", "left": 7.6, "top": 3.6, "width": 4.2}
+        {"path": "assets/anna_live_spa.png", "left": 7.6, "top": 3.6, "width": 4.2}
       ],
       "notes": "Ten sam agent, dwa kanały. Zero duplikacji konfiguracji."
     },
     {
       "layout": "title_content",
-      "title": "Enterprise ready — dane medyczne, RODO",
+      "title": "Projekt pod plan Enterprise — dane medyczne, RODO (w PoC nieaktywne)",
       "bullets": [
-        "Zero Retention Mode — audio i transkrypcje tylko w RAM",
-        "Conversation History Redaction — maskowanie PII",
-        "Data Residency EU — przetwarzanie w regionie UE, DPA",
+        "Zero Retention Mode (projekt) — audio i transkrypcje tylko w RAM",
+        "Redakcja historii rozmów (projekt) — maskowanie PII",
+        "Rezydencja danych UE (projekt) — przetwarzanie w regionie UE, DPA",
         "Signed URLs — widget bez exposowania klucza API"
       ],
       "notes": "Dla zarządu uzdra RODO decyduje, nie funkcje."
@@ -143,7 +143,7 @@
       "bullets_right": [
         "Jeden centralny agent „Anna”",
         "Dynamic variables per hotel: hotel_name, location, reception_phone, pms_id",
-        "SIP UUI (RFC 7433) — metadane w sygnale",
+        "SIP UUI (RFC 7433, projekt) — metadane w sygnale",
         "Nowy hotel = zmiana zmiennych, nie nowy agent"
       ],
       "notes": "Kluczowy argument biznesowy — ROI na 10 hoteli prawie identyczny jak na 1."

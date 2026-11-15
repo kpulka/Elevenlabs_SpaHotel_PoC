@@ -286,7 +286,7 @@ Dla połączeń telefonicznych, centrala PBX hotelu przekazuje identyfikator dzw
 
 ---
 
-## 6. Enterprise Compliance, RODO i Bezpieczeństwo
+## 6. Compliance, RODO i bezpieczeństwo
 
 Głównym wyzwaniem w branży uzdrowiskowej jest przetwarzanie danych osobowych (RODO) oraz wrażliwych danych medycznych (stan zdrowia, przeciwwskazania do zabiegów rehabilitacyjnych) [cite: 7, 12].
 
@@ -294,8 +294,8 @@ Głównym wyzwaniem w branży uzdrowiskowej jest przetwarzanie danych osobowych 
 W celu osadzenia interaktywnego widgetu na stronie internetowej uzdrowiska, aplikacja kliencka nie może komunikować się bezpośrednio przy użyciu głównego klucza API dewelopera (ryzyko kradzieży klucza i nielimitowanych kosztów) [cite: 156]. 
 *   **Proces autoryzacji:** Serwer hotelu (bezpieczne środowisko) wysyła żądanie do API ElevenLabs `/get_signed_url` [cite: 19, 157]. W odpowiedzi otrzymuje podpisany token ważny przez **15 minut** [cite: 19, 157]. Połączenie WebSocket jest nawiązywane przy użyciu tego tymczasowego adresu URL, zapewniając 100% bezpieczeństwo infrastruktury [cite: 19, 157].
 
-### 6.2. Strategia RODO dla Prezentacji (Enterprise Plan) [cite: 11]
-Podczas prezentacji dla Hiring Managera należy wytłumaczyć, w jaki sposób ElevenLabs zapewnia pełne bezpieczeństwo danych gości [cite: 13]:
+### 6.2. Strategia RODO (projekt pod plan Enterprise) [cite: 11]
+Podczas prezentacji dla zarządu lub klienta należy wytłumaczyć, w jaki sposób ElevenLabs zapewnia bezpieczeństwo danych gości [cite: 13]. Stan faktyczny PoC to plan Creator; poniższe mechanizmy są wymaganiami projektowymi, nieaktywnymi w PoC:
 1.  **Zero Retention Mode (ZRM):** Po aktywacji tego trybu w planie Enterprise, pliki audio oraz generowane transkrypcje są przetwarzane wyłącznie w pamięci RAM i **nigdy** nie są zapisywane na dyskach twardych ElevenLabs [cite: 26, 132].
 2.  **Conversation History Redaction:** Jeśli chcemy zachować statystyki rozmów i badać trendy, aktywujemy tryb redukcji historii [cite: 26, 131]. System automatycznie wykrywa i zamienia na gwiazdki (maskuje) wrażliwe dane osobowe: nazwiska, numery telefonów, numery rezerwacji oraz pojęcia o charakterze medycznym [cite: 26, 131].
 3.  **Data Residency:** Gwarancja przetwarzania danych na terenie Unii Europejskiej (serwery w regionie EU) w celu pełnej zgodności z DPA i regulacjami RODO.
@@ -329,11 +329,11 @@ Podczas prezentacji dla Hiring Managera należy wytłumaczyć, w jaki sposób El
    * `turn_timeout: 3` (w sekundach; parametr MCP jest liczbą całkowitą)
    * `model_id: eleven_v3_conversational` (zweryfikuj dostępność przez `list_models`)
    * `voice_id: cgSgspJ2msm6clMCkdW9` (Jessica — Playful, Bright, Warm)
-   * `first_message` + `system_prompt` = treść z `docs/anna_system_prompt_v3.md`
+   * `first_message` + `system_prompt` = treść z `agent/system_prompt_v3.md`
 
 ### 8.2. Baza wiedzy — konwersja i ograniczenie
 * MCP `add_knowledge_base_to_agent` przyjmuje wyłącznie **epub / pdf / docx / txt / html** — NIE `.md`.
-* **Krok 1:** skonwertuj 5 plików `docs/baza_wiedzy_rag_bukowy_dwor/*.md` do `.txt` (kodowanie UTF-8).
+* **Krok 1:** skonwertuj 5 plików `agent/knowledge_base/*.md` do `.txt` (wynik: `agent/knowledge_base_txt/`) (kodowanie UTF-8).
 * **Krok 2:** dodaj je do agenta przez MCP (osobne wywołanie na plik; użyj pola `text` lub `input_file_path`).
 * **Ograniczenie:** podział na tryby `prompt` vs `auto` (`usage_mode`) NIE jest dostępny w MCP — ustaw w panelu ElevenLabs (Knowledge Base → tryb per plik), jeśli jest wymagany.
 

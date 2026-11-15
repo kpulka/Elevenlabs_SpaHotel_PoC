@@ -4,7 +4,7 @@
     {
       "layout": "title",
       "title": "Virtual AI Receptionist — Bukowy Dwór & Thermal SPA",
-      "subtitle": "Case Study: Enterprise Deployment of ElevenLabs Conversational AI in a Spa Hotel Chain — Deployment Strategist, 2026",
+      "subtitle": "Case Study: design of an ElevenLabs Conversational AI deployment for a spa hotel chain, 2026",
       "background": "1B2A4A",
       "notes": "Start with 30 seconds of pure business context, user demographics, and financial stakes before touching architecture."
     },
@@ -100,7 +100,7 @@
         "Available live via the website widget and telephone SIP gateway"
       ],
       "images": [
-        {"path": "D:/Projects/Elevenlabs/SpaHotels/presentation/assets/anna_live_homepage.png", "left": 0.6, "top": 4.4, "width": 4.2}
+        {"path": "assets/anna_live_homepage.png", "left": 0.6, "top": 4.4, "width": 4.2}
       ],
       "notes": "Run the live voice demo. Keep fallback JSON response screenshots ready if network latency spikes."
     },
@@ -118,17 +118,17 @@
         "Success booking summary card with one-click actions"
       ],
       "images": [
-        {"path": "D:/Projects/Elevenlabs/SpaHotels/presentation/assets/anna_live_spa.png", "left": 7.6, "top": 3.6, "width": 4.2}
+        {"path": "assets/anna_live_spa.png", "left": 7.6, "top": 3.6, "width": 4.2}
       ],
       "notes": "Emphasize omnichannel synergy: the same agent core services both voice calls and website visitors without duplicated logic."
     },
     {
       "layout": "title_content",
-      "title": "Enterprise Security, Healthcare Data & GDPR",
+      "title": "GDPR & Healthcare Data — design for the Enterprise plan",
       "bullets": [
-        "Zero Retention Mode (ZRM) — Audio streams and transcripts reside strictly in volatile RAM, zero disk storage",
-        "Conversation History Redaction — Automatic masking of PII (national IDs, phone numbers, addresses, health notes)",
-        "EU Data Residency — Compute, LLM inference, and vector embeddings located strictly within EU (Frankfurt / Dublin)",
+        "Zero Retention Mode (ZRM, design) — Audio streams and transcripts reside strictly in volatile RAM, zero disk storage",
+        "Conversation History Redaction (design) — Automatic masking of PII (national IDs, phone numbers, addresses, health notes)",
+        "EU Data Residency (design) — Compute, LLM inference, and vector embeddings located strictly within EU (Frankfurt / Dublin)",
         "Signed URLs with 15-min TTL — Frontend widget connects securely without exposing backend xi-api-key"
       ],
       "notes": "For healthcare and resort management, data compliance and privacy are mandatory requirements, not optional features."
@@ -142,10 +142,10 @@
       ],
       "bullets_right": [
         "The Solution: 1 Master Agent Core + Dynamic Variables (hotel_name, location, reception_phone, pms_id)",
-        "SIP UUI (RFC 7433): Context metadata injected dynamically into the SIP signaling header per inbound number",
+        "SIP UUI (RFC 7433, design): Context metadata injected dynamically into the SIP signaling header per inbound number",
         "Onboarding a new hotel requires updating metadata, zero prompt duplication"
       ],
-      "notes": "Demonstrate enterprise deployment maturity: sub-linear maintenance costs as hotel properties scale."
+      "notes": "Show the deployment design: maintenance cost should grow sub-linearly as properties are added. Enterprise-tier items are design, not the live state."
     },
     {
       "layout": "title_content",
@@ -180,7 +180,7 @@
     {
       "layout": "title",
       "title": "Questions & Discussion",
-      "subtitle": "Ready to dive deep into Architecture, System Design, Excalidraw Wireframing, or Enterprise Security.",
+      "subtitle": "Ready to dive deep into Architecture, System Design, Excalidraw Wireframing, or the Enterprise security design.",
       "background": "1B2A4A",
       "notes": "Transition actively into open dialogue, technical deep-dive, or collaborative Excalidraw whiteboarding."
     }

@@ -1,6 +1,6 @@
-﻿> **Status:** aktualny (2026-11) — tłumaczenie EN dokumentów `docs/elevenlabs_agent_workflow.md` i `docs/elevenlabs_agent_procedures.md` (wersja źródłowa: PL).
+﻿> **Status:** aktualny (2026-11) — tłumaczenie EN dokumentów `docs/pl/elevenlabs_agent_workflow.md` i `docs/pl/elevenlabs_agent_procedures.md` (wersja źródłowa: PL).
 >
-> **Graph scope (read this first):** the Mermaid graph in §1 describes the **designed** conversational graph (target state, ~30 states). The graph **actually deployed and live** on the agent is a minimal **workflow v3: 3 nodes** (`start` → `main_agent` → `end`) and **2 edges**, defined in `.planning/workflow/workflow_v3.json`. §2 lists the 7 procedures that are published on the live agent.
+> **Graph scope (read this first):** the Mermaid graph in §1 describes the **designed** conversational graph (target state, ~30 states). The graph **actually deployed and live** on the agent is a minimal **workflow v3: 3 nodes** (`start` → `main_agent` → `end`) and **2 edges**, defined in `agent/workflow/workflow_v3.json`. §2 lists the 7 procedures that are published on the live agent.
 
 # Agent Workflows & Standard Operating Procedures (SOP) — Virtual AI Receptionist "Bukowy Dwór"
 
@@ -123,4 +123,4 @@ flowchart TD
 | **6** | **`procedura_zamowienia_transportu_i_meleksa`** | `agtprc_7001m0r0e15kfv28bnc9x9x3p11t` | Guest requests pickup from the Krynica-Zdrój train/bus station or an electric golf cart on premises. | Free dedicated electric shuttle (melex) for resort guests, available 24h. Logs arrival time, luggage count, wheelchair/mobility aid details → sends SMS with the driver's direct contact. |
 | **7** | **`procedura_reklamacji_i_trudnego_goscia`** | `agtprc_1801m0r0e1c1enmvsrcttyh36jq7` | Guest is dissatisfied, reports a technical defect, noise, or a service issue. | Active listening without interrupting → genuine institutional apology → immediate service ticket dispatched → complimentary herbal tea / salt cave pass and handoff to the Duty Manager. |
 
-> IDs are the published procedure IDs stored in `.planning/workflow/procedure_ids.json`.
+> IDs are the published procedure IDs stored in `agent/procedures/procedure_ids.json`.

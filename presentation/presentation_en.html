@@ -291,10 +291,10 @@
       <!-- SLIDE 1: Title -->
       <div class="slide theme-dark active" data-slide="1">
         <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
-          <div class="slide-category" style="font-size: 1rem; letter-spacing: 0.2em;">ELEVENLABS DEPLOYMENT STRATEGIST CASE STUDY</div>
+          <div class="slide-category" style="font-size: 1rem; letter-spacing: 0.2em;">ELEVENLABS CONVERSATIONAL AI · DEPLOYMENT CASE STUDY</div>
           <h1 style="font-family: var(--font-serif); font-size: 3.6rem; color: #ffffff; margin: 1rem 0;">Virtual AI Receptionist</h1>
           <h2 style="font-family: var(--font-serif); font-size: 2.0rem; color: var(--gold); font-weight: 400; margin-bottom: 2rem;">Bukowy Dwór — Thermal Spa & Health Resort</h2>
-          <p style="font-size: 1.1rem; color: var(--cream); opacity: 0.9;">Enterprise Voice AI Architecture for Hospitality Chains · 2026</p>
+          <p style="font-size: 1.1rem; color: var(--cream); opacity: 0.9;">Voice AI architecture for hospitality chains (design) · 2026</p>
         </div>
         <div class="notes-content" style="display:none;">
           Start with 30 seconds of pure business context and customer demographics. Do not dive into technical boxes until the hotel problem and user pain points are clearly framed.
@@ -371,7 +371,7 @@
             </div>
             <div class="card">
               <h3>Omnichannel Reach</h3>
-              <p>One unified AI brain serving both Telephone PBX (SIP Trunk) and Interactive Web/Mobile Widget.</p>
+              <p>One unified AI brain serving the interactive web widget (live) and, as target state, a telephone PBX (SIP Trunk).</p>
             </div>
           </div>
         </div>
@@ -550,7 +550,7 @@
       <!-- SLIDE 10: Security -->
       <div class="slide theme-dark" data-slide="10">
         <div class="slide-category">Data Governance & Compliance</div>
-        <h2 class="slide-title">Enterprise Security, Healthcare Privacy & GDPR</h2>
+        <h2 class="slide-title">GDPR &amp; Healthcare Privacy — design for the Enterprise plan</h2>
         <div class="grid-2">
           <div style="display:flex; justify-content:center; align-items:center;">
             <img src="assets/enterprise_security.png" alt="Security Overview" class="slide-media">
@@ -558,9 +558,9 @@
           <div class="card">
             <h3>Security Architecture</h3>
             <ul class="clean-list" style="margin-top:0.75rem;">
-              <li><strong>Zero Retention Mode (ZRM):</strong> Audio streams and transcripts exist strictly in volatile RAM — zero disk storage.</li>
-              <li><strong>PII Redaction:</strong> Automated masking for national ID, phone numbers, and health records in logs.</li>
-              <li><strong>EU Data Residency:</strong> Compute, LLM inference, and vector embeddings located strictly within EU (Frankfurt / Dublin).</li>
+              <li><strong>Zero Retention Mode (ZRM, design):</strong> Audio streams and transcripts exist strictly in volatile RAM — zero disk storage.</li>
+              <li><strong>PII Redaction (design):</strong> Automated masking for national ID, phone numbers, and health records in logs.</li>
+              <li><strong>EU Data Residency (design):</strong> Compute, LLM inference, and vector embeddings located strictly within EU (Frankfurt / Dublin).</li>
               <li><strong>Signed URLs:</strong> Frontend connects securely via 15-min TTL tokens without exposing server xi-api-key.</li>
             </ul>
           </div>
@@ -572,8 +572,8 @@
 
       <!-- SLIDE 11: Multi-Hotel -->
       <div class="slide" data-slide="11">
-        <div class="slide-category">Multi-Tenant Architecture</div>
-        <h2 class="slide-title">Multi-Hotel Scaling: 1 Master Agent, 10 Properties</h2>
+        <div class="slide-category">Multi-Tenant Architecture (design)</div>
+        <h2 class="slide-title">Multi-Hotel Scaling (design): 1 Master Agent, 10 Properties</h2>
         <div class="grid-2">
           <div style="display:flex; justify-content:center; align-items:center;">
             <img src="assets/diagram_multihotel.png" alt="Multi-hotel Architecture" class="slide-media">
@@ -583,7 +583,7 @@
             <ul class="clean-list" style="margin-top:0.75rem;">
               <li><strong>The Challenge:</strong> 10 properties typically means 10 separate agents, 10 siloed knowledge bases, and linear maintenance costs.</li>
               <li><strong>Centralized Master Core:</strong> 1 Master Agent with dynamic variables (hotel_name, location, phone, pms_id).</li>
-              <li><strong>SIP UUI (RFC 7433):</strong> Context metadata injected dynamically inside the telephony header per inbound number.</li>
+              <li><strong>SIP UUI (RFC 7433, design):</strong> Context metadata injected dynamically inside the telephony header per inbound number.</li>
               <li><strong>Zero Duplication:</strong> Adding a new hotel requires updating metadata in PMS — zero prompt duplication.</li>
             </ul>
           </div>
@@ -603,7 +603,7 @@
               <th>Parameter</th>
               <th>Creator Plan (PoC)</th>
               <th>Scale Plan (Production)</th>
-              <th>Enterprise Scale (10 Hotels)</th>
+              <th>Illustrative: 10 Hotels (Enterprise)</th>
             </tr>
           </thead>
           <tbody>
@@ -689,8 +689,8 @@
         <div style="flex:1; display:flex; flex-direction:column; justify-content:center; align-items:center; text-align:center;">
           <div class="slide-category" style="font-size:1.1rem; letter-spacing:0.2em;">CONCLUSION & DISCUSSION</div>
           <h1 style="font-family: var(--font-serif); font-size: 3.8rem; color: var(--gold); margin: 1rem 0;">Thank You</h1>
-          <h2 style="font-family: var(--font-serif); font-size: 2.0rem; color: #ffffff; font-weight: 400; margin-bottom: 2rem;">Ready for Questions & Excalidraw System Design</h2>
-          <p style="font-size: 1.1rem; color: var(--cream); opacity: 0.9;">Architecture · Enterprise Security · Latency Calibration · Commercial ROI</p>
+          <h2 style="font-family: var(--font-serif); font-size: 2.0rem; color: #ffffff; font-weight: 400; margin-bottom: 2rem;">Ready for Questions & a System Design Walkthrough</h2>
+          <p style="font-size: 1.1rem; color: var(--cream); opacity: 0.9;">Architecture · GDPR design · Latency Calibration · Commercial ROI</p>
         </div>
         <div class="notes-content" style="display:none;">
           Transition actively into collaborative system design.

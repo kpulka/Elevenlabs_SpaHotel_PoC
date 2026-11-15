@@ -22,7 +22,7 @@ TABLE_ALT = RGBColor(250, 246, 240)
 # Nazwy akcentów z JSON-a -> kolor. Dane nie niosą obiektów RGB, tylko nazwy.
 ACCENTS = {"navy": NAVY, "gold": GOLD, "sage": SAGE}
 
-BRAND_LINE = "ELEVENLABS DEPLOYMENT STRATEGIST CASE STUDY"
+BRAND_LINE = "ELEVENLABS CONVERSATIONAL AI · DEPLOYMENT CASE STUDY"
 
 
 def new_slide(prs, bg=NAVY):

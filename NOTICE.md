@@ -2,11 +2,11 @@
 
 ## What this repository is
 
-This is a **portfolio proof of concept / technical case study**, built by kpulka as part of an
-application for the **ElevenLabs Deployment Strategist** role. It demonstrates an end-to-end
-voice-agent deployment: a Next.js marketing site with the ElevenLabs Convai widget, a FastAPI
-mock backend implementing the agent's tools (availability, booking, SMS summary, handoff),
-ElevenLabs workflows/procedures, and a Podman + Cloudflare quick-tunnel local demo setup.
+This is a **portfolio proof of concept / technical case study** of an end-to-end voice-agent
+deployment: a Next.js marketing site with the ElevenLabs Convai widget, a FastAPI mock backend
+implementing the agent's tools (availability, booking, SMS summary, handoff), ElevenLabs
+workflows and procedures, and a Podman + Cloudflare quick-tunnel local demo setup. It is built
+on the ElevenLabs Conversational AI platform, which is named because it is the platform used.
 Nothing here is a production system or a deliverable for a paying client.
 
 ## The hotel is fictional
@@ -36,9 +36,9 @@ are the author's own API keys, kept in local `.env` files that are gitignored an
 
 ## PL — nota prawna (skrót)
 
-To repozytorium to **portfolio / studium przypadku** przygotowane na potrzeby aplikacji na
-stanowisko Deployment Strategist w ElevenLabs — nie jest to wdrożenie produkcyjne ani materiał
-dla klienta. „Uzdrowisko Termalne Bukowy Dwór" jest **fikcyjne**: nazwa obiektu, ceny, numer
+To repozytorium to **portfolio / studium przypadku** end-to-end wdrożenia agenta głosowego na
+platformie ElevenLabs Conversational AI — nie jest to wdrożenie produkcyjne ani materiał dla
+klienta. „Uzdrowisko Termalne Bukowy Dwór" jest **fikcyjne**: nazwa obiektu, ceny, numer
 telefonu, adres, godziny i personel (w tym „Anna") zostały wymyślone na potrzeby demonstracji.
 Wszystkie zdjęcia i ilustracje w froncie i prezentacji są **wygenerowane przez AI** jako
 placeholdery — nie przedstawiają realnego obiektu. Backend jest atrapą trzymającą stan

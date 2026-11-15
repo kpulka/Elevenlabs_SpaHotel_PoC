@@ -1,4 +1,4 @@
-﻿> **Status:** aktualny (2026-11) — źródło prawdy dla PROJEKTU grafu; wdrożona wersja to `workflow_v3.json` (3 węzły: start → main_agent → end), nie pełny graf z tego dokumentu.
+﻿> **Status:** aktualny (2026-11) — źródło prawdy dla PROJEKTU grafu; wdrożona wersja to `agent/workflow/workflow_v3.json` (3 węzły: start → main_agent → end), nie pełny graf z tego dokumentu.
 
 # Specyfikacja i Graf Workflow Agenta ElevenLabs — Anna (Bukowy Dwór)
 

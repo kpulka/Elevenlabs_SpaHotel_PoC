@@ -1,4 +1,4 @@
-"""Generator decku rekrutacyjnego (PL i EN) — python-pptx.
+"""Generator of the case-study deck (PL and EN) — python-pptx.
 
 Użycie:
     python presentation/generate_deck.py                  # tylko PL -> presentation/

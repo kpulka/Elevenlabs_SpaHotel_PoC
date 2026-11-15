@@ -11,11 +11,11 @@
 Architektura została zaprojektowana w oparciu o paradygmat **Natywnego Agenta Chmurowego (Cloud-Native Unified Conversational Loop)**, eliminując opóźnienia tradycyjnych kaskad wielomodelowych.
 
 System łączy 5 głównych warstw:
-1. **Warstwa Interfejsów Wejściowych (Omnichannel Inbound)** — Telefonia SIP oraz Web/Mobile WebRTC.
-2. **Warstwa Bezpieczeństwa & Autoryzacji (Edge Gateway)** — Signed URLs, ZRM, EU Data Residency.
+1. **Warstwa Interfejsów Wejściowych (Omnichannel Inbound)** — Web WebRTC (widget, działa); telefonia SIP to ścieżka docelowa (w PoC niepodłączona).
+2. **Warstwa Bezpieczeństwa & Autoryzacji (Edge Gateway)** — Signed URLs (wdrożone); ZRM i EU Data Residency to projekt pod plan Enterprise (w PoC nieaktywne).
 3. **Rdzeń Konwersacyjny ElevenLabs (AI Core Engine)** — Zunifikowane STT + LLM Orchestrator + RAG + TTS.
 4. **Warstwa Integracji i Webhooków (Integration Layer)** — Tool Calling, REST API, bramka FastAPI.
-5. **Systemy Źródłowe Enterprise (PMS, CRM, Telco, SMS)** — Hotelowy PMS, terminarz zabiegów balneologicznych, bramki SMS/Telegram, PBX.
+5. **Systemy źródłowe (PMS, CRM, telekomunikacja, SMS)** — Hotelowy PMS, terminarz zabiegów balneologicznych, bramki SMS/Telegram, PBX.
 
 ---
 
@@ -56,7 +56,7 @@ flowchart TB
         direction TB
         SIP_URI["SIP Gateway ElevenLabs\n`sip:agent_id@sip.elevenlabs.io`\n+ Nagłówki SIP UUI (RFC 7433)"]:::edgeLayer
         SIGNED_URL_API["Next.js Route Handler\n`GET /api/anna/signed-url`\n(15-min TTL Signed Tokens)"]:::edgeLayer
-        SEC_POL["Polityka Bezpieczeństwa:\n• Zero Retention Mode (ZRM)\n• EU Data Residency (Frankfurt)\n• PII Redaction w transkrypcjach"]:::secLayer
+        SEC_POL["Polityka bezpieczeństwa (projekt, plan Enterprise):\n• Zero Retention Mode (ZRM)\n• EU Data Residency (Frankfurt)\n• PII Redaction w transkrypcjach"]:::secLayer
     end
 
     SIP_TRUNK -->|"SIP / TLS + SRTP Audio"| SIP_URI
@@ -219,7 +219,7 @@ ElevenLabs wywołuje zewnętrzne narzędzia za pomocą schematu **Client Tools (
 ---
 
 ### E. Backend PoC & PMS Gateway (FastAPI)
-- **Środowisko:** Python 3.11+, FastAPI, Uvicorn ASGI Server, port **8011** (8000 na hoście deweloperskim zajmuje proces systemowy).
+- **Środowisko:** Python 3.12, FastAPI, Uvicorn ASGI Server, port **8011** (8000 na hoście deweloperskim zajmuje proces systemowy).
 - **Powierzchnia API:** 7 tras `POST` (po jednej na narzędzie agenta) + 2 `GET` (`/` — opis serwisu, `/health` — health check). Swagger UI: `http://localhost:8011/docs`.
 - **Model Danych:** Walidacja wejścia za pomocą modeli `Pydantic v2`.
 - **Ekspozycja w sieci:**
@@ -229,7 +229,9 @@ ElevenLabs wywołuje zewnętrzne narzędzia za pomocą schematu **Client Tools (
 
 ---
 
-## 4. Architektura Bezpieczeństwa Enterprise & RODO
+## 4. Architektura bezpieczeństwa i RODO (projekt pod plan Enterprise)
+
+> **Stan faktyczny:** agent działa na planie Creator. ZRM i redakcja historii rozmów poniżej są funkcjami planu Enterprise — opisane jako projekt, nie jako włączone w PoC. Signed URLs są wdrożone.
 
 ```
            [ Dane Gościa / Głos ]
@@ -253,6 +255,6 @@ ElevenLabs wywołuje zewnętrzne narzędzia za pomocą schematu **Client Tools (
          └───────────────────────┘
 ```
 
-1. **Zero Retention Mode (ZRM):** Głos kuracjusza i strumień audio są przetwarzane wyłącznie w ulotnej pamięci RAM serwerów ElevenLabs w UE i natychmiast niszczone po zakończeniu połączenia.
-2. **Conversation Redaction:** Wszelkie dane wrażliwe (np. informacje o stanie zdrowia podane w wywiadzie balneologicznym) są maskowane tokenami `[REDACTED]` w panelu analitycznym.
+1. **Zero Retention Mode (ZRM, projekt):** Głos kuracjusza i strumień audio są przetwarzane wyłącznie w ulotnej pamięci RAM serwerów ElevenLabs w UE i natychmiast niszczone po zakończeniu połączenia.
+2. **Conversation Redaction (projekt):** Wszelkie dane wrażliwe (np. informacje o stanie zdrowia podane w wywiadzie balneologicznym) są maskowane tokenami `[REDACTED]` w panelu analitycznym.
 3. **Signed URLs:** Komunikacja webowa nie ujawnia klucza `xi-api-key` w przeglądarce klienta — każda sesja otrzymuje unikalny token ważny 15 minut.

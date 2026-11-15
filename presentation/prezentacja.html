@@ -267,7 +267,7 @@
       <!-- SLIDE 1: Okładka -->
       <div class="slide theme-navy active" data-notes="Zacznij od 30 sekund kontekstu biznesowego: dlaczego uzdrowisko i dlaczego seniorzy, zanim wejdziesz w technikę.">
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center;">
-          <div class="tag">ELEVENLABS DEPLOYMENT STRATEGIST CASE STUDY</div>
+          <div class="tag">ELEVENLABS CONVERSATIONAL AI · DEPLOYMENT CASE STUDY</div>
           <h1 class="slide-title" style="font-size: 3.2rem; margin-bottom: 0.8rem; color: white;">Wirtualny Recepcjonista AI</h1>
           <p style="font-family: var(--font-serif); font-size: 1.6rem; color: var(--gold); margin-bottom: 1.5rem;">
             Uzdrowisko Termalne „Bukowy Dwór” × ElevenLabs
@@ -277,7 +277,7 @@
           </p>
           <div style="margin-top: 2.5rem; display: flex; gap: 1.5rem; align-items: center;">
             <span style="background: rgba(201,168,76,0.15); border: 1px solid var(--gold); color: var(--gold); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">
-              Etap V1 & V2: Case Study & System Design
+              Case Study: Product Design & System Architecture
             </span>
             <span style="color: var(--sage); font-size: 0.9rem;">Krynica-Zdrój · 2026</span>
           </div>
@@ -285,7 +285,7 @@
       </div>
 
       <!-- SLIDE 2: Problem -->
-      <div class="slide theme-cream" data-notes="To slajd o problemie biznesowym. Zanim powiesz jak to rozwiązałeś — zapytaj rekrutera o pytania do problemu.">
+      <div class="slide theme-cream" data-notes="To slajd o problemie biznesowym. Zanim powiesz jak to rozwiązałeś — zapytaj słuchaczy o pytania do problemu.">
         <div>
           <div class="tag">WYZWANIE BIZNESOWE</div>
           <h2 class="slide-title">Senior czeka. Recepcja nie odbiera.</h2>
@@ -346,7 +346,7 @@
           <div style="display: flex; flex-direction: column; gap: 1.2rem;">
             <div class="card">
               <h3>⚡ Zunifikowany Silnik (~430 ms)</h3>
-              <p>STT (Scribe v2) + LLM (Gemini 3.5 Flash Lite) + TTS (Eleven v3) w jednej pętli WebRTC/SIP, eliminując 2-sekundowe opóźnienia kaskady.</p>
+              <p>STT (Scribe v2) + LLM (Gemini 3.5 Flash Lite) + TTS (Eleven v3) w jednej pętli WebRTC (widget; SIP to ścieżka docelowa), eliminując 2-sekundowe opóźnienia kaskady.</p>
             </div>
             <div class="card">
               <h3>📚 Strict Grounding (RAG)</h3>
@@ -519,19 +519,19 @@
       <div class="slide theme-navy" data-notes="Dla zarządu sieci hoteli compliance medyczne to warunek sine qua non.">
         <div>
           <div class="tag">SECURITY & COMPLIANCE</div>
-          <h2 class="slide-title">Enterprise Ready: RODO i ochrona danych medycznych</h2>
+          <h2 class="slide-title">RODO i dane medyczne: projekt pod plan Enterprise</h2>
         </div>
         <div class="grid-2">
           <img src="assets/enterprise_security.png" alt="Security" class="slide-img slide-img-contain">
           <div style="display: flex; flex-direction: column; gap: 0.9rem;">
             <div class="card">
-              <p><strong>🔒 Zero Retention Mode (ZRM):</strong> Audio i transkrypcje przetwarzane wyłącznie w pamięci RAM — brak zapisu na dyskach ElevenLabs.</p>
+              <p><strong>🔒 Zero Retention Mode (ZRM, projekt):</strong> Audio i transkrypcje przetwarzane wyłącznie w pamięci RAM — brak zapisu na dyskach ElevenLabs. Plan Enterprise; w PoC nieaktywne.</p>
             </div>
             <div class="card">
-              <p><strong>🕶️ Conversation Redaction:</strong> Automatyczne maskowanie danych osobowych (PII) i medycznych w logach.</p>
+              <p><strong>🕶️ Redakcja rozmów (projekt):</strong> Automatyczne maskowanie danych osobowych (PII) i medycznych w logach. W PoC nieaktywne.</p>
             </div>
             <div class="card">
-              <p><strong>🇪🇺 Data Residency EU:</strong> Przetwarzanie danych na terenie Unii Europejskiej, pełna umowa DPA.</p>
+              <p><strong>🇪🇺 Rezydencja danych UE (projekt):</strong> Przetwarzanie danych na terenie Unii Europejskiej, umowa DPA. Plan Enterprise; w PoC nieaktywne.</p>
             </div>
             <div class="card">
               <p><strong>🔑 Signed URLs:</strong> 15-minutowe tokeny WebSocket eliminujące ryzyko wycieku klucza API do frontendu.</p>
@@ -541,10 +541,10 @@
       </div>
 
       <!-- SLIDE 11: Multi-Hotel -->
-      <div class="slide theme-navy" data-notes="Pokaż, jak myślisz jako Deployment Strategist: optymalizacja kosztów utrzymania i zarządzania agentami.">
+      <div class="slide theme-navy" data-notes="Pokaż perspektywę wdrożeniową: optymalizacja kosztów utrzymania i zarządzania agentami.">
         <div>
           <div class="tag">MULTI-TENANT ARCHITECTURE</div>
-          <h2 class="slide-title">Jeden agent, dziesięć hoteli — skalowanie sieciowe</h2>
+          <h2 class="slide-title">Jeden agent, wiele hoteli — skalowanie sieciowe (projekt)</h2>
         </div>
         <div class="grid-2">
           <img src="assets/diagram_multihotel.png" alt="Multi-hotel" class="slide-img slide-img-contain">
@@ -558,8 +558,8 @@
               <p>Wstrzykiwanie zmiennych: <code>hotel_name</code>, <code>location</code>, <code>pms_id</code>, <code>reception_phone</code> przy starcie sesji.</p>
             </div>
             <div class="card">
-              <h3>⚡ Sygnalizacja SIP UUI (RFC 7433)</h3>
-              <p>Przekazywanie ID hotelu bezpośrednio w nagłówku połączenia PBX. Nowy obiekt to 5 minut konfiguracji zmiennych.</p>
+              <h3>⚡ Sygnalizacja SIP UUI (RFC 7433, projekt)</h3>
+              <p>Przekazywanie ID hotelu bezpośrednio w nagłówku połączenia PBX. Dodanie obiektu to konfiguracja zmiennych (szacunek projektowy, nie zmierzony w PoC).</p>
             </div>
           </div>
         </div>
@@ -625,7 +625,7 @@
             </ul>
           </div>
           <div class="card" style="border-top: 4px solid var(--gold);">
-            <h3 style="color: var(--gold);">Faza II: Integracja Enterprise</h3>
+            <h3 style="color: var(--gold);">Faza II: Integracja produkcyjna</h3>
             <p style="font-size: 0.85rem; font-weight: 600; color: var(--muted);">MIESIĄC 1–2</p>
             <ul style="margin-left: 1.2rem; margin-top: 0.8rem; display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.9rem;">
               <li>Bezpośrednie API do PMS (Opera/KWHotel)</li>
@@ -648,15 +648,15 @@
       </div>
 
       <!-- SLIDE 14: Q&A -->
-      <div class="slide theme-navy" data-notes="Otwórz dyskusję i przejdź do warsztatu projektowego System Design (V2).">
+      <div class="slide theme-navy" data-notes="Otwórz dyskusję i przejdź do omówienia projektu systemu.">
         <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
           <div class="tag">PODSUMOWANIE</div>
           <h1 class="slide-title" style="font-size: 3.5rem; color: var(--gold); margin-bottom: 1rem;">Dziękuję za uwagę.</h1>
           <p style="font-size: 1.4rem; color: white; max-width: 700px; line-height: 1.5; margin-bottom: 2rem;">
-            Czas na dyskusję, pytania oraz sesję Product & System Design (Etap V2).
+            Czas na dyskusję, pytania oraz omówienie projektu systemu.
           </p>
           <div style="background: rgba(255,255,255,0.1); border: 1px solid var(--gold); padding: 1rem 2rem; border-radius: 12px; color: var(--cream);">
-            <p><strong>Deployment Strategist Case Study</strong> · Uzdrowisko Termalne „Bukowy Dwór”</p>
+            <p><strong>Deployment Case Study</strong> · Uzdrowisko Termalne „Bukowy Dwór”</p>
           </div>
         </div>
       </div>

@@ -3,7 +3,7 @@
   "s1_title": "Virtual AI Receptionist",
   "s1_sub": "Bukowy Dwór — Thermal Spa & Health Resort × ElevenLabs",
   "s1_tagline": "\nNative conversational agent deployment for a demanding 60+ guest base across a spa resort chain.",
-  "s1_badge": "Phase V1 & V2: Case Study, Product Design & System Architecture | 2026",
+  "s1_badge": "Case Study: Product Design & System Architecture | 2026",
   "s1_notes": "Start with 30 seconds of business context: why a health resort and why seniors, before touching the technology.",
   "s2_title": "Senior Guests Wait. Front Desk Can't Keep Up.",
   "s2_cat": "BUSINESS CHALLENGE",
@@ -29,7 +29,7 @@
       "👥"
     ]
   ],
-  "s2_notes": "This is the business problem slide. Before explaining your solution, ask the interviewer what questions the problem raises for them.",
+  "s2_notes": "This is the business problem slide. Before explaining your solution, ask the audience what questions the problem raises for them.",
   "s3_title": "Who Is Calling? Mrs. Sophia, 72 Years Old.",
   "s3_cat": "USER PERSONA & EMPATHY",
   "s3_points": [
@@ -58,7 +58,7 @@
   "s4_title": "Unified ElevenLabs Conversational Loop",
   "s4_cat": "SYSTEM ARCHITECTURE (HIGH LEVEL)",
   "s4_panel_title": "Single Loop vs Cascade",
-  "s4_panel_body": "\n• Integrated loop: STT + LLM + TTS in a single WebRTC/SIP channel\n\n• Response time: ~430 ms instead of >2.0 s in a classic cascaded backend\n\n• Strict grounding: answers come only from the 5 RAG files\n\n• Tool calling: native webhooks into the hotel PMS\n\n• Deterministic handoff: transfer to reception whenever in doubt",
+  "s4_panel_body": "\n• Integrated loop: STT + LLM + TTS in one WebRTC channel (widget; SIP is the target state)\n\n• Response time: ~430 ms instead of >2.0 s in a classic cascaded backend\n\n• Strict grounding: answers come only from the 5 RAG files\n\n• Tool calling: native webhooks into the hotel PMS\n\n• Deterministic handoff: transfer to reception whenever in doubt",
   "s4_notes": "Why a native ElevenLabs loop? Latency elimination. A cascade of three services loses a senior guest inside two seconds of silence.",
   "s5_title": "3 Core Architectural Decisions",
   "s5_cat": "STRATEGIC TRADE-OFFS",
@@ -153,32 +153,32 @@
     ]
   ],
   "s9_notes": "Have a fallback ready: if the network drops, show the FastAPI logs or the audio recordings.",
-  "s10_title": "Enterprise Ready: GDPR & Medical Data Protection",
-  "s10_cat": "SECURITY & COMPLIANCE",
+  "s10_title": "GDPR & medical data: design for the Enterprise plan",
+  "s10_cat": "SECURITY & COMPLIANCE (DESIGN)",
   "s10_items": [
     [
       "Zero Retention Mode (ZRM):",
-      "Audio and transcripts are processed in RAM only — nothing is written to ElevenLabs disks."
+      "Design (Enterprise plan): audio and transcripts in RAM only. Not enabled in the PoC."
     ],
     [
       "Data Redaction:",
-      "Automatic masking of personal (PII) and medical data in logs."
+      "Design (Enterprise plan): PII and medical-data masking in logs. Not enabled in the PoC."
     ],
     [
       "Data Residency EU:",
-      "Data processed inside the European Union, full GDPR / DPA compliance."
+      "Design (Enterprise plan): EU processing and a DPA. Not enabled in the PoC."
     ],
     [
       "Signed URLs:",
       "Secure one-time tokens that keep the API key out of the browser."
     ]
   ],
-  "s10_notes": "For a hotel-chain board, medical compliance is a sine qua non condition.",
-  "s11_title": "One Agent, Ten Hotels — Network Scaling",
-  "s11_cat": "MULTI-TENANT ARCHITECTURE",
-  "s11_panel_title": "Multi-Hotel Architecture",
-  "s11_panel_body": "• 1 Central Agent: instead of 10 separate bots we maintain a single system-prompt core.\n\n• Dynamic Variables: injected when the call starts:\n  - hotel_name, location\n  - reception_phone\n  - pms_hotel_id\n\n• SIP UUI signalling: the PBX passes the hotel ID in the call headers.\n\n• Scalability: adding an 11th property is 5 minutes of variable configuration.",
-  "s11_notes": "Show how you think as a Deployment Strategist: maintenance cost and agent governance optimisation.",
+  "s10_notes": "Current state: the live agent runs on the Creator plan. ZRM, PII redaction, DPA and EU residency are Enterprise-tier features that the PoC does not enable; they are shown here as design, not as the current state. For a hotel-chain board, medical compliance is a sine qua non condition.",
+  "s11_title": "One Agent, Many Hotels — Network Scaling (design)",
+  "s11_cat": "MULTI-TENANT ARCHITECTURE (DESIGN)",
+  "s11_panel_title": "Multi-Hotel Architecture (design, not built in the PoC)",
+  "s11_panel_body": "• 1 Central Agent: instead of 10 separate bots we maintain a single system-prompt core.\n\n• Dynamic Variables: injected when the call starts:\n  - hotel_name, location\n  - reception_phone\n  - pms_hotel_id\n\n• SIP UUI signalling (design; requires telephony): the PBX passes the hotel ID in the call headers.\n\n• Scalability (design estimate, not measured in the PoC): a new property is a configuration of variables.",
+  "s11_notes": "Show the deployment view: maintenance cost and agent governance optimisation.",
   "s12_title": "Deployment Cost & Hard Return on Investment (ROI)",
   "s12_cat": "BUSINESS CASE & FINANCIALS",
   "s12_headers": [
@@ -227,6 +227,6 @@
   ],
   "s13_notes": "Phase III moves the agent from a reactive hotline to a proactive revenue generator.",
   "s14_title": "Thank you.",
-  "s14_sub": "\nTime for discussion, questions and the System Design session (V2).",
-  "s14_notes": "Open the discussion and move into the design workshop."
+  "s14_sub": "\nTime for discussion, questions and a system-design walkthrough.",
+  "s14_notes": "Open the discussion and move into the system-design walkthrough."
 }

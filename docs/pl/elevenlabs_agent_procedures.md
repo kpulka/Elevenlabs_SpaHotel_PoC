@@ -42,7 +42,7 @@ W agencie istnieje **7 narzędzi** + `end_call`: `check_spa_availability`, `book
 | `procedura_zamowienia_transportu_i_meleksa` | `agtprc_7001m0r0e15kfv28bnc9x9x3p11t` |
 | `procedura_reklamacji_i_trudnego_goscia` | `agtprc_1801m0r0e1c1enmvsrcttyh36jq7` |
 
-*Źródło: `.planning/workflow/procedure_ids.json`.*
+*Źródło: `agent/procedures/procedure_ids.json`.*
 
 ---
 
@@ -91,7 +91,7 @@ W agencie istnieje **7 narzędzi** + `end_call`: `check_spa_availability`, `book
   - **Powyżej 14 dni przed przyjazdem:** Zwrot 100% wpłaconego zadatku na konto LUB bezterminowy voucher na pobyt o wartości 110% zadatku.
   - **7–14 dni przed przyjazdem:** Zwrot 50% zadatku LUB voucher na 100% wartości do wykorzystania w ciągu 12 miesięcy.
   - **Poniżej 7 dni przed przyjazdem:** Zadatek bezzwrotny.
-  - *Wyjątek medyczny:* W przypadku hospitalizacji lub nagłego zwolnienia lekarskiego — pełen zwrot po przesłaniu zaświadczenia na `recepcja@bukowydwor.pl`.
+  - *Wyjątek medyczny:* W przypadku hospitalizacji lub nagłego zwolnienia lekarskiego — pełen zwrot po przesłaniu zaświadczenia na `recepcja@bukowydwor.example`.
 - **Instrukcja krok po kroku (SOP):**
   1. Pobierz numer rezerwacji pokoju oraz nazwisko gościa.
   2. Oblicz liczbę dni pozostałych do planowanego zameldowania.

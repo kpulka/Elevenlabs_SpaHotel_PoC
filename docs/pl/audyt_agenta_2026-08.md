@@ -1,4 +1,4 @@
-> **Status:** historyczny (2026-08) — zapis audytu konfiguracji live z sierpnia 2026. **Opisane niżej liczby i nazwy narzędzi (4 webhooki, stara nazwa narzędzia eskalacji, `max_duration 300 s`, model Gemini 2.0 Flash, `list_procedures=[]`) są nieaktualne** — bieżący stan podsumowuje addendum na końcu dokumentu oraz `.planning/AGENT_ID.txt`. Nie zmieniamy zapisu historycznego.
+> **Status:** historyczny (2026-08) — zapis audytu konfiguracji live z sierpnia 2026. **Opisane niżej liczby i nazwy narzędzi (4 webhooki, stara nazwa narzędzia eskalacji, `max_duration 300 s`, model Gemini 2.0 Flash, `list_procedures=[]`) są nieaktualne** — bieżący stan podsumowuje addendum na końcu dokumentu. Nie zmieniamy zapisu historycznego.
 
 # Audyt Agenta „Anna" — Guardrails, Flow i Usprawnienia (2026-08)
 
@@ -37,7 +37,7 @@ Dodatkowo brakuje (jeśli wymagane):
 
 ## 3. PROPOZYCJE USPRA
 
-1. **Aktywuj `transfer_to_number`** (built-in system tool) przez panel/API, podając numer recepcji. W prompcie zamień `transfer_to_human` → `transfer_to_number` (przygotowany plik `docs/archive/anna_system_prompt_v2.md` — 1:1, tylko zamiana nazwy).
+1. **Aktywuj `transfer_to_number`** (built-in system tool) przez panel/API, podając numer recepcji. W prompcie zamień `transfer_to_human` → `transfer_to_number` (przygotowany plik `agent/archive/system_prompt_v2.md` — 1:1, tylko zamiana nazwy).
 2. **Podbij `max_duration_seconds`** 300 → 900 (15 min) dla spokojnych rozmów.
 3. **Rozważ stały tunel** dla webhooków (cloudflared stały domeny / public DOMEN), żeby 4 narady nie padały po restarcie.
 4. Opcjonalnie: włącz monitoring konwersacji, gdy będzie plan z tego wsparciem.
@@ -62,7 +62,7 @@ Dodatkowo brakuje (jeśli wymagane):
 Agent działa tylko jako **widget webowy** (`phone_numbers: []`), więc realny `transfer_to_number` (SIP/telefonia) w ogóle nie ma zastosowania na PoC. Zamiast tego:
 
 - **Dodano endpoint** `POST /transfer_to_simulated_handoff` w `mock_backend/main.py` — loguje zdarzenie do konsoli + opcjonalny alert na Telegram (przez istniejącą integrację `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_ID`). Przetestowany — zwraca `success:true`, `simulated:true`.
-- **Prompt v3** (`docs/anna_system_prompt_v3.md`) — zamiast `transfer_to_human`/`transfer_to_number` agent wywołuje webhook `transfer_to_simulated_handoff` (schemat JSON w nagłówku pliku).
+- **Prompt v3** (`agent/system_prompt_v3.md`) — zamiast `transfer_to_human`/`transfer_to_number` agent wywołuje webhook `transfer_to_simulated_handoff` (schemat JSON w nagłówku pliku).
 - **README mock_backend** zaktualizowany tabelą narzędzia.
 
 > **Aby zadziałało w panelu:** zarejestruj w ElevenLabs narzędzie webhook `transfer_to_simulated_handoff` → URL = tunel + `/transfer_to_simulated_handoff`, i wgraj prompt v3. Opcjonalnie: ustaw zmienne Telegram dla alertu „na drugim ekranie".
@@ -106,8 +106,8 @@ Powyższe sekcje 1–6 są zapisem historycznym (sierpień 2026). Stan bieżący
 
 - **Backend:** FastAPI ma **7 tras POST + 2 GET** (`/`, `/health`) na porcie **8011** (nie 8000); Swagger: `http://localhost:8011/docs`.
 - **Narzędzia:** **7 webhooków** (+ wbudowane `end_call`): `check_spa_availability`, `book_spa_appointment`, `cancel_spa_appointment`, `reschedule_spa_appointment`, `check_room_availability`, `send_sms_summary`, `transfer_to_simulated_handoff`. Narzędzie `transfer_to_human` nigdy nie istniało jako realne; `transfer_to_number` nie jest podpięte (brak telefonii/SIP) — handoff pozostaje symulowany.
-- **Procedury:** **7 procedur opublikowanych** (ID w `.planning/workflow/procedure_ids.json`), nie `list_procedures=[]` jak w sierpniu.
+- **Procedury:** **7 procedur opublikowanych** (ID w `agent/procedures/procedure_ids.json`), nie `list_procedures=[]` jak w sierpniu.
 - **`max_duration`:** **900 s** (podniesione z 300 s — postulat z sekcji 3 zrealizowany).
 - **LLM:** **`gemini-3.5-flash-lite`** (zastąpił wcześniejszy Gemini 2.0 Flash), temperatura 0.1.
-- **Workflow:** wdrożony graf **v3** — 3 węzły (`start` → `main_agent` → `end`), 2 krawędzie (`.planning/workflow/workflow_v3.json`).
-- **Prompt:** plik kanoniczny w repo to `docs/anna_system_prompt_v3.md`; **hosted prompt na żywo został wgrany osobnym krokiem i różni się długością** od pliku w repo — nie zakładać, że są identyczne.
+- **Workflow:** wdrożony graf **v3** — 3 węzły (`start` → `main_agent` → `end`), 2 krawędzie (`agent/workflow/workflow_v3.json`).
+- **Prompt:** plik kanoniczny w repo to `agent/system_prompt_v3.md`; **hosted prompt na żywo został wgrany osobnym krokiem i różni się długością** od pliku w repo — nie zakładać, że są identyczne.

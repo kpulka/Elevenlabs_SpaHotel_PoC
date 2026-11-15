@@ -105,7 +105,7 @@ flowchart TD
 
 ---
 
-## DIAGRAM 4 — Multi-Tenant Hotel Chain Scaling (Sub-Linear Architecture)
+## DIAGRAM 4 — Multi-Tenant Hotel Chain Scaling (Sub-Linear Architecture) — DESIGN, not built in the PoC
 
 ```mermaid
 flowchart TD
@@ -134,7 +134,7 @@ flowchart TD
 
 ---
 
-## DIAGRAM 5 — Complete End-to-End Enterprise Tech Stack
+## DIAGRAM 5 — Complete End-to-End Target Tech Stack (telephony and Enterprise security are design, not the live state)
 
 ```mermaid
 flowchart TB
@@ -159,7 +159,7 @@ flowchart TB
         direction TB
         SIP_URI["ElevenLabs SIP Gateway\nsip:agent_id@sip.elevenlabs.io\n+ SIP UUI RFC 7433 Headers"]:::edgeLayer
         SIGNED_URL_API["Next.js Route Handler\nGET /api/anna/signed-url\n(15-min TTL Signed Tokens)"]:::edgeLayer
-        SEC_POL["Security & Compliance:\n• Zero Retention Mode (ZRM)\n• EU Data Residency (Frankfurt)\n• Automated PII Redaction"]:::secLayer
+        SEC_POL["Security & Compliance (Enterprise plan, design):\n• Zero Retention Mode (ZRM)\n• EU Data Residency (Frankfurt)\n• Automated PII Redaction"]:::secLayer
     end
 
     SIP_TRUNK -->|"SIP / TLS + SRTP"| SIP_URI

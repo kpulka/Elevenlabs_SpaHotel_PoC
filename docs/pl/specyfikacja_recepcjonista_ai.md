@@ -126,7 +126,7 @@ Agent odpowiada w 100% w oparciu o bazę wiedzy i wyniki narzędzi. Brak informa
 
 ---
 
-## 8. Skalowanie na Sieć Hoteli (Multi-obiektowość)
+## 8. Skalowanie na sieć hoteli (multi-obiektowość, projekt)
 
 Jeden nadrzędny agent „Anna" + **Dynamic Variables / Overrides**: pakiet inicjalizacyjny `conversation_initiation_client_data` nadpisuje nazwę hotelu, lokalizację, telefon recepcji i ID hotelu. Dla telefonii: metadane w sygnalizacji SIP (**UUI, RFC 7433**). → jeden agent, wiele obiektów, bez powielania konfiguracji. (Szczegóły: plan implementacji §5.)
 
@@ -135,9 +135,9 @@ Jeden nadrzędny agent „Anna" + **Dynamic Variables / Overrides**: pakiet inic
 ## 9. Bezpieczeństwo i RODO
 
 1. **Signed URLs** (`/get_signed_url`, ważność 15 min) — widget nie używa głównego klucza API.
-2. **Zero Retention Mode (ZRM)** — audio + transkrypcje tylko w RAM, bez zapisu na dyskach (Enterprise).
-3. **Conversation History Redaction** — automatyczne maskowanie danych osobowych/medycznych.
-4. **Data Residency** — przetwarzanie w UE (DPA/RODO).
+2. **Zero Retention Mode (ZRM)** — audio + transkrypcje tylko w RAM, bez zapisu na dyskach (Enterprise; projekt, w PoC nieaktywne).
+3. **Conversation History Redaction** — automatyczne maskowanie danych osobowych/medycznych (projekt, w PoC nieaktywne).
+4. **Data Residency** — przetwarzanie w UE (DPA/RODO; projekt, plan Enterprise).
 5. **Minimalizacja danych** — tylko imię, nazwisko, telefon, preferencje; zgoda ustna na dane wrażliwe.
 
 ---
@@ -173,5 +173,4 @@ Pełna tabela — plan implementacji §7.
 ## 12. Odniesienia
 
 - **Plan techniczny (źródło prawdy):** `plan_implementacji_recepcjonisty.md`
-- **Baza wiedzy RAG:** `baza_wiedzy_rag_bukowy_dwor/` (5 plików)
-- **Wytyczne rekrutacyjne:** `archive/ElevenLabs_Etap_V1.md`, `archive/ElevenLabs_Etap_V2.md` (archiwum)
+- **Baza wiedzy RAG:** `agent/knowledge_base/` (5 plików `.md`; wgrywane jako `agent/knowledge_base_txt/*.txt`)
