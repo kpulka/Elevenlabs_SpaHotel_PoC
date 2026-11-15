@@ -1,136 +1,111 @@
 #!/usr/bin/env bash
 # ─────────────────────────────────────────────────────────────────────────────
-# start_anna.sh — stały startowy mock backend + tunnel dla agenta "Anna"
-# Uzdrowisko Bukowy Dwór (ElevenLabs PoC)
+# start_anna.sh — start the mock backend (uvicorn, no container) and a public tunnel for "Anna".
 #
-# Co robi:
-#  1. Uruchamia mock backend (uvicorn) na wolnym porcie (domyślnie 8011).
-#  2. Uruchamia cloudflared tunnel (trycloudflare) wskazujący na backend.
-#  3. Wyłapuje publiczny URL tunelu z logu.
-#  4. Aktualizuje 7 narzędzi webhook agenta ElevenLabs na ten URL
-#     (wspólny skrypt sync_agent_tools.py — szuka narzędzi po nazwie).
-#  5. Zapisuje stan (backend_pid, tunnel_pid, url) do tunnel/state.json.
+#   1. Starts the mock backend with uvicorn on a free port (default 8011), env from mock_backend/.env.
+#   2. Starts a cloudflared quick tunnel (trycloudflare) to that backend.
+#   3. Reads the public URL from the tunnel log and writes state to tunnel/state.json.
+#   4. Pins the tunnel host to IPv4 in the hosts file.
+#   5. Points the agent's 7 webhook tools at the new URL (sync_agent_tools.py, matched by name).
 #
-# Rozwiązuje awarię webhooków po restarcie (trycloudflare zmienia URL):
-#  po odpaleniu skrypt narzędzia same wracają na żywy URL.
+# Refuses to open the tunnel when ANNA_WEBHOOK_SECRET is empty (see _common.sh).
+# Trycloudflare issues a new URL on every start; the webhook sync repairs the agent after each restart.
 #
-# Użycie:
-#   ./start_anna.sh            # domyślny port 8011
-#   ./start_anna.sh 8012       # inny port
+# Usage:
+#   ./start_anna.sh            # default port 8011
+#   ./start_anna.sh 8012       # another port
 # ─────────────────────────────────────────────────────────────────────────────
-set -uo pipefail
+set -euo pipefail
 
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/../.."
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=_common.sh
+source "$SCRIPT_DIR/_common.sh"
+
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 BACKEND_DIR="$PROJECT_ROOT/mock_backend"
 TUNNEL_DIR="$BACKEND_DIR/tunnel"
 STATE_FILE="$TUNNEL_DIR/state.json"
+BACKEND_ENV_FILE="$BACKEND_DIR/.env"
+FRONTEND_ENV_FILE="$PROJECT_ROOT/frontend/.env.local"
 PORT="${1:-8011}"
-PYTHON_BIN="$(command -v python || command -v py || command -v python3 || true)"
+
+PYTHON_BIN="$(find_python || true)"
 if [[ -z "$PYTHON_BIN" ]]; then
-  echo "❌ brak interpretera Python w PATH (python/py/python3). Zainstaluj Python albo dodaj go do PATH."
+  echo "❌ no Python interpreter on PATH (python/py/python3). Install Python 3.12 or add it to PATH."
   exit 1
 fi
 
-# ── znajdź cloudflared ──────────────────────────────────────────────────────
+# ── cloudflared ─────────────────────────────────────────────────────────────
 CLOUDFLARED=""
-for c in "$TUNNEL_DIR/cloudflared.exe" "/c/Program Files (x86)/cloudflared/cloudflared" "$(command -v cloudflared 2>/dev/null)"; do
-  if [[ -n "$c" && -f "$c" ]]; then CLOUDFLARED="$c"; break; fi
+for candidate in "$TUNNEL_DIR/cloudflared.exe" "/c/Program Files (x86)/cloudflared/cloudflared" "$(command -v cloudflared 2>/dev/null || true)"; do
+  if [[ -n "$candidate" && -f "$candidate" ]]; then
+    CLOUDFLARED="$candidate"
+    break
+  fi
 done
 if [[ -z "$CLOUDFLARED" ]]; then
-  echo "❌ cloudflared nie znaleziony. Umieść go w $TUNNEL_DIR/cloudflared.exe"
+  echo "❌ cloudflared not found. Put it at $TUNNEL_DIR/cloudflared.exe"
   exit 1
 fi
 echo "cloudflared: $CLOUDFLARED"
-mkdir -p "$TUNNEL_DIR"
 
-# ── backend: start tylko jeśli nie działa ───────────────────────────────────
+# ── the public tunnel must never open without the webhook secret ────────────
+require_webhook_secret "$BACKEND_ENV_FILE"
+
+# ── backend: start only when it is not already answering ────────────────────
+# Variables from mock_backend/.env are exported here, because uvicorn inherits this shell's environment.
+load_env_file "$BACKEND_ENV_FILE"
+mkdir -p "$TUNNEL_DIR"
 if curl -s -m 5 "http://127.0.0.1:$PORT/" | grep -q '"status":"OK"'; then
-  echo "ℹ️  backend już działa na :$PORT (pomijam start)"
+  echo "ℹ️  backend already running on :$PORT — skipping start (it keeps the env it was started with)"
   BACKEND_PID="already-running"
 else
-  echo "🚀 startuję backend na :$PORT"
-  # PYTHON_BIN, nie literalne "python" — autostart o logowaniu bywa bez Pythona w PATH.
+  echo "🚀 starting backend on :$PORT"
   (cd "$BACKEND_DIR" && "$PYTHON_BIN" -m uvicorn main:app --host 0.0.0.0 --port "$PORT" >"$TUNNEL_DIR/backend.log" 2>&1) &
   BACKEND_PID=$!
   ok=0
-  for i in $(seq 1 15); do
-    if curl -s -m 2 "http://127.0.0.1:$PORT/" | grep -q '"status":"OK"'; then ok=1; break; fi
+  for _ in $(seq 1 15); do
+    if curl -s -m 2 "http://127.0.0.1:$PORT/" | grep -q '"status":"OK"'; then
+      ok=1
+      break
+    fi
     sleep 1
   done
   if [[ $ok != 1 ]]; then
-    echo "❌ backend nie wystartował (port $PORT zajęty przez aplikację?). Zobacz $TUNNEL_DIR/backend.log"
+    echo "❌ backend did not start (is port $PORT taken by another application?). See $TUNNEL_DIR/backend.log"
     exit 1
   fi
-  echo "✅ backend na :$PORT (pid $BACKEND_PID)"
+  echo "✅ backend on :$PORT (pid $BACKEND_PID)"
 fi
 
-# ── tunel: start (zawsze nowy trycloudflare URL; nowy adres akceptowalny) ──
-echo "🚀 startuję tunel -> http://localhost:$PORT"
+# ── tunnel: always a new trycloudflare URL ──────────────────────────────────
+echo "🚀 starting tunnel -> http://localhost:$PORT"
 "$CLOUDFLARED" tunnel --url "http://localhost:$PORT" --no-autoupdate >"$TUNNEL_DIR/tunnel.log" 2>&1 &
 TUNNEL_PID=$!
 
-URL=""
-for i in $(seq 1 30); do
-  URL="$(grep -aoE 'https://[a-z0-9-]+\.trycloudflare\.com' "$TUNNEL_DIR/tunnel.log" 2>/dev/null | head -1 || true)"
-  [[ -n "$URL" ]] && break
-  sleep 1
-done
-if [[ -z "$URL" ]]; then
-  echo "❌ nie udało się wyłapać URL tunelu — sprawdź $TUNNEL_DIR/tunnel.log"
+if ! URL="$(wait_for_tunnel_url "$TUNNEL_DIR/tunnel.log" 30)"; then
+  echo "❌ could not read the tunnel URL — see $TUNNEL_DIR/tunnel.log"
   exit 1
 fi
-echo "✅ URL tunelu: $URL"
+echo "✅ tunnel URL: $URL"
 
-# ── zapisz stan ─────────────────────────────────────────────────────────────
 cat >"$STATE_FILE" <<EOF
 {"port": $PORT, "backend_pid": "$BACKEND_PID", "tunnel_pid": $TUNNEL_PID, "url": "$URL"}
 EOF
-echo "📄 stan zapisany: $STATE_FILE"
+echo "📄 state saved: $STATE_FILE"
 
-# ── aktualizacja wpisu w hosts (omija problem z routerem DNS: brak A/IPv4) ──
-# Lokalny resolver (router) zwraca dla trycloudflare tylko IPv6 (AAAA), a maszyna
-# nie ma IPv6 → curl/przeglądarka nie mogą się połączyć. Wpis w hosts wymusza IPv4.
-HOSTS_FILE="/c/Windows/System32/drivers/etc/hosts"
-HOSTS_MARK="# ElevenLabs Anna - tunnel"
-update_hosts() {
-  local host="$1"
-  # wyciągnij IPv4 z publicznego resolwera (nslookup 1.1.1.1).
-  # Windows: adresy odpowiedzi w bloku "Addresses:" (linie z tabulacją);
-  # pomijamy nagłówek "Address: 1.1.1.1" (IP samego resolwera).
-  # DNS trycloudflare propaguje się kilka sekund — próbuj z retry.
-  local ip=""
-  for attempt in 1 2 3 4 5; do
-    ip="$(nslookup "$host" 1.1.1.1 2>/dev/null | grep -oE '([0-9]{1,3}\.){3}[0-9]{1,3}' | grep -v '^1\.1\.1\.1$' | tail -1)"
-    [[ -n "$ip" ]] && break
-    sleep 3
-  done
-  if [[ -z "$ip" ]]; then
-    echo "⚠️  nie udało się wyciągnąć IP dla $host — pomijam wpis w hosts"
-    return
-  fi
-  # usuń stary wpis (marker + poprzednia linia), dopisz nowy
-  if [[ -f "$HOSTS_FILE" ]]; then
-    cp "$HOSTS_FILE" "$HOSTS_FILE.bak" 2>/dev/null || true
-    sed -i "/$HOSTS_MARK/d; /${host}/d" "$HOSTS_FILE" 2>/dev/null || true
-    printf "\n%s\n%s  %s\n" "$HOSTS_MARK" "$ip" "$host" >>"$HOSTS_FILE" 2>/dev/null && \
-      echo "✅ hosts zaktualizowany: $ip $host" || \
-      echo "⚠️  brak uprawnień do zapisu hosts (uruchom jako admin)"
-  fi
-}
-update_hosts "$(echo "$URL" | sed 's|https://||; s|/||')"
+# ── hosts entry (IPv4) — the router returns AAAA only for trycloudflare hosts ─
+update_hosts_entry "$(echo "$URL" | sed 's|https://||; s|/||')"
 
-# ── aktualizacja webhooków agenta ElevenLabs (jeden wspólny skrypt) ───────
-ENV_FILE="$PROJECT_ROOT/frontend/.env.local"
-if [[ -f "$ENV_FILE" ]] && grep -q 'ELEVENLABS_API_KEY=' "$ENV_FILE"; then
-  if [[ -z "$PYTHON_BIN" ]]; then
-    echo "⚠️  brak interpretera python — NIE zaktualizowano webhooków."
-  elif "$PYTHON_BIN" "$TUNNEL_DIR/sync_agent_tools.py" --base-url "$URL"; then
-    echo "✅ webhooki agenta zaktualizowane na $URL"
+# ── agent webhooks (one shared script) ──────────────────────────────────────
+if [[ -f "$FRONTEND_ENV_FILE" ]] && env_get "$FRONTEND_ENV_FILE" ELEVENLABS_API_KEY >/dev/null; then
+  if "$PYTHON_BIN" "$TUNNEL_DIR/sync_agent_tools.py" --base-url "$URL"; then
+    echo "✅ agent webhooks updated to $URL"
   else
-    echo "❌ nie wszystkie webhooki udało się zaktualizować — patrz komunikaty powyżej"
+    echo "❌ not all webhooks were updated — see the messages above"
   fi
 else
-  echo "⚠️  brak klucza w $ENV_FILE — NIE zaktualizowano webhooków."
+  echo "⚠️  no ELEVENLABS_API_KEY in $FRONTEND_ENV_FILE — webhooks NOT updated"
 fi
 
 echo
@@ -138,5 +113,5 @@ echo "============================================================"
 echo "  Anna ready."
 echo "  Backend : http://localhost:$PORT"
 echo "  URL     : $URL"
-echo "  Restart : ponownie ./start_anna.sh"
+echo "  Restart : ./start_anna.sh"
 echo "============================================================"

@@ -1,6 +1,22 @@
-# Kontekst builda obrazu (Podman/Docker) — nie wysyłaj do demona zbędnych plików.
+# Build context for the backend image (Podman/Docker). Keep it small: nothing here is needed at runtime.
+# Used together with .containerignore (Podman prefers that file; the content is kept identical).
+Dockerfile
+.dockerignore
+.containerignore
 tunnel/
 tests/
 __pycache__/
-.env
 *.pyc
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.env
+.env.*
+*.db
+*.sqlite
+*.sqlite3
+*.log
+*.exe
+*.bak

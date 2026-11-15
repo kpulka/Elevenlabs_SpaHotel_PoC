@@ -12,18 +12,22 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # The single Python version of the project. The backend image (mock_backend/Dockerfile) uses python:3.12-slim.
+  PYTHON_VERSION: "3.12"
+
 jobs:
   backend:
-    name: backend (pytest)
+    name: backend (pytest + coverage)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
           cache-dependency-path: |
             mock_backend/requirements.txt
@@ -34,9 +38,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r mock_backend/requirements.txt -r mock_backend/requirements-dev.txt
 
-      - name: Run tests
+      # Coverage gate. Needs pytest-cov in mock_backend/requirements-dev.txt; the threshold is
+      # enforced by --cov-fail-under and the report is printed in the job log.
+      - name: Run tests with coverage (fail under 80 %)
         working-directory: mock_backend
-        run: python -m pytest -q
+        run: python -m pytest --cov=. --cov-fail-under=80 --cov-report=term-missing -q
 
   lint:
     name: lint (ruff)
@@ -45,12 +51,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      # Wersja przypięta: nowy ruff może dodać reguły i zepsuć zielony main bez zmiany kodu.
+      # Pinned: a newer ruff can add rules and break a green main without any code change.
       - name: Install ruff
         run: pip install ruff==0.17.4
 
@@ -64,16 +70,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
           cache: pip
           cache-dependency-path: |
             mock_backend/requirements.txt
             mock_backend/requirements-dev.txt
 
-      # mypy czyta importy z zainstalowanych bibliotek (fastapi, pydantic), więc potrzebuje runtime.
+      # mypy reads the imports of installed libraries (fastapi, pydantic), so it needs the runtime.
       - name: Install dependencies
         run: pip install -r mock_backend/requirements-dev.txt
 
@@ -81,27 +87,73 @@ jobs:
         working-directory: mock_backend
         run: python -m mypy .
 
-  docs:
-    name: docs (deck + business-case figures)
+  # Repository gates that need no dependencies. Each script is also runnable locally.
+  repo-gates:
+    name: repo gates (scripts, deck, docs index)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Python 3.12
+      - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: ${{ env.PYTHON_VERSION }}
 
-      # Arithmetic gate: the plan prices and the per-minute rate published in the decks,
-      # the HTML versions, the spec files and the business case must agree. No dependencies
-      # (a .pptx is read as a zip), so this job costs seconds.
-      - name: Figures agree across artifacts
+      # Figures must agree across the deck, the HTML decks, the spec files and the business case.
+      - name: Deck figures agree across artifacts
         run: python presentation/verify_deck.py
 
       # Every docs/*.md is listed in docs/INDEX.md and every .md the index points to exists.
       - name: docs/INDEX.md matches docs/
         run: python docs/verify_index.py
+
+      # Agent knowledge base and the uploaded copy must have the same keys and facts.
+      - name: Knowledge base parity (source vs uploaded .txt)
+        run: python scripts/check_kb_parity.py
+
+      # Prompt and knowledge base must not quote facts (amounts, hours, service names) that are missing from the KB.
+      - name: Prompt / procedures vs knowledge base (grounding lint)
+        if: hashFiles('scripts/lint_prompt_kb.py') != ''
+        run: python scripts/lint_prompt_kb.py
+
+      # Tool names and body fields in the prompt, the agent config and mock_backend/tunnel/tool_schemas.py agree.
+      - name: Tool contract (prompt / config / backend schemas)
+        if: hashFiles('scripts/check_tool_contract.py') != ''
+        run: python scripts/check_tool_contract.py
+
+  # Backend image: builds, starts and answers /health.
+  docker-build:
+    name: docker (build + health)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # The build context is mock_backend/ (COPY paths in the Dockerfile are relative to it).
+      - name: Build image
+        run: docker build -t bukowy-dwor-backend -f mock_backend/Dockerfile mock_backend
+
+      - name: Start container
+        run: docker run -d --name bukowy-dwor-backend -p 8011:8011 bukowy-dwor-backend
+
+      # The container may need a moment to start uvicorn: retry /health for about 20 s.
+      - name: Wait for /health
+        run: |
+          for i in $(seq 1 20); do
+            if curl -fsS http://localhost:8011/health; then
+              echo "health OK after ${i} s"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "No answer from /health after 20 s; container logs:"
+          docker logs bukowy-dwor-backend
+          exit 1
+
+      - name: Stop container
+        if: always()
+        run: docker rm -f bukowy-dwor-backend || true
 
   frontend:
     name: frontend (typecheck + build)
@@ -130,7 +182,7 @@ jobs:
         working-directory: frontend
         run: pnpm typecheck
 
-      # ESLint z eslint-config-next, tylko błędy (skrypt lint używa --quiet).
+      # ESLint with eslint-config-next, errors only (the lint script runs with --quiet).
       - name: Lint (ESLint)
         working-directory: frontend
         run: pnpm lint
@@ -152,3 +204,106 @@ jobs:
       - name: Build
         working-directory: frontend
         run: pnpm build
+
+  # Browser smoke test (Playwright). Runs only when the frontend Playwright config exists, so this job is
+  # a no-op on any branch that does not have it yet. Kept separate so a browser install does not slow the rest.
+  e2e:
+    name: frontend e2e (Playwright, chromium)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect Playwright config
+        id: detect
+        run: |
+          if [ -f frontend/playwright.config.ts ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "frontend/playwright.config.ts not found, skipping e2e"
+          fi
+
+      - name: Set up pnpm
+        if: steps.detect.outputs.present == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node 22
+        if: steps.detect.outputs.present == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        if: steps.detect.outputs.present == 'true'
+        working-directory: frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium with system dependencies
+        if: steps.detect.outputs.present == 'true'
+        working-directory: frontend
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build frontend
+        if: steps.detect.outputs.present == 'true'
+        working-directory: frontend
+        run: pnpm build
+
+      - name: Run e2e tests
+        if: steps.detect.outputs.present == 'true'
+        working-directory: frontend
+        run: pnpm test:e2e
+
+  # Dependency audits. Advisory for now: findings are printed but do not fail the build.
+  # Move to blocking once the baseline is clean.
+  audit:
+    name: dependency audit (advisory)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: pip-audit (backend runtime requirements)
+        continue-on-error: true
+        run: |
+          pip install pip-audit
+          pip-audit -r mock_backend/requirements.txt
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: pnpm audit (production dependencies)
+        continue-on-error: true
+        working-directory: frontend
+        run: pnpm audit --prod --audit-level=high
+
+  # Secret scanning over the full history (a fresh clone must be clean, not only the tip).
+  gitleaks:
+    name: secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

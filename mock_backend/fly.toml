@@ -1,0 +1,57 @@
+# Fly.io configuration for the mock backend.
+#
+# STATUS: config provided, NOT deployed. No Fly app exists for this repository and nothing in CI deploys it.
+# Run from mock_backend/ (fly.toml and Dockerfile are picked up from the current directory). When the decision
+# to deploy is taken:
+#
+#   fly apps create anna-spa-backend                    # or change `app` below to a free name
+#   fly volumes create anna_data --region waw --size 1  # one volume: the SQLite file lives here
+#   fly secrets set ANNA_WEBHOOK_SECRET=$(openssl rand -hex 32)
+#   fly secrets set TELEGRAM_BOT_TOKEN=... TELEGRAM_CHAT_ID=...   # optional
+#   fly deploy
+#
+# Single machine on purpose: the SQLite file is local to one volume and the store has no cross-machine locking.
+# Do not scale to more than one machine without moving the store to a server database first.
+
+app = "anna-spa-backend"
+primary_region = "waw"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  ANNA_ENV = "prod"             # refuses to start without ANNA_WEBHOOK_SECRET (see fly secrets above)
+  ANNA_DB_PATH = "/var/lib/anna/anna.db"
+  ANNA_LOG_FORMAT = "json"
+  ANNA_DEMO_LOGS = "0"
+  # Set to the origin of the website that calls the widget, e.g. "https://your-site.example". "*" is the default.
+  CORS_ORIGINS = "*"
+
+[http_service]
+  internal_port = 8011
+  force_https = true
+  auto_stop_machines = "off"     # a stopped machine would make the agent's first webhook call slow
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 20
+    hard_limit = 50
+
+  [[http_service.checks]]
+    grace_period = "10s"
+    interval = "30s"
+    method = "GET"
+    path = "/health"
+    protocol = "http"
+    timeout = "5s"
+
+[[mounts]]
+  source = "anna_data"
+  destination = "/var/lib/anna"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"

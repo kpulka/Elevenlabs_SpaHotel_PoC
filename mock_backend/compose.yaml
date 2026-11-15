@@ -1,0 +1,29 @@
+# Local run of the mock backend with a persistent volume for the SQLite database (ANNA_DB_PATH).
+# Config only: nothing in CI starts this file (CI builds the image and checks /health on its own).
+#
+#   cd mock_backend
+#   cp .env.example .env          # then set ANNA_WEBHOOK_SECRET (openssl rand -hex 32)
+#   docker compose up --build     # or: podman compose up --build
+#   curl http://127.0.0.1:8011/health
+#
+# The port is bound to 127.0.0.1 on purpose: publish it through the tunnel scripts, not to the LAN.
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: bukowy-dwor-backend
+    ports:
+      - "127.0.0.1:8011:8011"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # Where the SQLite database lives inside the container. Unset or ":memory:" keeps the state in RAM.
+      ANNA_DB_PATH: /var/lib/anna/anna.db
+    volumes:
+      - anna-data:/var/lib/anna
+    restart: unless-stopped
+
+volumes:
+  anna-data:
