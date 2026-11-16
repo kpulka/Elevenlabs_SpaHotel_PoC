@@ -1,0 +1,15 @@
+# Gitleaks configuration. Extends the default ruleset; only the known fictional test values below are allowed.
+# Anything else, including every other string in tests/, is still scanned.
+title = "SpaHotels gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Fictional secrets used as test vectors and documentation examples (no real credential)"
+regexes = [
+  '''whsec_test_vector_0123''',
+  '''whsec_delivery_test''',
+  '''tajny-sekret-123''',
+  '''inny-sekret''',
+]
