@@ -3,7 +3,7 @@
 Osobny deliverable: prezentacja case study „Wirtualny Recepcjonista AI — Bukowy Dwór" (portfolio: wdrożenie agenta głosowego ElevenLabs dla fikcyjnego uzdrowiska) plus surowce, z których powstała. Dokumentacja systemu jest w `docs/` (`docs/INDEX.md`).
 
 **Co otworzyć pierwsze:**
-- Online: [kpulka.github.io/Elevenlabs_SpaHotel_PoC](https://kpulka.github.io/Elevenlabs_SpaHotel_PoC/) — strona-wejście `index.html` z linkami do obu decków (GitHub Pages z tego katalogu, `.github/workflows/pages.yml`).
+- Online: [kpulka.github.io/anna-voice-agent](https://kpulka.github.io/anna-voice-agent/) — strona-wejście `index.html` z linkami do obu decków (GitHub Pages z tego katalogu, `.github/workflows/pages.yml`).
 - `prezentacja.html` — wersja PL decku w przeglądarce, bez zależności (otwierasz ją podczas prezentacji). EN: `presentation_en.html`.
 - `Bukowy_Dwor_Case_Study.pptx` / `Bukowy_Dwor_Case_Study_EN.pptx` — te same slajdy do edycji w PowerPoint/Google Slides.
 - `content_pl.json` / `content_en.json` — **kanon treści decku** (teksty, tabele, notatki prelegenta; 69 kluczy, identyczne struktury w obu językach). To z nich generator buduje PPTX.

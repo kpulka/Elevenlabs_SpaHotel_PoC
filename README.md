@@ -1,6 +1,6 @@
 # Anna — AI Voice Receptionist for a Thermal Spa Resort
 
-[![CI](https://github.com/kpulka/Elevenlabs_SpaHotel_PoC/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/kpulka/Elevenlabs_SpaHotel_PoC/actions/workflows/ci.yml)
+[![CI](https://github.com/kpulka/anna-voice-agent/actions/workflows/ci.yml/badge.svg?branch=main&event=push)](https://github.com/kpulka/anna-voice-agent/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 > **TL;DR**
@@ -8,8 +8,16 @@
 > - **What is really running:** the agent on the ElevenLabs platform (7 published procedures, 7 webhook tools, a 5-document knowledge base); a FastAPI backend with webhook authentication, JSON logs, metrics, idempotent bookings and an optional SQLite store; a Next.js site with a self-hosted widget; CI with tests, types, lint, drift gates, a container health check and security scans.
 > - **What is not there yet:** telephony (the agent runs on the web widget only; handoff is simulated), a managed production deployment (the demo runs from a laptop behind a quick tunnel), and published results of live evaluation runs.
 
-**Case-study deck (online):** [kpulka.github.io/Elevenlabs_SpaHotel_PoC](https://kpulka.github.io/Elevenlabs_SpaHotel_PoC/): 14 slides, PL and EN, opens in the browser.
-Editable `PPTX` files are in [`presentation/`](presentation/) and were attached to [release v1.0.1](https://github.com/kpulka/Elevenlabs_SpaHotel_PoC/releases/tag/v1.0.1).
+> **Reviewing this in 5 minutes without cloning?** Read in this order:
+> 1. [`docs/fde-fit.md`](docs/fde-fit.md): what exists, where, and how complete it is (honest status per capability).
+> 2. [`docs/lessons-learned.md`](docs/lessons-learned.md) and [`docs/postmortems/`](docs/postmortems/): production incidents and their fixes.
+> 3. [`docs/PRODUCT_FEEDBACK.md`](docs/PRODUCT_FEEDBACK.md): prioritised feedback for the platform vendor.
+> 4. [`mock_backend/events.py`](mock_backend/events.py) and [`mock_backend/routers/security.py`](mock_backend/routers/security.py): signed events and webhook authentication, with tests in [`mock_backend/tests/`](mock_backend/tests/).
+>
+> The company, guests and phone numbers are fictional; no personal data is processed (see [`NOTICE.md`](NOTICE.md)).
+
+**Case-study deck (online):** [kpulka.github.io/anna-voice-agent](https://kpulka.github.io/anna-voice-agent/): 14 slides, PL and EN, opens in the browser.
+Editable `PPTX` files are in [`presentation/`](presentation/) and were attached to [release v1.0.1](https://github.com/kpulka/anna-voice-agent/releases/tag/v1.0.1).
 
 ![Anna's widget on the site](frontend/public/og/anna-widget.jpg)
 
