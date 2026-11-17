@@ -10,7 +10,7 @@ Two output modes, selected by ``ANNA_LOG_FORMAT``:
 Call sites use ``log_event()`` and pass both representations: the ``demo`` text for the console
 and structured ``fields`` for JSON. Console-only blocks use ``log_demo()`` and never reach JSON.
 The request id and conversation id come from a context variable set by
-``main.ObservabilityMiddleware``, so lines written deep inside a handler are correlated without
+``middleware.ObservabilityMiddleware``, so lines written deep inside a handler are correlated without
 passing ids around.
 """
 
