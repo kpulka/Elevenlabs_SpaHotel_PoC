@@ -40,9 +40,10 @@ jobs:
 
       # Coverage gate. Needs pytest-cov in mock_backend/requirements-dev.txt; the threshold is
       # enforced by --cov-fail-under and the report is printed in the job log.
-      - name: Run tests with coverage (fail under 80 %)
+      # 95 (not 100): headroom for a few defensive lines; current coverage is ~97%.
+      - name: Run tests with coverage (fail under 95 %)
         working-directory: mock_backend
-        run: python -m pytest --cov=. --cov-fail-under=80 --cov-report=term-missing -q
+        run: python -m pytest --cov=. --cov-fail-under=95 --cov-report=term-missing -q
 
   lint:
     name: lint (ruff)

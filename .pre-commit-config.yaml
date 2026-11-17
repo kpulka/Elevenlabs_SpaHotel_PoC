@@ -1,0 +1,50 @@
+# Local mirrors of the CI gates (see .github/workflows/ci.yml), so a commit never
+# lands locally with something CI would reject. Install once:
+#   pip install pre-commit && pre-commit install
+# Run on everything: pre-commit run --all-files
+# Versions are pinned to match CI (ruff 0.17.4).
+minimum_pre_commit_version: "3.5.0"
+
+repos:
+  # Lint (same rules as CI: mock_backend/ruff.toml). No auto-fix — fixes are manual.
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.4
+    hooks:
+      - id: ruff
+        name: ruff (mock_backend)
+        args: [--exit-non-zero-on-fix]
+        files: ^mock_backend/
+
+  # Secret scan (same engine and .gitleaks.toml config as the CI gitleaks job).
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.24.3
+    hooks:
+      - id: gitleaks
+
+  # Repository gates that need no dependencies — same scripts CI runs.
+  - repo: local
+    hooks:
+      - id: check-kb-parity
+        name: KB parity (agent/knowledge_base == knowledge_base_txt)
+        entry: python scripts/check_kb_parity.py
+        language: system
+        pass_filenames: false
+        files: ^agent/knowledge_base(_txt)?/
+      - id: check-tool-contract
+        name: tool contract (backend schemas == agent tool schemas)
+        entry: python scripts/check_tool_contract.py
+        language: system
+        pass_filenames: false
+        files: ^(mock_backend/|agent/|scripts/check_tool_contract\.py)
+      - id: verify-index
+        name: docs/INDEX.md matches docs/
+        entry: python docs/verify_index.py
+        language: system
+        pass_filenames: false
+        files: ^(docs/|docs/INDEX\.md)
+      - id: verify-deck
+        name: deck figures agree across artifacts
+        entry: python presentation/verify_deck.py
+        language: system
+        pass_filenames: false
+        files: ^presentation/

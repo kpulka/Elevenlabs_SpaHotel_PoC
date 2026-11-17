@@ -6,6 +6,9 @@ This is a portfolio case study, so changes are welcome mainly as fixes, tests or
 
 Python is pinned to **3.12** (CI and the backend image both use it). Node is 22, pnpm is 10.
 
+Optionally install the same gates locally as git hooks: `pip install pre-commit && pre-commit install`
+(see `.pre-commit-config.yaml`: ruff, gitleaks, and the repository gates, pinned to the CI versions).
+
 1. **Backend:** `cd mock_backend && pip install -r requirements.txt -r requirements-dev.txt`, then
    `python -m pytest -q`. The CI job also enforces a coverage threshold; see `.github/workflows/ci.yml`.
    Lint and types as in CI: `ruff check mock_backend` (from the repo root) and `python -m mypy .` (from `mock_backend/`).
