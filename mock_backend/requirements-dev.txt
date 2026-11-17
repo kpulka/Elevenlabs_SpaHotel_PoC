@@ -3,6 +3,6 @@
 
 pytest==9.0.3
 # Pomiar pokrycia (mock_backend/.coveragerc). CI uruchamia pytest z --cov; lokalnie opcjonalnie.
-pytest-cov==7.0.0
+pytest-cov==7.1.0
 # Bramka typów (mock_backend/mypy.ini). Wersja przypięta jak ruff w CI.
 mypy==2.4.1
